@@ -281,6 +281,12 @@ export default function AttackPathPage() {
         <p style={{ color: '#888', fontSize: '13px', marginTop: '6px' }}>
           Build attack chains using MITRE ATT&CK techniques. Visualize kill chains, generate narratives for reports.
         </p>
+        <div style={{ marginTop: '12px', background: 'rgba(0,255,65,0.05)', border: '1px solid rgba(0,255,65,0.15)', borderRadius: '4px', padding: '10px 14px' }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: accent, letterSpacing: '0.1em', marginRight: '8px' }}>HOW TO USE</span>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '12px', color: '#666', lineHeight: 1.6 }}>
+            MITRE ATT&CK is the industry-standard framework for describing how attackers operate — each technique has a unique ID (e.g. T1566 = Phishing). Use this tool to map out what happened during a pentest or red team engagement. <strong style={{ color: '#aaa' }}>Load a preset</strong> to see an example, or <strong style={{ color: '#aaa' }}>click a phase button</strong> at the bottom to add steps. Fill in the target asset and notes for each step, then click <strong style={{ color: '#aaa' }}>✦ AI NARRATIVE</strong> to generate a professional report-ready description of the full attack chain. Use EXPORT to copy everything to your clipboard.
+          </span>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px', alignItems: 'start' }}>

@@ -360,6 +360,12 @@ export default function CTFPage() {
         <p style={{ color: '#5a7a5a', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem' }}>
           Quick reference for CTF competitions · Web · Crypto · Forensics · Pwnable · OSINT
         </p>
+        <div style={{ marginTop: '12px', background: 'rgba(0,255,65,0.03)', border: '1px solid rgba(0,255,65,0.12)', borderRadius: '4px', padding: '10px 14px' }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#00ff41', letterSpacing: '0.1em', marginRight: '8px' }}>WHAT IS A CTF</span>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: '#5a6a5a', lineHeight: 1.6 }}>
+            Capture The Flag competitions are legal hacking puzzles where you find a hidden &quot;flag&quot; string (e.g. <code style={{ color: '#00ff41', background: 'rgba(0,255,65,0.08)', padding: '1px 5px', borderRadius: '2px' }}>HTB{'{'flag{'}'}</code>) by solving security challenges. Categories: <strong style={{ color: '#8a9a8a' }}>WEB</strong> (find SQLi, XSS, IDOR bugs), <strong style={{ color: '#8a9a8a' }}>CRYPTO</strong> (break weak ciphers, RSA), <strong style={{ color: '#8a9a8a' }}>FORENSICS</strong> (analyse files, network captures), <strong style={{ color: '#8a9a8a' }}>PWNABLE</strong> (exploit programs with memory bugs). Click a category below to see cheatsheets. Start with <strong style={{ color: '#8a9a8a' }}>picoCTF</strong> if you are new — it is beginner-friendly and always available.
+          </span>
+        </div>
       </div>
 
       {/* CTF platforms */}

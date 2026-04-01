@@ -198,6 +198,12 @@ export default function ShodanPage() {
         <p style={{ color: '#888', fontSize: '13px', marginTop: '6px' }}>
           Build Shodan search queries with point-and-click filters. Live preview assembles the query as you type.
         </p>
+        <div style={{ marginTop: '12px', background: 'rgba(0,212,255,0.05)', border: '1px solid rgba(0,212,255,0.15)', borderRadius: '4px', padding: '10px 14px' }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: accent, letterSpacing: '0.1em', marginRight: '8px' }}>WHAT IS SHODAN</span>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '12px', color: '#666', lineHeight: 1.6 }}>
+            Shodan is a search engine that continuously scans every public IP address and indexes what services are running. Unlike Google which indexes websites, Shodan indexes devices — servers, cameras, routers, databases, industrial systems. Use it to find exposed infrastructure during recon. <strong style={{ color: '#aaa' }}>Click a filter category</strong>, fill in values, and the query builds live on the right. <strong style={{ color: '#aaa' }}>Load an example</strong> to see what real queries look like, then click OPEN SHODAN to run it. Requires a free Shodan account for full results.
+          </span>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: '24px', alignItems: 'start' }}>

@@ -165,6 +165,12 @@ export default function CryptoTracerPage() {
         <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#5a7a5a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>GHOSTNET // CRYPTO FORENSICS</div>
         <h1 style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '2rem', fontWeight: 700, color: '#ffb347', margin: '0.5rem 0', textShadow: '0 0 20px rgba(255,179,71,0.3)' }}>TRANSACTION TRACER</h1>
         <p style={{ color: '#5a7a5a', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem' }}>On-chain fund flow analysis · Address clustering · Risk scoring · Heuristics</p>
+        <div style={{ marginTop: '12px', background: 'rgba(255,179,71,0.04)', border: '1px solid rgba(255,179,71,0.15)', borderRadius: '4px', padding: '10px 14px' }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#ffb347', letterSpacing: '0.1em', marginRight: '8px' }}>HOW TO USE</span>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: '#5a6a5a', lineHeight: 1.6 }}>
+            Simulates the methodology used by blockchain investigators to follow money on-chain. <strong style={{ color: '#8a9a8a' }}>TRACE tab:</strong> paste a wallet address or transaction hash, select Bitcoin or Ethereum, and hit TRACE to see a simulated fund-flow graph with risk labels (mixer, exchange, high-risk). <strong style={{ color: '#8a9a8a' }}>HEURISTICS tab:</strong> learn the real techniques used to de-anonymise wallets. <strong style={{ color: '#8a9a8a' }}>TOOLS tab:</strong> links to free on-chain investigation tools. Pairs with MOD-03 Crypto lab.
+          </span>
+        </div>
       </div>
 
       {/* Tabs */}

@@ -150,6 +150,12 @@ export default function IntelPage() {
         <p style={{ color: '#5a7a5a', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem' }}>
           Live CVE feed · DeFi exploit tracker · Updated {lastUpdated || 'loading...'}
         </p>
+        <div style={{ marginTop: '12px', background: 'rgba(255,65,54,0.04)', border: '1px solid rgba(255,65,54,0.15)', borderRadius: '4px', padding: '10px 14px' }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#ff4136', letterSpacing: '0.1em', marginRight: '8px' }}>WHAT IS THIS</span>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: '#5a6a5a', lineHeight: 1.6 }}>
+            A live feed of real security vulnerabilities published this week. CVE = a publicly disclosed software flaw with a severity score (0–10). Use the <strong style={{ color: '#8a9a8a' }}>CVE tab</strong> to see what is actively being exploited. Use <strong style={{ color: '#8a9a8a' }}>DeFi tab</strong> for recent crypto hacks. Use <strong style={{ color: '#8a9a8a' }}>DARK WEB tab</strong> for underground intelligence. Filter by severity to focus on what matters most. Ask GHOST Agent to explain any entry.
+          </span>
+        </div>
       </div>
 
       {/* Stats bar */}
