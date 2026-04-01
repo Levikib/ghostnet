@@ -162,7 +162,7 @@ echo "=== PTR for $IP ===" && dig -x $IP +short`}</Pre>
       <Pre label="// SUBDOMAIN DISCOVERY — PASSIVE ONLY">{`TARGET="nmap.org"
 
 # Method 1: crt.sh (Certificate Transparency — no account needed)
-curl -s "https://crt.sh/?q=%.${TARGET}&output=json" | python3 -c "
+curl -s "https://crt.sh/?q=%.$TARGET&output=json" | python3 -c "
 import json, sys
 try:
     data = json.load(sys.stdin)
@@ -181,7 +181,7 @@ subfinder -d $TARGET -silent 2>/dev/null | head -30
 
 # Combine and deduplicate
 subfinder -d $TARGET -silent 2>/dev/null > /tmp/subs1.txt
-curl -s "https://crt.sh/?q=%.${TARGET}&output=json" | python3 -c "
+curl -s "https://crt.sh/?q=%.$TARGET&output=json" | python3 -c "
 import json, sys
 try:
     [print(r['name_value']) for r in json.load(sys.stdin)]
