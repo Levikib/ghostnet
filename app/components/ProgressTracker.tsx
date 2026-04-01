@@ -110,19 +110,19 @@ export default function ProgressTracker() {
   return (
     <>
       {justEarned > 0 && (
-        <div style={{ position: 'fixed', top: '80px', right: '24px', zIndex: 2000, background: 'rgba(0,255,65,0.12)', border: '1px solid rgba(0,255,65,0.4)', borderRadius: '6px', padding: '8px 16px', fontFamily: 'JetBrains Mono, monospace', fontSize: '13px', color: '#00ff41', animation: 'fadeUp 2s ease forwards' }}>
+        <div style={{ position: 'fixed', top: '80px', right: '24px', zIndex: 9500, background: 'rgba(0,255,65,0.12)', border: '1px solid rgba(0,255,65,0.4)', borderRadius: '6px', padding: '8px 16px', fontFamily: 'JetBrains Mono, monospace', fontSize: '13px', color: '#00ff41', animation: 'fadeUp 2s ease forwards' }}>
           +{justEarned} XP
           <style>{`@keyframes fadeUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-30px)}}`}</style>
         </div>
       )}
 
-      <button onClick={() => setOpen(!open)} style={{ position: 'fixed', bottom: '90px', left: '24px', zIndex: 1000, background: 'rgba(0,255,65,0.08)', border: '1px solid rgba(0,255,65,0.3)', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer', fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#00ff41', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+      <button onClick={() => setOpen(!open)} style={{ position: 'fixed', bottom: '90px', left: '24px', zIndex: 9000, background: 'rgba(0,255,65,0.08)', border: '1px solid rgba(0,255,65,0.3)', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer', fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#00ff41', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '6px' }}>
         <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00ff41' }} />
         {progress.xp} XP · {rank.title.toUpperCase()}
       </button>
 
       {open && (
-        <div style={{ position: 'fixed', bottom: '130px', left: '24px', zIndex: 999, width: '340px', maxHeight: '520px', background: '#080c0a', border: '1px solid rgba(0,255,65,0.2)', borderRadius: '10px', display: 'flex', flexDirection: 'column', fontFamily: 'JetBrains Mono, monospace', overflow: 'hidden' }}>
+        <div style={{ position: 'fixed', bottom: '130px', left: '24px', zIndex: 9001, width: '340px', maxHeight: '520px', background: '#080c0a', border: '1px solid rgba(0,255,65,0.2)', borderRadius: '10px', display: 'flex', flexDirection: 'column', fontFamily: 'JetBrains Mono, monospace', overflow: 'hidden' }}>
           <div style={{ padding: '12px 16px', borderBottom: '1px solid #1a2e1e', background: 'rgba(0,255,65,0.04)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
               <span style={{ fontSize: '11px', color: '#00ff41', fontWeight: 700, letterSpacing: '0.15em' }}>PROGRESS TRACKER</span>

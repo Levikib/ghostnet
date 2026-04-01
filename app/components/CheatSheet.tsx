@@ -155,12 +155,12 @@ export default function CheatSheet() {
 
   return (
     <>
-      <button onClick={() => setOpen(!open)} style={{ position: 'fixed', bottom: '24px', left: '24px', zIndex: 1000, background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.3)', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer', fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#00d4ff', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+      <button onClick={() => setOpen(!open)} style={{ position: 'fixed', bottom: '24px', left: '24px', zIndex: 9000, background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.3)', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer', fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#00d4ff', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '6px' }}>
         <span style={{ fontSize: '12px' }}>{'{}'}</span> CHEAT SHEETS
       </button>
 
       {open && (
-        <div style={{ position: 'fixed', bottom: '65px', left: '24px', zIndex: 999, width: '480px', height: '540px', background: '#080c0a', border: '1px solid rgba(0,212,255,0.2)', borderRadius: '10px', display: 'flex', flexDirection: 'column', fontFamily: 'JetBrains Mono, monospace', overflow: 'hidden' }}>
+        <div style={{ position: 'fixed', bottom: '65px', left: '24px', zIndex: 9001, width: '480px', height: '540px', background: '#080c0a', border: '1px solid rgba(0,212,255,0.2)', borderRadius: '10px', display: 'flex', flexDirection: 'column', fontFamily: 'JetBrains Mono, monospace', overflow: 'hidden' }}>
           <div style={{ padding: '10px 14px', borderBottom: '1px solid #1a2e1e', background: 'rgba(0,212,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{ fontSize: '11px', color: '#00d4ff', fontWeight: 700, letterSpacing: '0.15em' }}>COMMAND CHEAT SHEETS</span>
             <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', color: '#2a5a2a', cursor: 'pointer', fontSize: '16px' }}>×</button>

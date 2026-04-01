@@ -643,7 +643,7 @@ contract FlashLoanAttacker {
 ADDR="0xSuspectAddress"
 
 # 2. Etherscan — get full history
-# https://etherscan.io/address/ADDR_HERE
+# https://etherscan.io/address/${ADDR}
 # Check: token holdings, transaction history, contract interactions
 
 # 3. Blockchair — cross-chain check (same entity may use multiple chains)
