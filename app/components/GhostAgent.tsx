@@ -17,7 +17,25 @@ const MODULE_CONTEXT: Record<string, string> = {
   '/modules/crypto/lab': 'The user is in the crypto lab — tracing transactions, auditing smart contracts, analysing DeFi exploits, using Chainalysis methodology.',
   '/modules/offensive': 'The user is studying offensive security — penetration testing methodology, network attacks, web app exploitation, privilege escalation, CVEs.',
   '/modules/offensive/lab': 'The user is in the offensive security lab — running pen tests, exploiting vulnerabilities in authorised environments, writing reports.',
-  '/': 'The user is on the GHOSTNET dashboard, a private security research knowledge base.',
+  '/modules/active-directory': 'The user is studying Active Directory security — AD enumeration, BloodHound attack paths, Kerberoasting, Pass-the-Hash, DCSync, Golden Ticket attacks, domain dominance.',
+  '/modules/active-directory/lab': 'The user is in the Active Directory lab — running BloodHound, performing Kerberoasting, lateral movement with CrackMapExec, DCSync attacks, and Golden Ticket persistence.',
+  '/modules/web-attacks': 'The user is studying web application attacks — advanced SQL injection, XSS chains, SSRF, CSRF, deserialization vulnerabilities, GraphQL attacks, IDOR, business logic flaws.',
+  '/modules/web-attacks/lab': 'The user is in the web attacks lab — exploiting SQL injection, stored XSS, SSRF to cloud credentials, insecure deserialization, and GraphQL attack surfaces.',
+  '/modules/malware': 'The user is studying malware analysis — static analysis with Ghidra/IDA, dynamic sandbox analysis, ransomware anatomy, YARA rule writing, memory forensics, reverse engineering.',
+  '/modules/malware/lab': 'The user is in the malware analysis lab — using Ghidra for static analysis, running samples in sandboxes, writing YARA detection rules, performing memory forensics with Volatility.',
+  '/modules/network-attacks': 'The user is studying network attacks — Wireshark packet analysis, ARP spoofing, MITM attacks, DNS poisoning, SSL stripping, VLAN hopping, packet crafting with Scapy, lateral movement.',
+  '/modules/network-attacks/lab': 'The user is in the network attacks lab — capturing traffic with Wireshark/tshark, performing ARP spoofing MITM, DNS spoofing with dnschef, VLAN hopping with Scapy, lateral movement with CrackMapExec.',
+  '/modules/cloud-security': 'The user is studying cloud security — AWS IAM exploitation, S3 misconfigurations, EC2 IMDS credential theft, IAM privilege escalation, container escape, Kubernetes security, GCP and Azure attack patterns.',
+  '/modules/cloud-security/lab': 'The user is in the cloud security lab — enumerating AWS with CLI, exploiting S3 buckets, stealing IMDS credentials, escalating IAM privileges, escaping containers via Docker socket.',
+  '/modules/social-engineering': 'The user is studying social engineering — phishing infrastructure with Gophish, spear phishing methodology, vishing scripts, physical intrusion, OSINT for targeting, SET toolkit, defence and awareness training.',
+  '/modules/social-engineering/lab': 'The user is in the social engineering lab — building target profiles with OSINT, setting up Gophish phishing campaigns, analysing email headers, examining phishing page construction, building security awareness content.',
+  '/modules/red-team': 'The user is studying red team operations — full campaign methodology, C2 frameworks (Cobalt Strike, Sliver, Havoc), AV and EDR evasion, living off the land, persistence mechanisms, exfiltration techniques.',
+  '/modules/red-team/lab': 'The user is in the red team operations lab — deploying Sliver C2, setting up covert infrastructure, running PowerView for AD enumeration, pass-the-hash lateral movement, establishing persistence, writing red team reports.',
+  '/modules/wireless-attacks': 'The user is studying wireless attacks — WPA2 handshake capture and cracking, PMKID attacks, evil twin APs, WPS exploitation with Pixie Dust, Bluetooth attacks, captive portal bypass.',
+  '/modules/wireless-attacks/lab': 'The user is in the wireless attacks lab — enabling monitor mode with airmon-ng, capturing WPA2 handshakes, cracking with hashcat, capturing PMKID with hcxdumptool, WPS Pixie Dust with reaver, rogue AP with hostapd.',
+  '/modules/mobile-security': 'The user is studying mobile security — Android APK analysis, decompilation with jadx/apktool, dynamic analysis with ADB, Frida dynamic instrumentation, SSL pinning bypass, Drozer component testing, OWASP Mobile Top 10.',
+  '/modules/mobile-security/lab': 'The user is in the mobile security lab — decompiling DIVA APK with apktool/jadx, running MobSF automated analysis, ADB runtime analysis, bypassing SSL pinning with Frida and objection, attacking Android components with Drozer.',
+  '/': 'The user is on the GHOSTNET dashboard, a private security research knowledge base covering 13 modules from Tor to mobile security.',
 }
 
 const SYSTEM_PROMPT = `You are GHOST — the embedded AI research agent inside GHOSTNET, a private cybersecurity knowledge base and research platform.
@@ -209,26 +227,18 @@ export default function GhostAgent() {
         onClick={() => setOpen(!open)}
         style={{
           position: 'fixed', bottom: '24px', right: '24px', zIndex: 9000,
-          width: '52px', height: '52px', borderRadius: '8px',
-          background: open ? 'rgba(0,212,255,0.15)' : 'rgba(0,255,65,0.1)',
-          border: `1px solid ${open ? 'rgba(0,212,255,0.5)' : 'rgba(0,255,65,0.4)'}`,
+          height: '32px', borderRadius: '6px',
+          background: open ? 'rgba(0,212,255,0.12)' : 'rgba(0,255,65,0.08)',
+          border: '1px solid ' + (open ? 'rgba(0,212,255,0.5)' : 'rgba(0,255,65,0.35)'),
           cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: `0 0 20px ${open ? 'rgba(0,212,255,0.3)' : 'rgba(0,255,65,0.25)'}`,
+          padding: '4px 10px', gap: '5px',
+          boxSizing: 'border-box' as const,
           transition: 'all 0.2s',
-          flexDirection: 'column', gap: '3px',
         }}
         title="GHOST Agent"
       >
-        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', fontWeight: 700, color: open ? '#00d4ff' : '#00ff41', lineHeight: 1 }}>GH</div>
-        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: open ? '#00d4ff' : '#00ff41', opacity: 0.7, letterSpacing: '0.05em' }}>AGENT</div>
-        {/* pulse dot */}
-        <div style={{
-          position: 'absolute', top: '6px', right: '6px',
-          width: '7px', height: '7px', borderRadius: '50%',
-          background: '#00ff41',
-          boxShadow: '0 0 6px #00ff41',
-          animation: 'pulse-green 2s infinite',
-        }} />
+        <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#00ff41', boxShadow: '0 0 5px #00ff41', animation: 'pulse-green 2s infinite', flexShrink: 0 }} />
+        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', fontWeight: 700, color: open ? '#00d4ff' : '#00ff41', letterSpacing: '0.1em' }}>GHOST AGENT</div>
       </button>
 
       {/* Chat panel */}

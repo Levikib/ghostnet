@@ -67,14 +67,14 @@ export default function CVEFeed() {
 
   return (
     <>
-      <button onClick={() => setOpen(!open)} style={{ position: 'fixed', bottom: '70px', right: '24px', zIndex: 9000, background: 'rgba(255,65,54,0.08)', border: '1px solid rgba(255,65,54,0.3)', borderRadius: '6px', padding: '6px 12px', cursor: 'pointer', fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#ff4136', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ff4136', animation: 'pulse-red 2s infinite' }} />
+      <button onClick={() => setOpen(!open)} style={{ position: 'fixed', bottom: '62px', right: '24px', zIndex: 9000, background: 'rgba(255,65,54,0.08)', border: '1px solid rgba(255,65,54,0.3)', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: '#ff4136', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '5px', height: '32px', boxSizing: 'border-box' as const }}>
+        <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#ff4136', animation: 'pulse-red 2s infinite', flexShrink: 0 }} />
         LIVE CVE FEED
         <style>{`@keyframes pulse-red{0%,100%{box-shadow:0 0 4px #ff4136}50%{box-shadow:0 0 12px #ff4136}}`}</style>
       </button>
 
       {open && (
-        <div style={{ position: 'fixed', bottom: '116px', right: '24px', zIndex: 9001, width: '420px', maxHeight: '50vh', background: '#080c0a', border: '1px solid rgba(255,65,54,0.2)', borderRadius: '10px', display: 'flex', flexDirection: 'column', fontFamily: 'JetBrains Mono, monospace', overflow: 'hidden' }}>
+        <div style={{ position: 'fixed', bottom: '100px', right: '24px', zIndex: 9001, width: '320px', maxHeight: '40vh', background: '#080c0a', border: '1px solid rgba(255,65,54,0.2)', borderRadius: '10px', display: 'flex', flexDirection: 'column', fontFamily: 'JetBrains Mono, monospace', overflow: 'hidden' }}>
           <div style={{ padding: '10px 14px', borderBottom: '1px solid #1a2e1e', background: 'rgba(255,65,54,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <div style={{ fontSize: '11px', color: '#ff4136', fontWeight: 700, letterSpacing: '0.15em' }}>LIVE CVE FEED</div>
