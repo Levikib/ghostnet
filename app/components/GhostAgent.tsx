@@ -234,8 +234,8 @@ export default function GhostAgent() {
       {/* Chat panel */}
       {open && (
         <div style={{
-          position: 'fixed', bottom: '88px', right: '24px', zIndex: 9001,
-          width: '420px', height: '600px',
+          position: 'fixed', bottom: '70px', right: '24px', zIndex: 9001,
+          width: '420px', maxHeight: '60vh',
           background: '#080c0a',
           border: '1px solid rgba(0,212,255,0.2)',
           borderRadius: '10px',

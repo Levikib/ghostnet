@@ -15,6 +15,12 @@ const H2 = ({ children }: { children: React.ReactNode }) => (
   </h2>
 )
 const P = ({ children }: { children: React.ReactNode }) => <p style={{ color: '#9a9a8a', lineHeight: 1.8, marginBottom: '1rem', fontSize: '0.9rem' }}>{children}</p>
+const Note = ({ children }: { children: React.ReactNode }) => (
+  <div style={{ background: 'rgba(255,149,0,0.05)', border: '1px solid rgba(255,149,0,0.2)', borderRadius: '6px', padding: '1rem 1.25rem', marginBottom: '1.5rem', marginTop: '0.5rem' }}>
+    <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#ff9500', letterSpacing: '0.15em', marginBottom: '6px' }}>BEGINNER NOTE</div>
+    <p style={{ color: '#8a9a9a', fontSize: '0.82rem', lineHeight: 1.7, margin: 0, fontFamily: 'sans-serif' }}>{children}</p>
+  </div>
+)
 
 export default function CloudSecurity() {
   return (
@@ -35,6 +41,8 @@ export default function CloudSecurity() {
       </div>
 
       <H2>01 — AWS Fundamentals for Attackers</H2>
+      <P>Cloud environments like AWS differ from traditional networks in a critical way: access is controlled through IAM (Identity and Access Management) rather than firewalls. One misconfigured IAM role, one public S3 bucket, or one exposed API key can give an attacker access to an entire cloud environment — often without setting off traditional alarms.</P>
+      <Note>AWS, Azure, and GCP are not just 'servers in the internet' — they are entire data center ecosystems with hundreds of services. When a company says they're 'in the cloud', they mean they've replaced physical servers with services like EC2 (virtual machines), S3 (file storage), and RDS (databases) managed by Amazon, Microsoft, or Google.</Note>
       <Pre label="// AWS ATTACK SURFACE OVERVIEW">{`# AWS components attackers target:
 
 # IAM (Identity & Access Management)
@@ -112,6 +120,8 @@ aws ssm describe-parameters  # Parameter Store
 aws cloudtrail describe-trails`}</Pre>
 
       <H2>03 — IMDS — Stealing Credentials from EC2</H2>
+      <P>Every EC2 instance can query a special IP address — 169.254.169.254 — to get information about itself, including the temporary AWS credentials for whatever role it's running as. This is the Instance Metadata Service (IMDS). The attack: if a web application running on EC2 is vulnerable to SSRF (Server-Side Request Forgery), an attacker can make the server fetch its own metadata and leak its cloud credentials.</P>
+      <Note>SSRF (Server-Side Request Forgery) means tricking a server into making HTTP requests on your behalf. Imagine a web app that lets you preview URLs — if you pass it 'http://169.254.169.254/latest/meta-data/iam/security-credentials/', the server will fetch that URL from inside AWS and return the credentials to you.</Note>
       <P>The Instance Metadata Service (IMDS) is accessible from every EC2 instance at 169.254.169.254. If an SSRF vulnerability exists in an application running on EC2, you can steal the instance's IAM credentials.</P>
       <Pre label="// IMDS EXPLOITATION VIA SSRF">{`# IMDSv1 (legacy, no auth required):
 curl http://169.254.169.254/latest/meta-data/
@@ -152,6 +162,7 @@ curl -H "X-aws-ec2-metadata-token: $TOKEN" \
 # Via SSRF with IMDSv2 — need PUT method support in vulnerable app`}</Pre>
 
       <H2>04 — S3 Bucket Attacks</H2>
+      <P>S3 buckets are like folders on the internet — companies use them to store files, backups, logs, and assets. The problem: bucket access controls are complex and frequently misconfigured. A public bucket might contain database backups, private keys, or customer data that was never meant to be exposed.</P>
       <Pre label="// FINDING AND EXPLOITING S3 MISCONFIGURATIONS">{`# Step 1: Find buckets (common naming patterns)
 # company-backup, company-logs, company-dev, company-prod
 # company-assets, company-data, company-uploads
@@ -191,6 +202,7 @@ aws s3api get-bucket-acl --bucket BUCKET-NAME
 # wp-config.php, database.php`}</Pre>
 
       <H2>05 — IAM Privilege Escalation</H2>
+      <Note>IAM privilege escalation means using limited permissions you already have to grant yourself more permissions. Think of it like a new employee who can only read files, but discovers they have permission to edit the access control list — so they give themselves admin rights. AWS has dozens of escalation paths; security tools like Pacu automate finding them.</Note>
       <Pre label="// ESCALATE FROM LOW-PRIV TO ADMIN IN AWS">{`# Many paths to admin from limited IAM access:
 
 # Path 1: iam:CreatePolicyVersion
@@ -233,6 +245,8 @@ run iam__enum_permissions
 run iam__privesc_scan`}</Pre>
 
       <H2>06 — Container Escape</H2>
+      <P>Containers (Docker, Kubernetes) are meant to isolate applications from the host system. But misconfigurations — like mounting the Docker socket, running with --privileged, or having excessive capabilities — can allow an attacker who compromises a container to break out and access the underlying host.</P>
+      <Note>A container is like a sandbox: your code runs inside it, isolated from everything else. A container escape is when you find a hole in the sandbox walls and climb out to the host system. Once on the host, you have access to every other container and potentially the entire cloud account.</Note>
       <Pre label="// BREAK OUT OF DOCKER/K8S CONTAINERS">{`# Check if running in container:
 cat /proc/1/cgroup | grep docker
 ls /.dockerenv
