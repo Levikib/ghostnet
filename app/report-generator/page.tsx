@@ -72,6 +72,7 @@ export default function ReportGenerator() {
   const [loading, setLoading] = useState(false)
   const [aiSection, setAiSection] = useState<'summary' | 'finding' | null>(null)
   const [aiTarget, setAiTarget] = useState<number | null>(null)
+  const [aiError, setAiError] = useState('')
   const [output, setOutput] = useState('')
   const [copied, setCopied] = useState(false)
 
@@ -91,72 +92,98 @@ export default function ReportGenerator() {
     setFindings(prev => prev.map(f => f.id === id ? { ...f, [field]: value } : f))
   }
 
-  const callAI = async (prompt: string, onResult: (text: string) => void) => {
+  const callAI = async (
+    prompt: string,
+    onResult: (text: string) => void,
+    onDone: () => void
+  ) => {
     setLoading(true)
+    setAiError('')
     try {
       const res = await fetch('/api/ghost', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          systemPrompt: 'You are a senior penetration tester writing professional security assessment reports. Write concise, accurate, technically precise content. Use plain professional language — no marketing fluff. Output only the requested content with no preamble or explanation.',
+          systemPrompt: 'You are a senior penetration tester writing professional security assessment reports. Write concise, accurate, technically precise content. Use plain professional language — no marketing fluff. Do not add preamble, do not explain what you are about to write, do not add a closing sentence. Output only the requested content.',
           messages: [{ role: 'user', content: prompt }],
         }),
       })
       const data = await res.json()
-      onResult(data.text || 'No response received.')
-    } catch {
-      onResult('Error contacting AI. Check your GROQ_API_KEY.')
+      if (data.error) throw new Error(data.error)
+      onResult(data.text || '')
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error'
+      setAiError(msg)
     } finally {
       setLoading(false)
+      onDone()
     }
   }
 
   const generateSummary = () => {
+    if (loading) return
     setAiSection('summary')
-    const critCount = findings.filter(f => f.severity === 'CRITICAL').length
-    const highCount = findings.filter(f => f.severity === 'HIGH').length
-    const findingsList = findings.map(f => f.title + ' (' + f.severity + ')').filter(t => t.trim() !== ' ()').join(', ')
-    const prompt = 'Write a 2-3 paragraph executive summary for a penetration test report. ' +
-      'Client: ' + (clientName || 'the client') + '. ' +
-      'Engagement: ' + (engagementName || 'security assessment') + '. ' +
-      'Methodology: ' + methodology + '. ' +
-      'Findings: ' + (findingsList || 'no findings yet') + '. ' +
-      'Critical findings: ' + critCount + ', High: ' + highCount + '. ' +
-      'Scope: ' + (scope || 'full network and web application') + '. ' +
-      'Write professionally. Do not use bullet points — use paragraphs only.'
-    callAI(prompt, text => {
-      setExecutiveSummary(text)
-      setAiSection(null)
-    })
+    const sevCounts = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFO'].map(s => {
+      const n = findings.filter(f => f.severity === s).length
+      return n > 0 ? n + ' ' + s : null
+    }).filter(Boolean).join(', ')
+    const findingsList = findings
+      .filter(f => f.title.trim())
+      .map(f => '- ' + f.title + ' [' + f.severity + ']' + (f.asset ? ' on ' + f.asset : ''))
+      .join('\n')
+    const prompt = [
+      'Write a professional executive summary for a penetration test report. Use 2-3 paragraphs.',
+      'Client: ' + (clientName || 'the client'),
+      'Engagement: ' + (engagementName || 'Security Assessment'),
+      'Methodology: ' + methodology,
+      'Scope: ' + (scope || 'network and web applications'),
+      'Findings (' + (sevCounts || 'none recorded') + '):',
+      findingsList || '(no findings entered yet)',
+      '',
+      'Paragraph 1: overall security posture and engagement purpose.',
+      'Paragraph 2: summary of key findings and their business risk.',
+      'Paragraph 3: high-level remediation priority and recommended next steps.',
+      'Write in third person. No bullet points. No heading labels.',
+    ].join('\n')
+    callAI(prompt, text => setExecutiveSummary(text), () => setAiSection(null))
   }
 
   const generateFindingDesc = (f: Finding) => {
+    if (loading) return
     setAiSection('finding')
     setAiTarget(f.id)
-    const prompt = 'Write a professional penetration test finding description for: ' + f.title + '. ' +
-      'Severity: ' + f.severity + '. ' +
-      'Asset: ' + (f.asset || 'target system') + '. ' +
-      'Write three short paragraphs: (1) what the vulnerability is, (2) how it was identified/reproduced, (3) what an attacker could do with it. ' +
-      'Be technical and precise. No bullet points.'
-    callAI(prompt, text => {
-      updateFinding(f.id, 'description', text)
-      setAiSection(null)
-      setAiTarget(null)
-    })
+    const prompt = [
+      'Write a penetration test finding description. Three paragraphs, no headings, no bullet points.',
+      'Finding: ' + f.title,
+      'Severity: ' + f.severity,
+      'Affected asset: ' + (f.asset || 'target system'),
+      f.impact ? 'Known impact context: ' + f.impact : '',
+      '',
+      'Paragraph 1: Technical explanation of the vulnerability — what it is, the root cause, and the relevant CWE or vulnerability class.',
+      'Paragraph 2: How the vulnerability was discovered and reproduced during testing — specific evidence or steps taken.',
+      'Paragraph 3: What an attacker could achieve by exploiting it, and why the severity rating is appropriate.',
+    ].filter(Boolean).join('\n')
+    callAI(prompt, text => updateFinding(f.id, 'description', text), () => { setAiSection(null); setAiTarget(null) })
   }
 
   const generateRecommendation = (f: Finding) => {
+    if (loading) return
     setAiSection('finding')
     setAiTarget(f.id)
-    const prompt = 'Write a concise remediation recommendation for this vulnerability: ' + f.title + '. ' +
-      'Severity: ' + f.severity + '. ' +
-      'Be specific and actionable. Include: immediate mitigation step, long-term fix, and one relevant reference (CVE, CWE, or OWASP). ' +
-      'Write 2-3 sentences maximum. No bullet points.'
-    callAI(prompt, text => {
-      updateFinding(f.id, 'recommendation', text)
-      setAiSection(null)
-      setAiTarget(null)
-    })
+    const prompt = [
+      'Write a remediation recommendation for this penetration test finding.',
+      'Finding: ' + f.title,
+      'Severity: ' + f.severity,
+      'Affected asset: ' + (f.asset || 'target system'),
+      f.description ? 'Description context: ' + f.description.slice(0, 300) : '',
+      '',
+      'Write exactly 3 sentences:',
+      '1. Immediate mitigation step the team can take right now to reduce exposure.',
+      '2. Long-term fix — the proper architectural or configuration change to permanently remediate.',
+      '3. Reference standard: cite the specific CWE, CVE, or OWASP item that applies.',
+      'Be specific and actionable. No bullet points. No headings.',
+    ].filter(Boolean).join('\n')
+    callAI(prompt, text => updateFinding(f.id, 'recommendation', text), () => { setAiSection(null); setAiTarget(null) })
   }
 
   const buildReport = () => {
@@ -283,14 +310,22 @@ export default function ReportGenerator() {
               <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: accent, letterSpacing: '0.2em' }}>EXECUTIVE SUMMARY</div>
               <button
                 onClick={generateSummary}
-                disabled={loading && aiSection === 'summary'}
-                style={{ background: accentDim, border: '1px solid ' + accentBorder, borderRadius: '3px', padding: '4px 10px', cursor: 'pointer', fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: accent, letterSpacing: '0.1em', opacity: loading && aiSection === 'summary' ? 0.5 : 1 }}
+                disabled={loading}
+                style={{ background: accentDim, border: '1px solid ' + accentBorder, borderRadius: '3px', padding: '4px 10px', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: accent, letterSpacing: '0.1em', opacity: loading ? 0.5 : 1 }}
               >
-                {loading && aiSection === 'summary' ? 'GENERATING...' : 'AI: GENERATE SUMMARY'}
+                {loading && aiSection === 'summary' ? '⟳ GENERATING...' : 'AI: GENERATE SUMMARY'}
               </button>
             </div>
             <Textarea value={executiveSummary} onChange={setExecutiveSummary} placeholder="Write or AI-generate an executive summary..." rows={5} />
           </div>
+
+          {/* AI ERROR BANNER */}
+          {aiError && (
+            <div style={{ background: 'rgba(255,65,54,0.06)', border: '1px solid rgba(255,65,54,0.3)', borderRadius: '4px', padding: '10px 14px', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: '#ff4136' }}>AI Error: {aiError}</span>
+              <button onClick={() => setAiError('')} style={{ background: 'none', border: 'none', color: '#ff4136', cursor: 'pointer', fontSize: '14px', padding: '0 4px' }}>✕</button>
+            </div>
+          )}
 
           {/* FINDINGS */}
           <div style={{ background: '#0a130a', border: '1px solid #1a2e1e', borderRadius: '6px', padding: '1.25rem', marginBottom: '1.5rem' }}>
@@ -343,7 +378,7 @@ export default function ReportGenerator() {
                       disabled={loading}
                       style={{ background: 'transparent', border: '1px solid #1a2e1e', borderRadius: '3px', padding: '2px 7px', cursor: 'pointer', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#3a6a3a', letterSpacing: '0.1em', opacity: loading && aiTarget === f.id ? 0.5 : 1 }}
                     >
-                      {loading && aiTarget === f.id && aiSection === 'finding' ? 'WRITING...' : 'AI DRAFT'}
+                      {loading && aiTarget === f.id && aiSection === 'finding' ? '⟳ WRITING...' : 'AI DRAFT'}
                     </button>
                   </div>
                   <Textarea value={f.description} onChange={v => updateFinding(f.id, 'description', v)} placeholder="Describe the vulnerability, how it was found, and reproduction steps..." rows={3} />
@@ -362,7 +397,7 @@ export default function ReportGenerator() {
                       disabled={loading}
                       style={{ background: 'transparent', border: '1px solid #1a2e1e', borderRadius: '3px', padding: '2px 7px', cursor: 'pointer', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#3a6a3a', letterSpacing: '0.1em', opacity: loading ? 0.5 : 1 }}
                     >
-                      {loading && aiTarget === f.id ? 'WRITING...' : 'AI DRAFT'}
+                      {loading && aiTarget === f.id && aiSection === 'finding' ? '⟳ WRITING...' : 'AI DRAFT'}
                     </button>
                   </div>
                   <Textarea value={f.recommendation} onChange={v => updateFinding(f.id, 'recommendation', v)} placeholder="How should this be fixed? Immediate and long-term steps." rows={2} />
