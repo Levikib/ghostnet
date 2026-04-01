@@ -19,16 +19,17 @@ const Pre = ({ label, children }: { label?: string; children: string }) => (
     <pre style={{ background: '#050805', border: '1px solid #2e1e00', borderRadius: '4px', padding: '1.25rem', overflow: 'auto', color: '#ffb347', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', lineHeight: 1.7, whiteSpace: 'pre' as const }}>{children}</pre>
   </div>
 )
-const Alert = ({ type, children }: { type: 'info' | 'warn' | 'danger' | 'tip'; children: React.ReactNode }) => {
+const Alert = ({ type, children }: { type: 'info' | 'warn' | 'danger' | 'tip' | 'beginner'; children: React.ReactNode }) => {
   const c: Record<string, [string, string, string]> = {
-    info:   ['#ffb347', 'rgba(255,179,71,0.05)',  'NOTE'],
-    warn:   ['#ff4136', 'rgba(255,65,54,0.05)',   'WARNING'],
-    danger: ['#ff4136', 'rgba(255,65,54,0.07)',   'CRITICAL'],
-    tip:    ['#00ff41', 'rgba(0,255,65,0.04)',    'PRO TIP'],
+    info:     ['#ffb347', 'rgba(255,179,71,0.05)',  'NOTE'],
+    warn:     ['#ff4136', 'rgba(255,65,54,0.05)',   'WARNING'],
+    danger:   ['#ff4136', 'rgba(255,65,54,0.07)',   'CRITICAL'],
+    tip:      ['#00ff41', 'rgba(0,255,65,0.04)',    'PRO TIP'],
+    beginner: ['#00d4ff', 'rgba(0,212,255,0.05)',   'BEGINNER NOTE'],
   }
   const [color, bg, label] = c[type]
   return (
-    <div style={{ background: bg, borderLeft: `3px solid ${color}`, padding: '1rem 1.25rem', borderRadius: '0 4px 4px 0', margin: '1.5rem 0', border: `1px solid ${color}33`, borderLeftColor: color }}>
+    <div style={{ background: bg, borderLeft: '3px solid ' + color, padding: '1rem 1.25rem', borderRadius: '0 4px 4px 0', margin: '1.5rem 0', border: '1px solid ' + color + '33', borderLeftColor: color }}>
       <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color, letterSpacing: '0.2em', marginBottom: '6px' }}>{label}</div>
       <div style={{ color: '#8a9a8a', fontSize: '0.85rem', lineHeight: 1.7 }}>{children}</div>
     </div>

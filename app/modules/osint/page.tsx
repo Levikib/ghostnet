@@ -22,16 +22,17 @@ const Pre = ({ label, children }: { label?: string; children: string }) => (
     <pre style={{ background: '#050805', border: '1px solid #1a2e1e', borderRadius: '4px', padding: '1.25rem', overflow: 'auto', color: '#00d4ff', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', lineHeight: 1.7, whiteSpace: 'pre' as const }}>{children}</pre>
   </div>
 )
-const Alert = ({ type, children }: { type: 'info' | 'warn' | 'danger' | 'tip'; children: React.ReactNode }) => {
+const Alert = ({ type, children }: { type: 'info' | 'warn' | 'danger' | 'tip' | 'beginner'; children: React.ReactNode }) => {
   const configs: Record<string, [string, string, string]> = {
-    info:   ['#00d4ff', 'rgba(0,212,255,0.05)', 'NOTE'],
-    warn:   ['#ffb347', 'rgba(255,179,71,0.05)', 'WARNING'],
-    danger: ['#ff4136', 'rgba(255,65,54,0.05)',  'CRITICAL'],
-    tip:    ['#00ff41', 'rgba(0,255,65,0.04)',   'PRO TIP'],
+    info:     ['#00d4ff', 'rgba(0,212,255,0.05)', 'NOTE'],
+    warn:     ['#ffb347', 'rgba(255,179,71,0.05)', 'WARNING'],
+    danger:   ['#ff4136', 'rgba(255,65,54,0.05)',  'CRITICAL'],
+    tip:      ['#00ff41', 'rgba(0,255,65,0.04)',   'PRO TIP'],
+    beginner: ['#00d4ff', 'rgba(0,212,255,0.05)',  'BEGINNER NOTE'],
   }
   const [color, bg, label] = configs[type]
   return (
-    <div style={{ background: bg, borderLeft: `3px solid ${color}`, padding: '1rem 1.25rem', borderRadius: '0 4px 4px 0', margin: '1.5rem 0', border: `1px solid ${color}33`, borderLeftColor: color }}>
+    <div style={{ background: bg, borderLeft: '3px solid ' + color, padding: '1rem 1.25rem', borderRadius: '0 4px 4px 0', margin: '1.5rem 0', border: '1px solid ' + color + '33', borderLeftColor: color }}>
       <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color, letterSpacing: '0.2em', marginBottom: '6px' }}>{label}</div>
       <div style={{ color: '#8a9a8a', fontSize: '0.85rem', lineHeight: 1.7 }}>{children}</div>
     </div>
@@ -85,6 +86,9 @@ export default function OSINTModule() {
       </div>
 
       <H2>01 — OSINT Fundamentals & Intelligence Cycle</H2>
+      <Alert type="beginner">
+        In plain English: OSINT means gathering information about a target using only publicly available sources — things anyone with internet access can find. No hacking, no special access required. A Google search is OSINT. Looking up a company on LinkedIn is OSINT. Checking who owns a domain on WHOIS is OSINT. The skill is knowing where to look, what to look for, and how to connect the dots across different sources.
+      </Alert>
       <P>Open Source Intelligence (OSINT) is the collection and analysis of information from publicly available sources. The term "open source" refers to the data being openly accessible — not to open-source software. It encompasses anything legally obtainable without hacking: websites, social media, public records, metadata, satellite imagery, and more.</P>
       <P>OSINT is the foundation of nearly every intelligence operation — criminal, corporate, journalistic, and state-level. Before any technical attack, a threat actor spends significant time on OSINT. Understanding this phase is critical for both offensive security and defense.</P>
 
@@ -115,6 +119,9 @@ DISSEMINATION
       ]} />
 
       <H2>02 — Passive vs Active Reconnaissance</H2>
+      <Alert type="beginner">
+        The key distinction: passive recon means you never send a packet to the target — you are only reading what others have already published. Like reading a company&apos;s Wikipedia page. Active recon means directly probing the target — their server sees your traffic. Like knocking on every door in a building to see which ones open. Passive is always legal; active requires written permission from the target.
+      </Alert>
       <Table headers={['TYPE', 'DEFINITION', 'EXAMPLE', 'DETECTABILITY', 'LEGAL RISK']} rows={[
         ['Passive', 'No direct contact with target systems', 'Reading public WHOIS records', 'Zero', 'None'],
         ['Semi-passive', 'Normal-looking traffic to target', 'Visiting their website once', 'Minimal', 'None'],
@@ -173,6 +180,9 @@ curl "https://crt.sh/?q=%25.example.com&output=json" | \
 # Online: https://crt.sh  |  https://securitytrails.com`}</Pre>
 
       <H2>04 — Shodan: The Internet of Everything</H2>
+      <Alert type="beginner">
+        Think of Shodan as Google, but instead of indexing web pages, it indexes every internet-connected device — servers, webcams, databases, routers, industrial equipment. When Shodan &quot;crawls&quot; the internet, it connects to every IP address and records what responds on each port. The result: a searchable database of what software is running, what version, and whether it is misconfigured. Security researchers use this to find exposed services before attackers do.
+      </Alert>
       <P>Shodan indexes the banners and responses of services running on open ports across the entire internet — servers, databases, webcams, industrial control systems, anything with an IP. For security researchers it is the single most powerful passive recon tool available.</P>
 
       <Table headers={['OPERATOR', 'FUNCTION', 'EXAMPLE']} rows={[
@@ -291,6 +301,9 @@ pip install maigret
 maigret username --report-dir ./reports`}</Pre>
 
       <H2>08 — Metadata Extraction & Analysis</H2>
+      <Alert type="beginner">
+        Every file you create with software contains invisible background data called metadata. A Word document stores the author&apos;s username, their company name, the file path on their computer, and how long they edited it. A photo taken on a smartphone stores the exact GPS coordinates of where it was taken. This data travels with the file when you share it — and most people have no idea it is there. For investigators, this can reveal internal usernames, office locations, and server paths from a single publicly downloaded PDF.
+      </Alert>
       <P>Every digital file contains metadata — author, creation time, GPS coordinates, software version, editing history. This data is often overlooked and can be devastating for opsec.</P>
 
       <Pre label="// EXIFTOOL — EXTRACT METADATA">{`sudo apt install libimage-exiftool-perl

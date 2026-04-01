@@ -39,17 +39,17 @@ const Pre = ({ label, children }: { label?: string; children: string }) => (
   </div>
 )
 
-const Alert = ({ type, children }: { type: 'info' | 'warn' | 'danger'; children: React.ReactNode }) => {
-  const colors: Record<string, [string, string]> = {
-    info: ['#00ff41', 'rgba(0,255,65,0.05)'],
-    warn: ['#ffb347', 'rgba(255,179,71,0.05)'],
-    danger: ['#ff4136', 'rgba(255,65,54,0.05)'],
+const Alert = ({ type, children }: { type: 'info' | 'warn' | 'danger' | 'beginner'; children: React.ReactNode }) => {
+  const configs: Record<string, [string, string, string]> = {
+    info: ['#00ff41', 'rgba(0,255,65,0.05)', 'NOTE'],
+    warn: ['#ffb347', 'rgba(255,179,71,0.05)', 'WARNING'],
+    danger: ['#ff4136', 'rgba(255,65,54,0.05)', 'CRITICAL'],
+    beginner: ['#00d4ff', 'rgba(0,212,255,0.05)', 'BEGINNER NOTE'],
   }
-  const labels = { info: 'NOTE', warn: 'WARNING', danger: 'CRITICAL' }
-  const [color, bg] = colors[type]
+  const [color, bg, label] = configs[type]
   return (
-    <div style={{ background: bg, borderLeft: `3px solid ${color}`, padding: '1rem 1.25rem', borderRadius: '0 4px 4px 0', margin: '1.5rem 0', border: `1px solid ${color}33`, borderLeftColor: color }}>
-      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color, letterSpacing: '0.2em', marginBottom: '6px' }}>{labels[type]}</div>
+    <div style={{ background: bg, borderLeft: '3px solid ' + color, padding: '1rem 1.25rem', borderRadius: '0 4px 4px 0', margin: '1.5rem 0', border: '1px solid ' + color + '33', borderLeftColor: color }}>
+      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color, letterSpacing: '0.2em', marginBottom: '6px' }}>{label}</div>
       <div style={{ color: '#8a9a8a', fontSize: '0.85rem', lineHeight: 1.7 }}>{children}</div>
     </div>
   )
@@ -123,6 +123,9 @@ export default function TorModule() {
 
       {/* SECTION 01 */}
       <H2>01 — What Tor Is (and Isn't)</H2>
+      <Alert type="beginner">
+        In plain English: Tor is a privacy tool that hides where your internet traffic is coming from. When you use Tor, your traffic bounces through 3 random computers around the world before reaching its destination. Each of those computers only knows the previous and next hop — no single computer knows both who you are AND where you are going. Think of it like passing a letter through 3 strangers, each only knowing who gave it to them and who to pass it to next.
+      </Alert>
       <P>
         Tor (The Onion Router) is a free, open-source anonymity network originally developed in the mid-1990s by the United States Naval Research Laboratory for protecting US intelligence communications online. It was publicly released in 2002 and is now maintained by the non-profit Tor Project.
       </P>
@@ -148,8 +151,11 @@ export default function TorModule() {
 
       {/* SECTION 02 */}
       <H2>02 — Onion Routing: The Architecture</H2>
+      <Alert type="beginner">
+        The &quot;onion&quot; metaphor: imagine wrapping a letter in 3 envelopes. The outermost envelope is addressed to Relay 1. Inside is an envelope addressed to Relay 2. Inside that is an envelope addressed to Relay 3. Inside that is the actual message for the website. Each relay only opens one envelope, sees the next address, and forwards — never seeing the full picture. This is exactly what Tor does with encryption.
+      </Alert>
       <P>
-        Onion routing works by wrapping your data in multiple layers of encryption — one layer for each relay in the circuit. Each relay only decrypts one layer, learns the next hop, and forwards the data. No single relay knows both who you are and where you're going.
+        Onion routing works by wrapping your data in multiple layers of encryption — one layer for each relay in the circuit. Each relay only decrypts one layer, learns the next hop, and forwards the data. No single relay knows both who you are and where you&apos;re going.
       </P>
 
       <H3>The Layered Encryption Model</H3>
@@ -177,8 +183,11 @@ export default function TorModule() {
 
       {/* SECTION 03 */}
       <H2>03 — Circuit Building: Guard, Middle, Exit</H2>
+      <Alert type="beginner">
+        Think of the three nodes as three different jobs with different amounts of sensitive information. The Guard node is the one that knows your real IP — it is like the front door. The Middle node is a pure relay, the safest role — it knows neither your IP nor your destination. The Exit node connects to the actual website — it sees the destination but not your IP. This separation of knowledge is the core of why Tor works.
+      </Alert>
       <P>
-        When you open Tor Browser, the Tor client builds a 3-hop circuit through the network. The selection of each relay is not random — it's weighted by bandwidth, uptime, and flags assigned by directory authorities.
+        When you open Tor Browser, the Tor client builds a 3-hop circuit through the network. The selection of each relay is not random — it&apos;s weighted by bandwidth, uptime, and flags assigned by directory authorities.
       </P>
 
       <H3>The Three Node Types</H3>
@@ -216,8 +225,11 @@ export default function TorModule() {
 
       {/* SECTION 04 */}
       <H2>04 — Hidden Services (.onion)</H2>
+      <Alert type="beginner">
+        A .onion address is a website that only exists inside the Tor network. There is no DNS (domain name system) involved — the .onion address IS the cryptographic public key of the server. You cannot reach it with a regular browser or find it on Google. Both the visitor and the server remain anonymous, because they connect to a shared meeting point inside Tor rather than directly to each other.
+      </Alert>
       <P>
-        Hidden services (now called Onion Services) allow servers to host websites and services accessible only through Tor, without revealing the server's IP address. Both the client and server remain anonymous.
+        Hidden services (now called Onion Services) allow servers to host websites and services accessible only through Tor, without revealing the server&apos;s IP address. Both the client and server remain anonymous.
       </P>
 
       <H3>How .onion Addresses Work</H3>
@@ -323,6 +335,9 @@ network.proxy.type = 1  (SOCKS5 through Tor)
 
       {/* SECTION 07 */}
       <H2>07 — Operational Security (Opsec)</H2>
+      <Alert type="beginner">
+        Opsec (operational security) means not accidentally revealing who you are through your behaviour, even when your technical tools are working correctly. The best lock on your front door does not help if you leave your name and address taped to it. With Tor: the technology can be perfect, but if you log into your Gmail account through Tor, Google (and anyone watching) now knows it is you. Most real Tor-related arrests came from these human mistakes, not from breaking the cryptography.
+      </Alert>
       <P>
         Technical anonymity tools fail when operational security fails. Most Tor-related identification comes not from breaking the cryptography, but from user behaviour, metadata, and mistakes.
       </P>
