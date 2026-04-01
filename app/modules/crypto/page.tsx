@@ -102,6 +102,9 @@ export default function CryptoModule() {
 
       {/* 01 */}
       <H2>01 — Blockchain Fundamentals: How It Actually Works</H2>
+      <Alert type="beginner">
+        In plain English: a blockchain is a shared spreadsheet that thousands of computers around the world maintain simultaneously. No single person controls it. Every row (transaction) is permanently linked to the row before it using cryptography — so you cannot go back and edit history without everyone noticing. This is why &quot;blockchain is immutable&quot; — changing the past would require redoing an enormous amount of work on every computer simultaneously.
+      </Alert>
       <P>A blockchain is a distributed, append-only ledger maintained by a network of nodes. Every transaction is cryptographically linked to the previous one, forming an immutable chain. Understanding this structure is the foundation of both blockchain security research and forensic analysis.</P>
 
       <H3>The Block Structure</H3>
@@ -151,6 +154,9 @@ BLOCK BODY
 
       {/* 02 */}
       <H2>02 — Transaction Anatomy & The UTXO Model</H2>
+      <Alert type="beginner">
+        Bitcoin does not work like a bank account with a single balance. Instead, think of it like a physical wallet full of cash notes of different denominations — except each note is called a UTXO (Unspent Transaction Output). When you &quot;send&quot; Bitcoin, you are actually consuming one or more of those notes and creating new ones: one for the recipient, and usually one back to yourself as &quot;change.&quot; Every UTXO can be traced back through the entire chain of ownership — this is what makes Bitcoin traceable.
+      </Alert>
       <P>Bitcoin uses the Unspent Transaction Output (UTXO) model. Every coin you own is actually a collection of unspent outputs from previous transactions. Understanding this model is essential for forensic tracing.</P>
 
       <Pre label="// UTXO MODEL — HOW BITCOIN TRANSACTIONS WORK">{`# A UTXO is a chunk of Bitcoin assigned to an address.
@@ -322,6 +328,9 @@ get_address_info("1A1zP1eP5QGefi2DMPTfTL5SLmv7Divf8N")  # Genesis block address`
 
       {/* 05 */}
       <H2>05 — Smart Contracts: Architecture & Vulnerability Classes</H2>
+      <Alert type="beginner">
+        A smart contract is a program that lives on the blockchain. Once deployed, it runs exactly as coded — no one can stop it, change it, or intervene. It can hold real money (ETH, tokens) and transfer it automatically based on rules in its code. The danger: if there is a bug in the code, an attacker can exploit it and drain all the funds. There is no bank to call, no refund, no undo. This is why smart contract security auditing is one of the highest-paid specialisations in security.
+      </Alert>
       <P>Smart contracts are programs deployed on the blockchain that execute automatically when conditions are met. They are immutable once deployed, hold real funds, and interact with each other — making vulnerabilities extremely high stakes. A single bug can drain millions with no recourse.</P>
 
       <H3>Solidity Contract Structure</H3>
