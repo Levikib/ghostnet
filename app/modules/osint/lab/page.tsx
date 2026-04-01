@@ -2,39 +2,49 @@
 import React from 'react'
 import Link from 'next/link'
 
+const accent = '#00d4ff'
+const accentDim = 'rgba(0,212,255,0.1)'
+const accentBorder = 'rgba(0,212,255,0.3)'
+
 const H2 = ({ num, children }: { num: string; children: React.ReactNode }) => (
-  <h2 style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1rem', fontWeight: 600, color: '#00d4ff', marginTop: '3rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-    <span style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.3)', padding: '2px 8px', borderRadius: '3px', fontSize: '0.65rem', letterSpacing: '0.15em' }}>LAB-{num}</span>
+  <h2 style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1rem', fontWeight: 600, color: accent, marginTop: '3rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <span style={{ background: accentDim, border: '1px solid ' + accentBorder, padding: '2px 8px', borderRadius: '3px', fontSize: '0.65rem', letterSpacing: '0.15em' }}>LAB-{num}</span>
     {children}
   </h2>
 )
+
 const H3 = ({ children }: { children: React.ReactNode }) => (
   <h3 style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.82rem', fontWeight: 600, color: '#0088aa', marginTop: '1.75rem', marginBottom: '0.6rem' }}>▸ {children}</h3>
 )
+
 const P = ({ children }: { children: React.ReactNode }) => (
   <p style={{ color: '#8a9a8a', lineHeight: 1.8, marginBottom: '1rem', fontSize: '0.88rem' }}>{children}</p>
 )
+
 const Pre = ({ label, children }: { label?: string; children: string }) => (
   <div style={{ margin: '1rem 0 1.5rem' }}>
-    {label && <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#5a7a5a', letterSpacing: '0.15em', marginBottom: '4px', paddingLeft: '4px' }}>{label}</div>}
-    <pre style={{ background: '#050805', border: '1px solid #1a2e1e', borderRadius: '4px', padding: '1.25rem', overflow: 'auto', color: '#00d4ff', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', lineHeight: 1.7, whiteSpace: 'pre' as const }}>{children}</pre>
+    {label && <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#2a5a6a', letterSpacing: '0.15em', marginBottom: '4px', paddingLeft: '4px' }}>{label}</div>}
+    <pre style={{ background: '#050805', border: '1px solid #1a2e1e', borderRadius: '4px', padding: '1.25rem', overflow: 'auto', color: accent, fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', lineHeight: 1.7, whiteSpace: 'pre' as const }}>{children}</pre>
   </div>
 )
-const Alert = ({ type, children }: { type: 'info' | 'warn' | 'objective'; children: React.ReactNode }) => {
+
+const Alert = ({ type, children }: { type: 'info' | 'warn' | 'objective' | 'note'; children: React.ReactNode }) => {
   const configs: Record<string, [string, string, string]> = {
-    info:      ['#00d4ff', 'rgba(0,212,255,0.05)', 'INFO'],
-    warn:      ['#ff4136', 'rgba(255,65,54,0.05)',  'IMPORTANT'],
-    objective: ['#00d4ff', 'rgba(0,212,255,0.05)', 'OBJECTIVE'],
+    info: ['#00d4ff', 'rgba(0,212,255,0.05)', 'INFO'],
+    warn: ['#ff4136', 'rgba(255,65,54,0.05)', 'IMPORTANT'],
+    objective: [accent, accentDim, 'OBJECTIVE'],
+    note: ['#ffb347', 'rgba(255,179,71,0.05)', 'BEGINNER NOTE'],
   }
   const [color, bg, label] = configs[type]
   return (
-    <div style={{ background: bg, borderLeft: `3px solid ${color}`, padding: '1rem 1.25rem', borderRadius: '0 4px 4px 0', margin: '1.25rem 0', border: `1px solid ${color}33`, borderLeftColor: color }}>
+    <div style={{ background: bg, borderLeft: '3px solid ' + color, padding: '1rem 1.25rem', borderRadius: '0 4px 4px 0', margin: '1.25rem 0', border: '1px solid ' + color + '33', borderLeftColor: color }}>
       <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color, letterSpacing: '0.2em', marginBottom: '6px' }}>{label}</div>
       <div style={{ color: '#8a9a8a', fontSize: '0.85rem', lineHeight: 1.7 }}>{children}</div>
     </div>
   )
 }
-const Check = ({ children }: { children: React.ReactNode }) => (
+
+const CheckItem = ({ children }: { children: React.ReactNode }) => (
   <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', padding: '6px 0', borderBottom: '1px solid #0e1a10' }}>
     <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', color: '#1a4a1a', marginTop: '2px', flexShrink: 0 }}>[ ]</span>
     <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#5a7a5a', lineHeight: 1.6 }}>{children}</span>
@@ -44,444 +54,629 @@ const Check = ({ children }: { children: React.ReactNode }) => (
 export default function OSINTLab() {
   return (
     <div>
+      {/* Breadcrumb */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: '#5a7a5a' }}>
         <Link href="/" style={{ color: '#5a7a5a', textDecoration: 'none' }}>GHOSTNET</Link>
         <span>›</span>
         <Link href="/modules/osint" style={{ color: '#5a7a5a', textDecoration: 'none' }}>MOD-02 // OSINT</Link>
         <span>›</span>
-        <span style={{ color: '#00d4ff' }}>LAB</span>
+        <span style={{ color: accent }}>LAB</span>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
           <Link href="/modules/osint" style={{ textDecoration: 'none', padding: '3px 10px', background: 'transparent', border: '1px solid #1a2e1e', borderRadius: '3px', color: '#5a7a5a', fontSize: '8px', letterSpacing: '0.15em' }}>← CONCEPT</Link>
-          <span style={{ padding: '3px 10px', background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.3)', borderRadius: '3px', color: '#00d4ff', fontSize: '8px', letterSpacing: '0.15em' }}>LAB</span>
+          <span style={{ padding: '3px 10px', background: accentDim, border: '1px solid ' + accentBorder, borderRadius: '3px', color: accent, fontSize: '8px', letterSpacing: '0.15em' }}>LAB</span>
         </div>
       </div>
 
+      {/* Header */}
       <div style={{ marginBottom: '2.5rem' }}>
-        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#5a7a5a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>MODULE 02 · LAB ENVIRONMENT</div>
-        <h1 style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.8rem', fontWeight: 700, color: '#00d4ff', margin: '0.5rem 0', lineHeight: 1.1, textShadow: '0 0 20px rgba(0,212,255,0.3)' }}>OSINT LAB — PRACTICAL EXERCISES</h1>
-        <p style={{ color: '#5a7a5a', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', lineHeight: 1.6 }}>6 labs: domain footprinting · Shodan · Google dorking · social intel · metadata forensics · full target profile</p>
+        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#2a5a6a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>MODULE 02 · LAB ENVIRONMENT</div>
+        <h1 style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.8rem', fontWeight: 700, color: accent, margin: '0.5rem 0', lineHeight: 1.1, textShadow: '0 0 20px rgba(0,212,255,0.3)' }}>
+          OSINT & SURVEILLANCE — LAB
+        </h1>
+        <p style={{ color: '#5a7a5a', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', lineHeight: 1.6 }}>
+          6 exercises: domain footprinting · Shodan recon · Google dorking · social media intel · metadata forensics · full target profile
+        </p>
       </div>
 
-      <div style={{ background: '#0e1410', border: '1px solid #1a2e1e', borderRadius: '6px', padding: '1.25rem', marginBottom: '2rem' }}>
-        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#5a7a5a', letterSpacing: '0.2em', marginBottom: '0.75rem' }}>PREREQUISITES</div>
-        <Check>Linux / WSL terminal access</Check>
-        <Check>sudo apt access for installing tools</Check>
-        <Check>Read MOD-02 Concept page before starting</Check>
-        <Check>Free Shodan account: shodan.io (for search queries)</Check>
-        <Check>Free Hunter.io account: hunter.io (for email intel)</Check>
+      {/* Lab Environment Setup */}
+      <div style={{ background: '#0a1318', border: '1px solid #1a2e1e', borderRadius: '6px', padding: '1.5rem', marginBottom: '2rem' }}>
+        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#2a5a6a', letterSpacing: '0.2em', marginBottom: '1rem' }}>LAB ENVIRONMENT SETUP</div>
+        <P>These labs use entirely passive techniques — you never send packets directly to the target. All data comes from public sources: DNS, search engines, certificate logs, and Shodan. A standard Linux terminal with internet access is all you need.</P>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
+          <div style={{ background: '#050805', border: '1px solid #1a2e1e', borderRadius: '4px', padding: '1rem' }}>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: accent, letterSpacing: '0.15em', marginBottom: '8px' }}>REQUIRED TOOLS</div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: '#5a7a5a', lineHeight: 1.8 }}>
+              whois · dnsutils (dig)<br />
+              curl · python3 · exiftool<br />
+              subfinder · amass<br />
+              sherlock · theHarvester
+            </div>
+          </div>
+          <div style={{ background: '#050805', border: '1px solid #1a2e1e', borderRadius: '4px', padding: '1rem' }}>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: accent, letterSpacing: '0.15em', marginBottom: '8px' }}>FREE ACCOUNTS NEEDED</div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: '#5a7a5a', lineHeight: 1.8 }}>
+              Shodan: shodan.io<br />
+              Hunter.io: hunter.io<br />
+              HaveIBeenPwned: haveibeenpwned.com<br />
+              (all free tier sufficient)
+            </div>
+          </div>
+        </div>
+        <div style={{ marginTop: '1rem' }}>
+          <CheckItem>Linux environment with internet access and terminal</CheckItem>
+          <CheckItem>Python 3 and pip installed</CheckItem>
+          <CheckItem>Read MOD-02 Concept page — understand passive vs active recon</CheckItem>
+          <CheckItem>Only use active recon techniques on systems you own or have written permission to test</CheckItem>
+          <CheckItem>For practice: use your own domain, or scanme.nmap.org (explicitly permitted)</CheckItem>
+        </div>
       </div>
 
-      <Alert type="warn">All labs use publicly available data only. Practice on your own domains/infrastructure, or use explicitly designated practice targets like scanme.nmap.org. Never run active scans against systems you do not own or have written permission to test.</Alert>
+      <Alert type="warn">
+        OSINT uses publicly available data. However, active scanning (sending packets to a target) crosses into legal territory without permission. In this lab, Labs 01-05 are fully passive. Lab 06 combines techniques — only run the active portions against authorised targets.
+      </Alert>
 
       {/* LAB 01 */}
-      <H2 num="01">Domain Footprinting — Full Recon on a Target Domain</H2>
-      <Alert type="objective">Build a complete picture of a domain: registrant, DNS records, subdomains, IP ranges, tech stack. Use only passive methods.</Alert>
+      <H2 num="01">Domain Footprinting — Full Passive Recon</H2>
+      <Alert type="objective">
+        Build a complete picture of a target domain using only public data sources: WHOIS registration, DNS records, subdomains via certificate transparency, and IP range ownership.
+      </Alert>
+      <Alert type="note">
+        &quot;Footprinting&quot; means gathering information without touching the target. You are asking public databases, not the target server. A WHOIS lookup goes to a registrar database; a DNS query goes to public nameservers — the target never knows you looked.
+      </Alert>
 
-      <H3>Step 1: Install Tools</H3>
-      <Pre label="// INSTALL RECON TOOLKIT">{`sudo apt update && sudo apt install -y \
-  whois dnsutils curl wget amass \
-  libimage-exiftool-perl python3-pip
+      <H3>Step 1: Install OSINT Tools</H3>
+      <Pre label="// INSTALL RECON TOOLKIT">{`sudo apt update && sudo apt install -y whois dnsutils curl wget exiftool python3-pip
 
-pip install subfinder theHarvester shodan 2>/dev/null || true
+# Python-based tools
+pip3 install subfinder theHarvester shodan sherlock-project
 
-# Verify:
+# Verify installations
 whois --version
 dig -v
-amass --version`}</Pre>
+subfinder -version 2>/dev/null || echo "subfinder ready"
+exiftool -ver`}</Pre>
 
-      <H3>Step 2: WHOIS + DNS Baseline</H3>
-      <Pre label="// TARGET: use a domain you own or scanme.nmap.org">{`TARGET="scanme.nmap.org"
+      <H3>Step 2: WHOIS and DNS Records</H3>
+      <P>WHOIS reveals who registered a domain, when it expires, and which nameservers it uses. DNS records expose the full infrastructure: mail servers, web IPs, SPF policies, and verification tokens.</P>
+      <Pre label="// TARGET: use your own domain or scanme.nmap.org">{`# Practice target — Nmap's explicitly public test server
+TARGET="scanme.nmap.org"
 
-# WHOIS
-echo "=== WHOIS ===" && whois $TARGET
+# WHOIS registration info
+echo "=== WHOIS ===" && whois $TARGET | grep -E "Registrant|Admin|Tech|Name Server|Creation|Expiry"
 
-# All DNS records
-echo "=== DNS ===" && dig $TARGET ANY +short
+# All DNS records at once
+echo "=== DNS ALL ===" && dig $TARGET ANY +short
 
-# Name servers (reveals hosting provider)
-echo "=== NS ===" && dig $TARGET NS +short
+# Specific record types:
+echo "=== A RECORDS ===" && dig $TARGET A +short         # IPv4 addresses
+echo "=== MX ===" && dig $TARGET MX +short               # Mail servers (reveals email provider)
+echo "=== TXT ===" && dig $TARGET TXT +short             # SPF, DKIM, Google/Facebook verify tokens
+echo "=== NS ===" && dig $TARGET NS +short               # Authoritative nameservers
 
-# Mail servers (reveals email provider)
-echo "=== MX ===" && dig $TARGET MX +short
+# SOA record — zone admin email (often a real contact)
+echo "=== SOA ===" && dig $TARGET SOA +short
 
-# TXT records (SPF, DKIM, verification tokens)
-echo "=== TXT ===" && dig $TARGET TXT +short
+# Reverse DNS on the IP (PTR record)
+IP=$(dig +short $TARGET A | head -1)
+echo "=== PTR for $IP ===" && dig -x $IP +short`}</Pre>
 
-# SOA (admin contact + serial)
-echo "=== SOA ===" && dig $TARGET SOA +short`}</Pre>
+      <H3>Step 3: Subdomain Enumeration via Certificate Transparency</H3>
+      <P>When an HTTPS certificate is issued for any subdomain, it is logged publicly in Certificate Transparency (CT) logs. These logs are searchable — giving you a free, passive list of subdomains without scanning anything.</P>
+      <Pre label="// SUBDOMAIN DISCOVERY — PASSIVE ONLY">{`TARGET="nmap.org"
 
-      <H3>Step 3: Subdomain Enumeration</H3>
-      <Pre label="// FIND ALL SUBDOMAINS">{`TARGET="nmap.org"
-
-# Method 1: Certificate Transparency (no tools needed)
-curl -s "https://crt.sh/?q=%25.$TARGET&output=json" | \
-  python3 -c "
+# Method 1: Certificate Transparency via crt.sh (no account needed)
+curl -s "https://crt.sh/?q=%.${TARGET}&output=json" | python3 -c "
 import json, sys
-data = json.load(sys.stdin)
-names = set()
-for r in data:
-    for name in r['name_value'].split('\n'):
-        names.add(name.strip())
-for n in sorted(names):
-    print(n)
-" 2>/dev/null | head -50
+try:
+    data = json.load(sys.stdin)
+    names = set()
+    for r in data:
+        for name in r['name_value'].split():
+            names.add(name.strip())
+    for n in sorted(names):
+        print(n)
+except:
+    print('No results or API error')
+" | head -40
 
-# Method 2: Subfinder
+# Method 2: subfinder (combines 40+ passive sources)
 subfinder -d $TARGET -silent 2>/dev/null | head -30
 
-# Method 3: Amass passive
-amass enum -d $TARGET -passive -timeout 2 2>/dev/null | head -30
+# Combine both and deduplicate
+echo "Combining results..."
+subfinder -d $TARGET -silent 2>/dev/null > /tmp/subs1.txt
+curl -s "https://crt.sh/?q=%.${TARGET}&output=json" | python3 -c "
+import json, sys
+try:
+    [print(r['name_value']) for r in json.load(sys.stdin)]
+except: pass
+" 2>/dev/null > /tmp/subs2.txt
 
-# Combine and deduplicate:
-{ subfinder -d $TARGET -silent; \
-  curl -s "https://crt.sh/?q=%25.$TARGET&output=json" | \
-  python3 -c "import json,sys; [print(r['name_value']) for r in json.load(sys.stdin)]"; \
-} | sort -u > subdomains.txt
+sort -u /tmp/subs1.txt /tmp/subs2.txt > subdomains.txt
+echo "Total unique subdomains found: $(wc -l < subdomains.txt)"
+head -20 subdomains.txt`}</Pre>
 
-echo "Found: $(wc -l < subdomains.txt) unique subdomains"
-cat subdomains.txt`}</Pre>
+      <H3>Step 4: IP Range and ASN Mapping</H3>
+      <Pre label="// MAP IP OWNERSHIP AND RANGES">{`TARGET="nmap.org"
 
-      <H3>Step 4: IP Range Mapping</H3>
-      <Pre label="// MAP IP RANGES">{`TARGET="nmap.org"
-
-# Resolve main domain to IP
+# Resolve domain to IP
 IP=$(dig +short $TARGET A | head -1)
 echo "Main IP: $IP"
 
-# WHOIS on IP (find owning organisation + IP range)
-whois $IP | grep -E "NetRange|CIDR|OrgName|Organisation|country" 
+# WHOIS the IP (find owning org and IP range)
+whois $IP | grep -E "NetRange|CIDR|OrgName|Organisation|country|inetnum"
 
-# BGPView API — find all prefixes for the organisation
-curl -s "https://api.bgpview.io/ip/$IP" | \
-  python3 -c "
+# BGPView API — find all IP prefixes for the organisation
+curl -s "https://api.bgpview.io/ip/$IP" | python3 -c "
 import json, sys
-d = json.load(sys.stdin)
-data = d.get('data', {})
-print('IP:', data.get('ip'))
-for prefix in data.get('prefixes', []):
-    print('Prefix:', prefix.get('prefix'), '|', prefix.get('name'))
-"`}</Pre>
+try:
+    d = json.load(sys.stdin).get('data', {})
+    print('Country:', d.get('country_code', 'unknown'))
+    for p in d.get('prefixes', []):
+        print('Prefix:', p.get('prefix'), '-', p.get('name', ''))
+except Exception as e:
+    print('Error:', e)
+"
+
+# Find all IPs for each subdomain (from subdomains.txt)
+while read subdomain; do
+  ip=$(dig +short $subdomain A 2>/dev/null | head -1)
+  if [ -n "$ip" ]; then
+    echo "$subdomain -> $ip"
+  fi
+done < subdomains.txt | head -20`}</Pre>
 
       {/* LAB 02 */}
-      <H2 num="02">Shodan Recon — Expose What's Running</H2>
-      <Alert type="objective">Use Shodan to map open services, identify software versions, and find potential misconfigurations on a target. All passive — no direct contact with target.</Alert>
+      <H2 num="02">Shodan Recon — Mapping Exposed Services</H2>
+      <Alert type="objective">
+        Use Shodan to find open ports, running services, software versions, and potential misconfigurations on a target. Shodan scans the internet continuously — you are querying its database, not scanning anything yourself.
+      </Alert>
+      <Alert type="note">
+        Shodan is a search engine for internet-connected devices and services. It passively crawls all public IP addresses and indexes what services are running on each port. When you search Shodan, you are querying its database — completely passive, no packets sent to any target.
+      </Alert>
 
-      <Pre label="// SHODAN CLI SETUP">{`# Install and configure:
-pip install shodan
-shodan init YOUR_API_KEY   # get free key at shodan.io
+      <H3>Step 1: Shodan CLI Setup</H3>
+      <Pre label="// CONFIGURE SHODAN CLI">{`# Install Shodan CLI
+pip3 install shodan
 
-# Basic host lookup:
-shodan host 45.33.32.156   # scanme.nmap.org
+# Register at https://shodan.io for a free account
+# Get your API key from: https://account.shodan.io
 
-# What you see:
-# Open ports
-# Running services + banners
-# Software versions
-# Last scan time
-# Hostnames + org`}</Pre>
+# Configure the CLI with your key
+shodan init YOUR_API_KEY_HERE
 
-      <Pre label="// SHODAN SEARCH PATTERNS — PRACTICE">{`# Search for services in a country:
+# Test it works
+shodan info
+# Shows: Query Credits remaining, Scan Credits remaining
+
+# Basic host lookup by IP
+shodan host 45.33.32.156
+# 45.33.32.156 = scanme.nmap.org (explicitly public test target)
+
+# What you get back:
+# - All open ports
+# - Service banners (what software responded on each port)
+# - Software version strings
+# - SSL certificate info (if HTTPS)
+# - Hostname records
+# - Country/city/ISP`}</Pre>
+
+      <H3>Step 2: Search by Domain and Organisation</H3>
+      <Pre label="// SHODAN SEARCH QUERIES">{`# Find all Shodan results for a hostname
+shodan search "hostname:scanme.nmap.org" --limit 10
+
+# Search for services in a specific country
 shodan search "country:KE port:22" --limit 10
 shodan search "country:KE product:nginx" --limit 10
 
-# Find exposed databases:
-shodan search "port:27017 country:KE" --limit 5   # MongoDB
-shodan search "port:9200 country:KE" --limit 5    # Elasticsearch
+# Get a count before fetching results (saves query credits)
+shodan count "country:KE port:27017"
 
-# Search by organisation:
-# (replace with an org you have permission to research)
-shodan search 'org:"Safaricom" port:443' --limit 10
+# Find exposed databases (practice identifying risk)
+shodan search "port:27017 country:KE" --limit 5    # MongoDB (often no auth)
+shodan search "port:9200 country:KE" --limit 5     # Elasticsearch
 
-# Get count before full search:
-shodan count 'port:27017 product:MongoDB'
+# Search by certificate domain (finds all assets for a company)
+shodan search "ssl.cert.subject.cn:example.com" --limit 20
 
-# Download results as JSON:
-shodan download results 'port:27017 -authentication' --limit 100
-shodan parse --fields ip_str,port,org results.json.gz`}</Pre>
+# Download results as JSON for analysis
+shodan download osint_results "country:KE port:22" --limit 50
+shodan parse --fields ip_str,port,org,product,version osint_results.json.gz`}</Pre>
 
-      <Pre label="// WEB-BASED SHODAN SEARCHES (no CLI needed)">{`# Open https://shodan.io and try these queries:
+      <H3>Step 3: Web-Based Shodan Dorks</H3>
+      <Pre label="// SHODAN WEB SEARCH — VISIT SHODAN.IO">{`# Open https://shodan.io and try these searches:
 
-# 1. Exposed admin panels:
+# Exposed admin panels in Kenya:
 http.title:"Admin Panel" http.status:200 country:KE
 
-# 2. Open directory listings:
+# Open directory listings (files browseable without auth):
 http.title:"Index of /" country:KE
 
-# 3. SSL cert enumeration for a domain:
-ssl.cert.subject.cn:"*.your-target.com"
+# Find all SSL certs for a domain (reveals all subdomains with HTTPS):
+ssl.cert.subject.cn:"*.example.com"
 
-# 4. Find all assets for an org:
-org:"Your Org Name"
+# Devices running a specific software version:
+product:Apache http.status:200 version:2.4.49
 
-# Document findings:
-# For each result: IP, port, service, version, hostname, banner
+# Look for login portals (targets for password spraying research):
+http.html:"Please login" country:KE
+
+# For each result document:
+# IP address, open port, service name, software + version,
+# hostname, organisation, banner text, last seen date
 # This is what a real attack surface map looks like`}</Pre>
 
       {/* LAB 03 */}
-      <H2 num="03">Google Dorking — Find What Shouldn't Be Public</H2>
-      <Alert type="objective">Use Google dorks to discover exposed files, credentials, admin panels, and sensitive data on a target domain. All passive — Google has already crawled it.</Alert>
+      <H2 num="03">Google Dorking — Finding Exposed Files</H2>
+      <Alert type="objective">
+        Use Google advanced search operators (dorks) to find configuration files, credentials, admin panels, and sensitive data that should not be publicly indexed. All passive — Google crawled it, you are just searching smarter.
+      </Alert>
+      <Alert type="note">
+        Google indexes the public web continuously. &quot;Dorking&quot; means using Google&apos;s advanced operators to narrow results. For example, &quot;site:&quot; limits to a domain, &quot;filetype:&quot; limits to file extensions, &quot;intitle:&quot; searches page titles. None of this contacts the target — you are searching Google&apos;s index.
+      </Alert>
 
-      <Pre label="// SYSTEMATIC DORKING METHODOLOGY">{`# Target: use your own domain, or a CTF/bug bounty target
+      <H3>Step 1: Core Dork Operators</H3>
+      <Pre label="// GOOGLE DORK OPERATORS — REFERENCE">{`# Run these in Google. Replace example.com with your authorised target.
 
-TARGET="example.com"  # replace with authorised target
+# site: — limit to a specific domain
+site:example.com
 
-# Run these in Google one at a time:
+# filetype: — find specific file types
+site:example.com filetype:pdf
+site:example.com filetype:env
+site:example.com filetype:sql
+site:example.com filetype:config
+site:example.com filetype:log
+site:example.com filetype:xlsx
 
-# 1. Find ALL indexed pages
-site:$TARGET
+# intitle: — match page title
+site:example.com intitle:"Index of /"
+site:example.com intitle:"Admin"
 
-# 2. Exposed configuration files
-# site:$TARGET ext:env
-# site:$TARGET ext:config  
-# site:$TARGET ext:cfg
-# site:$TARGET inurl:".git"
+# inurl: — match URL path
+site:example.com inurl:admin
+site:example.com inurl:login
+site:example.com inurl:.git
+site:example.com inurl:backup
 
-# 3. Database files
-# site:$TARGET ext:sql
-# site:$TARGET ext:db
-# site:$TARGET ext:sqlite
+# intext: — match page body
+site:example.com intext:password
+site:example.com intext:"api_key"
 
-# 4. Log files (may contain credentials)
-# site:$TARGET ext:log
-# site:$TARGET filetype:log intext:password
+# Combine operators:
+site:example.com filetype:log intext:password
+site:example.com inurl:admin intitle:"Login"`}</Pre>
 
-# 5. Open directories
-# site:$TARGET intitle:"Index of /"
-# site:$TARGET intitle:"Index of" inurl:/backup
+      <H3>Step 2: Systematic Dorking Workflow</H3>
+      <Pre label="// STRUCTURED DORK CHECKLIST">{`# Run these against an authorised target (your own domain or bug bounty):
 
-# 6. Admin portals
-# site:$TARGET inurl:admin
-# site:$TARGET inurl:login intitle:"Admin"
-# site:$TARGET inurl:wp-admin
+# 1. Configuration and credentials
+site:TARGET ext:env            # .env files (often contain DB passwords, API keys)
+site:TARGET ext:config         # Config files
+site:TARGET "DB_PASSWORD"      # Direct credential search
+site:TARGET "SECRET_KEY"
+site:TARGET "api_key"
 
-# 7. Sensitive documents
-# site:$TARGET filetype:pdf "confidential"
-# site:$TARGET filetype:xlsx OR filetype:csv "email"
+# 2. Source code exposure
+site:TARGET inurl:".git"       # Exposed .git directory
+site:TARGET filetype:php       # PHP source files
+site:TARGET "<?php"            # Inline PHP
 
-# Document everything found — screenshot + URL + data type`}</Pre>
+# 3. Backup files
+site:TARGET inurl:backup
+site:TARGET ext:bak
+site:TARGET ext:old
+site:TARGET ext:swp             # Vim swap files with source code
 
-      <Pre label="// EXPLOIT-DB GHDB — EXPLORE THE FULL DATABASE">{`# Google Hacking Database: https://www.exploit-db.com/google-hacking-database
-# 4,000+ categorised dork patterns
+# 4. Sensitive documents
+site:TARGET filetype:pdf "confidential"
+site:TARGET filetype:xlsx "salary"
+site:TARGET filetype:docx "internal"
 
-# Categories:
-# - Files Containing Passwords
-# - Sensitive Directories
-# - Web Server Detection
-# - Vulnerable Files
-# - Error Messages (revealing stack info)
-# - Network or Vulnerability Data
-# - Pages Containing Login Portals
+# 5. Infrastructure exposure
+site:TARGET inurl:phpinfo.php  # PHP configuration dump
+site:TARGET inurl:server-status  # Apache status page
+site:TARGET intitle:"phpMyAdmin"`}</Pre>
 
-# Exercise: pick 5 dorks from each category
-# Run them against a target you have permission to test
-# Document what you find`}</Pre>
+      <H3>Step 3: Google Hacking Database</H3>
+      <Pre label="// EXPLOIT-DB GHDB — 4000+ DORK PATTERNS">{`# Google Hacking Database: https://www.exploit-db.com/google-hacking-database
+# Maintained by Offensive Security — categorised, searchable
+
+# Key categories to explore:
+# - Files Containing Passwords       (highest impact)
+# - Sensitive Directories            (backup folders, admin areas)
+# - Web Server Detection             (fingerprint the stack)
+# - Vulnerable Files                 (known vulnerable file paths)
+# - Error Messages                   (stack traces revealing internals)
+# - Network or Vulnerability Data    (config files, diagrams)
+# - Pages Containing Login Portals   (attack surface)
+
+# Exercise:
+# 1. Visit the GHDB
+# 2. Pick 3 dorks from "Files Containing Passwords"
+# 3. Run them against your authorised target
+# 4. Document: what was found, what risk does it represent, how to fix it`}</Pre>
 
       {/* LAB 04 */}
-      <H2 num="04">Social Media Intelligence — Build a Target Profile</H2>
-      <Alert type="objective">Map the digital footprint of a public figure or organisation using SOCMINT tools. Practice using open data only — Twitter, LinkedIn, Instagram public posts.</Alert>
+      <H2 num="04">Social Media Intelligence — Digital Footprint Mapping</H2>
+      <Alert type="objective">
+        Map the public digital footprint of a target using SOCMINT tools. Find linked accounts, email addresses, employee data, and public posts that reveal internal information.
+      </Alert>
+      <Alert type="note">
+        SOCMINT (social media intelligence) uses only publicly available posts and profiles. You are not hacking accounts — you are reading what people and companies chose to make public. This is the same data a recruiter, journalist, or attacker would access.
+      </Alert>
 
-      <H3>Sherlock — Username Hunt</H3>
-      <Pre label="// SHERLOCK INSTALLATION & USAGE">{`pip install sherlock-project
+      <H3>Step 1: Username Hunting with Sherlock</H3>
+      <Pre label="// SHERLOCK — CROSS-PLATFORM USERNAME SEARCH">{`# Sherlock searches 300+ platforms for a username
+pip3 install sherlock-project
 
-# Hunt a username across 300+ platforms:
-sherlock TARGET_USERNAME
+# Basic search — replace with your target username
+sherlock target_username
 
-# With timeout (faster):
-sherlock TARGET_USERNAME --timeout 10
+# With timeout (avoids slow sites hanging the scan)
+sherlock target_username --timeout 10
 
-# Save results:
-sherlock TARGET_USERNAME --output username_results.txt
+# Save results to file
+sherlock target_username --output username_hunt.txt
+cat username_hunt.txt
 
-# Multiple usernames:
-sherlock user1 user2 user3
+# Multiple usernames at once
+sherlock username1 username2 username3
 
-# What to look for in results:
-# - Platforms where username is registered
+# What to look for:
+# - Platforms where the username exists (consistent = same person)
 # - Profile URLs to investigate further
-# - Consistent username = likely same person
-# - Different content across platforms = different personas`}</Pre>
+# - Profile photos (use reverse image search to confirm identity)
+# - Bio text that reveals location, employer, interests
+# - Posting history that reveals schedule, location, contacts`}</Pre>
 
-      <H3>Email → Social Profile Mapping</H3>
-      <Pre label="// FIND SOCIAL PROFILES FROM EMAIL">{`# Tools for email → profile lookup:
+      <H3>Step 2: Email to Profile Mapping</H3>
+      <Pre label="// FIND SOCIAL PROFILES FROM AN EMAIL ADDRESS">{`# Holehe — check if an email is registered on 120+ platforms
+pip3 install holehe
+holehe target@example.com
+# Lists platforms where this email is registered: Twitter, Instagram, GitHub...
 
-# 1. GHunt (Google account OSINT)
-pip install ghunt
-ghunt login  # authenticate with a Google account
-ghunt email target@gmail.com
-# Returns: Google account ID, profile photo, connected services, maps activity
+# Hunter.io — find email addresses for a domain (free tier: 25/month)
+# Visit: https://hunter.io/domain-search
+# Enter a company domain
+# Returns: all public email addresses found for that domain
+# Includes: name, title, confidence score, sources
 
-# 2. Holehe — check email registration across platforms
-pip install holehe
-holehe email@example.com
-# Checks 120+ platforms: Twitter, Instagram, GitHub, Spotify...
+# theHarvester — automated email and name harvesting
+theHarvester -d example.com -b google,bing -l 100
+# -b = sources to search (also: linkedin, twitter, shodan)
+# Returns: emails, names, subdomains, IPs found in search results
 
-# 3. Social-Analyzer
-pip install social-analyzer
-social-analyzer --username "target_username" --websites all`}</Pre>
+# LinkedIn OSINT (manual):
+# Search: site:linkedin.com "example company" "current"
+# Lists employees who mentioned the company in their profile`}</Pre>
 
-      <H3>Twitter / X Advanced Search</H3>
-      <Pre label="// BUILD A TIMELINE FROM PUBLIC TWEETS">{`# Advanced search URL pattern:
-# https://twitter.com/search?q=QUERY&f=live
+      <H3>Step 3: Mapping Connections and Relationships</H3>
+      <Pre label="// BUILD AN ORG CHART FROM PUBLIC DATA">{`# From theHarvester results + LinkedIn + Twitter, build:
+# - Employee names and roles
+# - Email format (firstname.lastname@company.com pattern)
+# - Technology stack (job listings reveal tech: "Python Django developer wanted")
+# - Office locations (event check-ins, tagged photos)
+# - Org chart (LinkedIn connections, "reports to" relationships)
 
-# Find tweets from a user in a location:
-from:username geocode:-1.286389,36.817223,10km
+# Job listings are gold for OSINT:
+# Site: indeed.com OR linkedin.com jobs
+# "example company" developer
+# Reveals: internal tools, frameworks, cloud providers, team structure
 
-# Find tweets mentioning a company in a date range:
-"example corp" since:2024-01-01 until:2024-06-01
+# Twitter/X advanced search:
+# from:username                       — all their tweets
+# to:username                         — replies to them
+# from:username lang:en since:2024-01-01 until:2024-06-30
+# (from:user1 OR from:user2) keyword  — multiple accounts
+# geocode:LAT,LON,RADIUSkm            — location-tagged tweets
 
-# Find deleted tweets (cached):
+# Wayback Machine for deleted content:
 # https://web.archive.org/web/*/twitter.com/username
-# https://cacheview.nl
-
-# twint — scrape without API (may need workarounds):
-pip install twint
-twint -u username --tweets --limit 100
-twint -u username --followers
-twint -u username --following
-twint -u username -g "-1.286389,36.817223,10km" --since 2024-01-01`}</Pre>
+# Find posts that were deleted but cached before deletion`}</Pre>
 
       {/* LAB 05 */}
-      <H2 num="05">Metadata Forensics — Extract Hidden Data</H2>
-      <Alert type="objective">Download public documents from a target domain and extract metadata to reveal internal usernames, software versions, server paths, and GPS coordinates.</Alert>
+      <H2 num="05">Metadata Forensics — Extract Hidden Data from Files</H2>
+      <Alert type="objective">
+        Download public documents from a target domain and extract hidden metadata: author names, internal usernames, server paths, creation times, GPS coordinates from photos, and software version strings.
+      </Alert>
+      <Alert type="note">
+        Every file created by software embeds invisible metadata — who created it, when, on what computer, with what software version. Documents created in Microsoft Office often contain the author&apos;s Windows username, company name, and the template file path. Photos taken on phones embed GPS coordinates by default.
+      </Alert>
 
-      <Pre label="// BULK METADATA EXTRACTION">{`# Step 1: Find documents on a target domain via Google:
+      <H3>Step 1: Find and Download Public Documents</H3>
+      <Pre label="// LOCATE DOCUMENTS VIA GOOGLE">{`# Use Google dorks to find public documents on a target domain
 # site:example.com filetype:pdf
-# site:example.com filetype:docx OR filetype:xlsx
+# site:example.com filetype:docx
+# site:example.com filetype:xlsx
+# site:example.com filetype:pptx
 
-# Step 2: Download all found documents
-mkdir target_docs && cd target_docs
+# Download found documents
+mkdir osint_docs && cd osint_docs
 
-wget "https://example.com/annual_report.pdf"
-wget "https://example.com/presentation.pptx"
-# (replace with real URLs found in Google)
+wget "https://example.com/annual_report_2024.pdf"
+wget "https://example.com/company_presentation.pptx"
+# (replace with actual URLs from your Google dork results)
 
-# Step 3: Extract metadata from everything
+# List what you downloaded
+ls -lh`}</Pre>
+
+      <H3>Step 2: Extract Metadata with ExifTool</H3>
+      <Pre label="// EXTRACT ALL METADATA">{`# Extract metadata from all files at once
 exiftool *.pdf *.docx *.pptx *.xlsx 2>/dev/null
 
-# Step 4: Focus on key fields
-exiftool *.pdf | grep -E "Author|Creator|Producer|Company|Last Modified By|Template|GPS"
+# Focus on the most revealing fields:
+exiftool *.pdf | grep -E "Author|Creator|Producer|Company|Last Modified By|Template|Software|GPS|Create Date"
 
-# Step 5: Export to CSV for analysis
-exiftool -csv *.pdf *.docx > metadata_report.csv
+# For Office documents (docx, xlsx) — these are especially revealing:
+exiftool *.docx | grep -E "Creator|Last Modified By|Company|Total Edit Time|Revision Number|Template"
+
+# What each field tells you:
+# Creator/Author       — the person's full name (often their real name)
+# Last Modified By     — who last edited (may differ from creator)
+# Company              — the organisation name as set in Office
+# Template             — full internal file path including username:
+#                        e.g. C:\\Users\\jsmith\\AppData\\Roaming\\Microsoft\\Templates\\
+#                        This reveals: Windows username, internal drive structure
+# Software             — Office version (useful for exploit research)
+# Create Date          — when document was originally created
+
+# Export to CSV for easy analysis
+exiftool -csv *.pdf *.docx *.pptx > metadata_report.csv
 cat metadata_report.csv`}</Pre>
 
-      <Pre label="// IMAGE METADATA — GPS EXTRACTION">{`# Download a public image from target (e.g. from their social media)
-# Many older uploads retain GPS data
+      <H3>Step 3: GPS Data Extraction from Images</H3>
+      <Pre label="// EXTRACT GPS FROM PHOTOS">{`# Many photos from smartphones embed GPS coordinates
+# Download a public image from target social media or website
 
 wget "https://example.com/team_photo.jpg"
-exiftool team_photo.jpg | grep -E "GPS|Latitude|Longitude|Location"
 
-# If GPS found:
-# GPS Latitude  : 52 deg 30' 26.35" N
-# GPS Longitude : 13 deg 24' 20.96" E
+# Extract GPS metadata
+exiftool team_photo.jpg | grep -E "GPS|Latitude|Longitude|Location|Altitude"
+
+# If GPS found, the output looks like:
+# GPS Latitude  : 1 deg 17' 23.40" S
+# GPS Longitude : 36 deg 49' 12.60" E
 
 # Convert to decimal degrees for Google Maps:
 python3 -c "
-lat_d, lat_m, lat_s = 52, 30, 26.35
-lon_d, lon_m, lon_s = 13, 24, 20.96
+# Replace these values with what exiftool returned
+lat_d, lat_m, lat_s, lat_ref = 1, 17, 23.40, 'S'
+lon_d, lon_m, lon_s, lon_ref = 36, 49, 12.60, 'E'
 lat = lat_d + lat_m/60 + lat_s/3600
 lon = lon_d + lon_m/60 + lon_s/3600
-print(f'https://maps.google.com/?q={lat},{lon}')
+if lat_ref == 'S': lat = -lat
+if lon_ref == 'W': lon = -lon
+print('Decimal:', lat, lon)
+print('Google Maps: https://maps.google.com/?q=' + str(lat) + ',' + str(lon))
 "
 
-# If no GPS in image — check surrounding context:
-# Background details, visible landmarks, street signs`}</Pre>
+# If no GPS in image — check:
+# Background landmarks, visible text, shop names, street signs
+# Reverse image search the photo on Google Images for context`}</Pre>
 
       {/* LAB 06 */}
-      <H2 num="06">Full Target Profile — Bringing It All Together</H2>
-      <Alert type="objective">Combine all previous techniques into a structured intelligence report on a single target. This simulates a real security assessment pre-engagement OSINT phase.</Alert>
+      <H2 num="06">Full Target Profile — Structured Intelligence Report</H2>
+      <Alert type="objective">
+        Combine all five techniques into a single structured OSINT report. This replicates the pre-engagement intelligence phase of a real penetration test or red team engagement.
+      </Alert>
 
-      <Pre label="// OSINT REPORT TEMPLATE">{`#!/bin/bash
-# Full OSINT workflow — run against authorised target
-
+      <H3>Automated Collection Script</H3>
+      <Pre label="// FULL OSINT PIPELINE — AUTHORISED TARGETS ONLY">{`#!/bin/bash
+# Replace example.com with your authorised target
 TARGET_DOMAIN="example.com"
-OUTPUT_DIR="./osint_report_$(date +%Y%m%d)"
-mkdir -p $OUTPUT_DIR
+OUTPUT_DIR="osint_report_$(date +%Y%m%d_%H%M)"
+mkdir -p "$OUTPUT_DIR"
 
-echo "=== GHOSTNET OSINT REPORT ===" > $OUTPUT_DIR/report.txt
-echo "Target: $TARGET_DOMAIN" >> $OUTPUT_DIR/report.txt
-echo "Date: $(date)" >> $OUTPUT_DIR/report.txt
-echo "" >> $OUTPUT_DIR/report.txt
+echo "GHOSTNET OSINT REPORT" > "$OUTPUT_DIR/report.md"
+echo "Target: $TARGET_DOMAIN" >> "$OUTPUT_DIR/report.md"
+echo "Date: $(date)" >> "$OUTPUT_DIR/report.md"
+echo "---" >> "$OUTPUT_DIR/report.md"
 
 # 1. WHOIS
-echo "--- WHOIS ---" >> $OUTPUT_DIR/report.txt
-whois $TARGET_DOMAIN >> $OUTPUT_DIR/report.txt
+echo "## WHOIS" >> "$OUTPUT_DIR/report.md"
+whois "$TARGET_DOMAIN" 2>/dev/null >> "$OUTPUT_DIR/report.md"
 
-# 2. DNS
-echo "--- DNS RECORDS ---" >> $OUTPUT_DIR/report.txt
-dig $TARGET_DOMAIN ANY +short >> $OUTPUT_DIR/report.txt
+# 2. DNS Records
+echo "## DNS" >> "$OUTPUT_DIR/report.md"
+dig "$TARGET_DOMAIN" ANY +short >> "$OUTPUT_DIR/report.md"
+dig "$TARGET_DOMAIN" MX +short >> "$OUTPUT_DIR/report.md"
+dig "$TARGET_DOMAIN" TXT +short >> "$OUTPUT_DIR/report.md"
 
-# 3. Subdomains via cert transparency
-echo "--- SUBDOMAINS ---" >> $OUTPUT_DIR/report.txt
-curl -s "https://crt.sh/?q=%25.$TARGET_DOMAIN&output=json" | \
-  python3 -c "import json,sys; [print(r['name_value']) for r in json.load(sys.stdin)]" 2>/dev/null | \
-  sort -u >> $OUTPUT_DIR/report.txt
+# 3. Subdomains
+echo "## Subdomains" >> "$OUTPUT_DIR/report.md"
+subfinder -d "$TARGET_DOMAIN" -silent 2>/dev/null >> "$OUTPUT_DIR/report.md"
 
-# 4. IP resolution
-echo "--- IPs ---" >> $OUTPUT_DIR/report.txt
-dig +short $TARGET_DOMAIN A >> $OUTPUT_DIR/report.txt
+# 4. IP Ownership
+echo "## IP Ranges" >> "$OUTPUT_DIR/report.md"
+IP=$(dig +short "$TARGET_DOMAIN" A | head -1)
+whois "$IP" 2>/dev/null | grep -E "NetRange|CIDR|OrgName" >> "$OUTPUT_DIR/report.md"
 
-# 5. theHarvester
-echo "--- THEHARVESTER ---" >> $OUTPUT_DIR/report.txt
-theHarvester -d $TARGET_DOMAIN -b google,bing 2>/dev/null >> $OUTPUT_DIR/report.txt
+# 5. theHarvester email harvest
+echo "## Emails and Names" >> "$OUTPUT_DIR/report.md"
+theHarvester -d "$TARGET_DOMAIN" -b google,bing 2>/dev/null >> "$OUTPUT_DIR/report.md"
 
-echo "Report saved: $OUTPUT_DIR/report.txt"
-wc -l $OUTPUT_DIR/report.txt`}</Pre>
+echo "Report saved to: $OUTPUT_DIR/report.md"
+wc -l "$OUTPUT_DIR/report.md"`}</Pre>
 
-      <Pre label="// STRUCTURED REPORT SECTIONS">{`# A professional OSINT report covers:
+      <H3>Professional Report Structure</H3>
+      <Pre label="// OSINT REPORT SECTIONS">{`# 1. EXECUTIVE SUMMARY
+#    Target overview, key findings, overall risk level
+#    Top 3-5 most critical exposures with impact description
 
-# 1. EXECUTIVE SUMMARY
-#    - Target overview
-#    - Key findings (top 5 most critical)
-#    - Risk level assessment
+# 2. DOMAIN AND DNS INFRASTRUCTURE
+#    Registrant details (if not privacy-protected)
+#    Hosting provider and IP ranges
+#    All discovered subdomains + resolution status
+#    MX/SPF/DKIM/DMARC configuration (email security gaps)
 
-# 2. TECHNICAL FINDINGS
-#    a. Domain & DNS infrastructure
-#    b. Exposed services (Shodan)
-#    c. Employee/contact information
-#    d. Technology stack
-#    e. Public document metadata
+# 3. EXPOSED SERVICES (from Shodan)
+#    Open ports per IP
+#    Software versions (map to known CVEs)
+#    Misconfigurations found (open directories, unauth panels)
 
-# 3. SOCIAL MEDIA PRESENCE
-#    - Platform profiles found
-#    - Key employee profiles
-#    - Information disclosure risks
+# 4. HUMAN INTELLIGENCE
+#    Identified employees + roles
+#    Email address format discovered
+#    Technology stack inferred from job listings
+#    Social media exposure risks
 
-# 4. BREACH DATA
-#    - Email addresses found in breaches
-#    - Passwords/hashes discovered
-#    - Risk to credential stuffing attacks
+# 5. DOCUMENT METADATA
+#    Internal usernames discovered
+#    Software versions from Office metadata
+#    GPS coordinates found (if any)
+#    Internal file paths and server names
 
-# 5. RECOMMENDATIONS
-#    - Remove exposed files
-#    - Implement privacy for WHOIS
-#    - Remove sensitive metadata from docs
-#    - Configure SPF/DMARC properly
-#    - Review Shodan exposure`}</Pre>
+# 6. RECOMMENDATIONS
+#    WHOIS privacy protection
+#    Remove sensitive files from public web
+#    Strip metadata from published documents
+#    Shodan remediation (close unnecessary ports)
+#    Review social media disclosure policies`}</Pre>
 
-      {/* Challenge */}
-      <div style={{ marginTop: '3rem', background: '#0e1410', border: '1px solid rgba(0,212,255,0.2)', borderRadius: '6px', padding: '1.5rem' }}>
-        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#0088aa', letterSpacing: '0.2em', marginBottom: '1rem' }}>LAB CHALLENGE — SELF ASSESSMENT</div>
+      {/* Check Your Understanding */}
+      <div style={{ marginTop: '3rem', background: '#0a1318', border: '1px solid ' + accentBorder, borderRadius: '6px', padding: '1.5rem' }}>
+        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: accent, letterSpacing: '0.2em', marginBottom: '1rem' }}>CHECK YOUR UNDERSTANDING</div>
+        <P>You should be able to answer all of these before moving to the next module.</P>
         {[
-          'What is the difference between WHOIS and RDAP? When would you use each?',
-          'Why are Certificate Transparency logs so valuable for subdomain enumeration?',
-          'What does an MX record reveal about a target beyond just their mail server?',
-          'You find a document with Template: C:\\Users\\jsmith\\AppData\\... — what does this tell you?',
-          'How would you find all IP ranges owned by a target company with no prior knowledge?',
-          'What metadata fields should you strip before publishing documents publicly?',
-          'Run theHarvester against your own domain — what does it find about you?',
+          'What is the difference between passive OSINT and active reconnaissance? Give an example of each.',
+          'Why are Certificate Transparency logs so useful for subdomain enumeration? Who publishes them?',
+          'You found a Word document with Template: C:\\Users\\jsmith\\AppData\\... — what exactly does this reveal?',
+          'A Shodan result shows "MongoDB 3.4.0 — no authentication required" on port 27017. What does this mean and what is the risk?',
+          'What metadata fields should every organisation strip from documents before publishing them publicly?',
         ].map((q, i) => (
           <div key={i} style={{ display: 'flex', gap: '10px', padding: '8px 0', borderBottom: '1px solid #0a1208', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem' }}>
-            <span style={{ color: '#00d4ff', flexShrink: 0 }}>{String(i + 1).padStart(2, '0')}.</span>
+            <span style={{ color: accent, flexShrink: 0 }}>{String(i + 1).padStart(2, '0')}.</span>
             <span style={{ color: '#5a7a5a' }}>{q}</span>
           </div>
         ))}
       </div>
 
+      {/* Recommended Practice */}
+      <div style={{ marginTop: '2rem', background: '#0a1318', border: '1px solid #1a2e1e', borderRadius: '6px', padding: '1.5rem' }}>
+        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#2a5a6a', letterSpacing: '0.2em', marginBottom: '1rem' }}>RECOMMENDED PRACTICE</div>
+        {[
+          { platform: 'TryHackMe', name: 'OhSINT', note: 'Classic OSINT challenge — start with a photo and find everything about a target using only public sources' },
+          { platform: 'TryHackMe', name: 'Searchlight - OSINT', note: 'Geolocation from images, username hunting, Google dorking — all core OSINT skills in one room' },
+          { platform: 'TryHackMe', name: 'Google Dorking', note: 'Dedicated room for learning Google dork operators and the Google Hacking Database' },
+          { platform: 'HackTheBox', name: 'Starting Point — Recon Challenges', note: 'OSINT challenges in HTB CTF format — subdomain enumeration, metadata forensics, Shodan queries' },
+        ].map((r, i) => (
+          <div key={i} style={{ padding: '10px 0', borderBottom: '1px solid #0a1208' }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '4px' }}>
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: accent, background: accentDim, border: '1px solid ' + accentBorder, padding: '1px 6px', borderRadius: '2px' }}>{r.platform}</span>
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#8a9a8a', fontWeight: 600 }}>{r.name}</span>
+            </div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: '#2a5a6a', paddingLeft: '4px' }}>{r.note}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Footer nav */}
       <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid #1a2e1e', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Link href="/modules/osint" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#5a7a5a' }}>← BACK TO CONCEPT</Link>
-        <Link href="/modules/crypto" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#00d4ff', padding: '8px 20px', border: '1px solid rgba(0,212,255,0.4)', borderRadius: '4px', background: 'rgba(0,212,255,0.06)' }}>
-          NEXT MODULE: CRYPTO & BLOCKCHAIN →
+        <Link href="/" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a6a6a' }}>DASHBOARD</Link>
+        <Link href="/modules/crypto/lab" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: accent, padding: '8px 20px', border: '1px solid ' + accentBorder, borderRadius: '4px', background: accentDim }}>
+          NEXT: MOD-03 CRYPTO LAB →
         </Link>
       </div>
     </div>
