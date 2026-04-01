@@ -66,6 +66,7 @@ export default function ReportGenerator() {
   const [scope, setScope] = useState('')
   const [methodology, setMethodology] = useState('Black Box')
   const [executiveSummary, setExecutiveSummary] = useState('')
+  const findingCounter = React.useRef(1)
   const [findings, setFindings] = useState<Finding[]>([
     { id: 1, title: '', severity: 'HIGH', cvss: '', asset: '', description: '', impact: '', recommendation: '' }
   ])
@@ -77,8 +78,9 @@ export default function ReportGenerator() {
   const [copied, setCopied] = useState(false)
 
   const addFinding = () => {
+    findingCounter.current += 1
     setFindings(prev => [...prev, {
-      id: prev.length + 1,
+      id: findingCounter.current,
       title: '', severity: 'HIGH', cvss: '', asset: '',
       description: '', impact: '', recommendation: ''
     }])
@@ -216,13 +218,13 @@ export default function ReportGenerator() {
     report += 'TECHNICAL FINDINGS\n'
     report += '================================================================\n\n'
 
-    if (sorted.filter(f => f.title.trim()).length === 0) {
+    if (sorted.length === 0) {
       report += '[No findings recorded.]\n'
     } else {
-      sorted.filter(f => f.title.trim()).forEach((f, i) => {
+      sorted.forEach((f, i) => {
         report += '----------------------------------------------------------------\n'
         report += 'FINDING ' + String(i + 1).padStart(3, '0') + '\n'
-        report += 'Title:          ' + f.title + '\n'
+        report += 'Title:          ' + (f.title || '[Untitled Finding]') + '\n'
         report += 'Severity:       ' + f.severity + '\n'
         report += 'CVSS Score:     ' + (f.cvss || 'N/A') + '\n'
         report += 'Affected Asset: ' + (f.asset || 'N/A') + '\n'
@@ -458,7 +460,7 @@ export default function ReportGenerator() {
           </div>
 
           {/* Risk summary */}
-          {findings.some(f => f.title.trim()) && (
+          {findings.length > 0 && (
             <div style={{ background: '#0a130a', border: '1px solid #1a2e1e', borderRadius: '6px', padding: '1rem', marginTop: '1rem' }}>
               <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#3a6a3a', letterSpacing: '0.2em', marginBottom: '10px' }}>RISK SUMMARY</div>
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' as const }}>
