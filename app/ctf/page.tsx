@@ -1,7 +1,6 @@
-'use client';
-
-import React, { useState } from 'react';
-import Link from 'next/link';
+'use client'
+import React, { useState } from 'react'
+import Link from 'next/link'
 
 const CATEGORIES = [
   {
@@ -82,7 +81,7 @@ ct = bytes.fromhex('YOUR_HEX_HERE')
 for key in range(256):
     pt = bytes([c ^ key for c in ct])
     if all(32 <= b <= 126 for b in pt):
-        print(f'Key ${key}: ${pt.decode()}')
+        print(f'Key {key}: {pt.decode()}')
 "
 
 # Multi-byte XOR (repeated key):
@@ -345,13 +344,13 @@ python3 -c "import urllib.parse; print(urllib.parse.unquote('%48%65%6C%6C%6F'))"
 # Drag "Magic" operation → paste mystery text → it auto-detects` },
     ]
   },
-];
+]
 
 export default function CTFPage() {
-  const [activeCategory, setActiveCategory] = useState('WEB');
-  const [expandedItem, setExpandedItem] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState('WEB')
+  const [expandedItem, setExpandedItem] = useState<string | null>(null)
 
-  const cat = CATEGORIES.find(c => c.name === activeCategory)!;
+  const cat = CATEGORIES.find(c => c.name === activeCategory)!
 
   return (
     <div>
@@ -399,14 +398,15 @@ export default function CTFPage() {
         ))}
       </div>
 
-      {/* Items */}
+      {/* Items - FIXED HERE */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: '#1a2e1e', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a2e1e' }}>
         {cat.items.map((item, i) => {
-          const key = `${cat.name}-${i}`;
-          const open = expandedItem === key;
+          const itemKey = `${cat.name}-${i}`;   // Changed from "key" to "itemKey"
+          const open = expandedItem === itemKey;
+
           return (
-            <div key={i} style={{ background: '#0e1410' }}>
-              <div onClick={() => setExpandedItem(open ? null : key)} style={{ padding: '14px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: `3px solid ${cat.color}` }}>
+            <div key={itemKey} style={{ background: '#0e1410' }}>
+              <div onClick={() => setExpandedItem(open ? null : itemKey)} style={{ padding: '14px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: `3px solid ${cat.color}` }}>
                 <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.85rem', fontWeight: 700, color: cat.color }}>{item.title}</span>
                 <span style={{ color: cat.color, opacity: 0.5, fontSize: '10px' }}>{open ? '▼' : '▶'}</span>
               </div>
@@ -418,7 +418,7 @@ export default function CTFPage() {
                 </div>
               )}
             </div>
-          );
+          )
         })}
       </div>
 
@@ -460,5 +460,5 @@ export default function CTFPage() {
         </Link>
       </div>
     </div>
-  );
+  )
 }
