@@ -394,6 +394,12 @@ export default function ToolsPage() {
         <p style={{ color: '#5a7a5a', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem' }}>
           {TOOLS.length} tools · {TOOLS.reduce((n, t) => n + t.commands.length, 0)} commands · instant search
         </p>
+        <div style={{ marginTop: '12px', background: 'rgba(0,255,65,0.03)', border: '1px solid rgba(0,255,65,0.12)', borderRadius: '4px', padding: '10px 14px' }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#00ff41', letterSpacing: '0.1em', marginRight: '8px' }}>HOW TO USE</span>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: '#5a6a5a', lineHeight: 1.6 }}>
+            A copy-ready cheatsheet for every major security tool. <strong style={{ color: '#8a9a8a' }}>Search</strong> by tool name, flag, or what you want to do (e.g. &quot;scan ports&quot;, &quot;crack hash&quot;, &quot;brute force&quot;). Click a <strong style={{ color: '#8a9a8a' }}>category badge</strong> to filter by tool. Click any command to <strong style={{ color: '#8a9a8a' }}>copy it</strong>. Replace LHOST/RHOST/WORDLIST with your actual values. Ask GHOST Agent if you are unsure which tool to use for a task.
+          </span>
+        </div>
       </div>
 
       {/* Search + filters */}

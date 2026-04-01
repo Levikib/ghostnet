@@ -168,6 +168,24 @@ export default function ReportGenerator() {
     callAI(prompt, text => updateFinding(f.id, 'description', text), () => { setAiSection(null); setAiTarget(null) })
   }
 
+  const generateImpact = (f: Finding) => {
+    if (loading) return
+    setAiSection('finding')
+    setAiTarget(f.id)
+    const prompt = [
+      'Write the impact statement for a penetration test finding. Two sentences maximum.',
+      'Finding: ' + f.title,
+      'Severity: ' + f.severity,
+      'Affected asset: ' + (f.asset || 'target system'),
+      f.description ? 'Description context: ' + f.description.slice(0, 200) : '',
+      '',
+      'Sentence 1: What can an attacker concretely achieve by exploiting this vulnerability (data access, system control, lateral movement, etc.).',
+      'Sentence 2: The business consequence — what does that mean for the organisation (data breach, regulatory exposure, service disruption, reputational damage).',
+      'Be specific to the finding. No bullet points. No headings. No preamble.',
+    ].filter(Boolean).join('\n')
+    callAI(prompt, text => updateFinding(f.id, 'impact', text), () => { setAiSection(null); setAiTarget(null) })
+  }
+
   const generateRecommendation = (f: Finding) => {
     if (loading) return
     setAiSection('finding')
@@ -267,6 +285,12 @@ export default function ReportGenerator() {
         <p style={{ color: '#5a7a5a', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', lineHeight: 1.6 }}>
           Fill in engagement details and findings · Use AI to draft descriptions · Export formatted report
         </p>
+        <div style={{ marginTop: '12px', background: accentDim, border: '1px solid ' + accentBorder, borderRadius: '4px', padding: '10px 14px' }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: accent, letterSpacing: '0.1em', marginRight: '8px' }}>HOW TO USE</span>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: '#5a6a5a', lineHeight: 1.6 }}>
+            <strong style={{ color: '#8a9a8a' }}>1. Engagement Details</strong> — fill in the client name, tester, scope, and methodology. <strong style={{ color: '#8a9a8a' }}>2. Executive Summary</strong> — write it yourself or click AI to generate one from your findings. <strong style={{ color: '#8a9a8a' }}>3. Findings</strong> — add each vulnerability: give it a title, set the severity, and use the AI DRAFT buttons to auto-write the description, impact, and recommendation. <strong style={{ color: '#8a9a8a' }}>4. Generate Report</strong> — click the button to assemble the full formatted report on the right. Copy and paste into your document.
+          </span>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
@@ -387,8 +411,17 @@ export default function ReportGenerator() {
                 </div>
 
                 <div style={{ marginBottom: '8px' }}>
-                  <Label>IMPACT</Label>
-                  <Textarea value={f.impact} onChange={v => updateFinding(f.id, 'impact', v)} placeholder="What can an attacker achieve by exploiting this?" rows={2} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                    <Label>IMPACT</Label>
+                    <button
+                      onClick={() => generateImpact(f)}
+                      disabled={loading}
+                      style={{ background: 'transparent', border: '1px solid #1a2e1e', borderRadius: '3px', padding: '2px 7px', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#3a6a3a', letterSpacing: '0.1em', opacity: loading ? 0.5 : 1 }}
+                    >
+                      {loading && aiTarget === f.id && aiSection === 'finding' ? '⟳ WRITING...' : 'AI DRAFT'}
+                    </button>
+                  </div>
+                  <Textarea value={f.impact} onChange={v => updateFinding(f.id, 'impact', v)} placeholder="What can an attacker achieve? What is the business consequence?" rows={2} />
                 </div>
 
                 <div>

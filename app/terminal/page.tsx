@@ -496,6 +496,9 @@ Run theHarvester for email extraction:
         <div>
           <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#5a7a5a', letterSpacing: '0.25em' }}>GHOSTNET // TERMINAL</div>
           <h1 style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.4rem', fontWeight: 700, color: '#00ff41', margin: '4px 0 0' }}>RESEARCH TERMINAL</h1>
+          <p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: '#3a5a3a', margin: '4px 0 0' }}>
+            Simulated terminal — type <strong style={{ color: '#5a8a5a' }}>help</strong> to see all commands · <strong style={{ color: '#5a8a5a' }}>cheatsheet osint</strong> for quick reference · no real network access
+          </p>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           {['OSINT', 'OFFENSIVE', 'CRYPTO'].map(tag => (

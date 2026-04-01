@@ -337,6 +337,12 @@ export default function PayloadPage() {
         <p style={{ color: '#5a7a5a', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem' }}>
           {PAYLOADS.length} payloads — reverse shells · web shells · SQLi · XSS · privesc · listeners
         </p>
+        <div style={{ marginTop: '12px', background: 'rgba(191,95,255,0.04)', border: '1px solid rgba(191,95,255,0.15)', borderRadius: '4px', padding: '10px 14px' }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#bf5fff', letterSpacing: '0.1em', marginRight: '8px' }}>HOW TO USE</span>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: '#5a6a5a', lineHeight: 1.6 }}>
+            Pre-built attack payloads for authorised testing and CTFs. <strong style={{ color: '#8a9a8a' }}>Step 1:</strong> Enter your LHOST (your machine&apos;s IP) and LPORT (any open port, e.g. 4444) below — all payloads update automatically. <strong style={{ color: '#8a9a8a' }}>Step 2:</strong> Filter by category (reverse shell, SQLi, XSS, etc). <strong style={{ color: '#8a9a8a' }}>Step 3:</strong> Click any payload to copy it. For reverse shells, start a listener first: <code style={{ color: '#bf5fff', background: 'rgba(191,95,255,0.1)', padding: '1px 5px', borderRadius: '2px' }}>nc -lvnp LPORT</code>. Only use against systems you own or have written permission to test.
+          </span>
+        </div>
       </div>
 
       {/* LHOST/LPORT config */}
