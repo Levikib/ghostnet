@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 const accent = '#00ff41'
 const accentDim = 'rgba(0,255,65,0.08)'
@@ -158,6 +158,14 @@ export default function AttackPathPage() {
   const [aiNarrative, setAiNarrative] = useState('')
   const [showNarrative, setShowNarrative] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [narrativeCopied, setNarrativeCopied] = useState(false)
+  const narrativeRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (showNarrative && narrativeRef.current) {
+      narrativeRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [showNarrative, aiNarrative])
 
   const addStep = (phase: string) => {
     const s = newStep(phase)
@@ -203,11 +211,12 @@ export default function AttackPathPage() {
   }
 
   const generateNarrative = async () => {
-    if (steps.length === 0) return
+    if (steps.length === 0 || loadingAI) return
     setLoadingAI(true)
     setShowNarrative(true)
+    setAiNarrative('')
     const summary = steps.map((s, i) =>
-      (i + 1) + '. [' + s.phase + '] ' + s.techniqueId + ' ' + s.techniqueName +
+      (i + 1) + '. [' + s.phase + '] ' + s.techniqueId + ' — ' + s.techniqueName +
       (s.asset ? ' on ' + s.asset : '') +
       (s.notes ? ' — ' + s.notes : '')
     ).join('\n')
@@ -216,14 +225,16 @@ export default function AttackPathPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          systemPrompt: 'You are a senior red team operator writing attack path narratives for pentest reports. Given a sequence of MITRE ATT&CK techniques, write a clear, technical, third-person narrative describing the attack chain. Each paragraph covers one phase. Include what the attacker did, why it worked, and what defenses failed. Be concise but thorough. 2-3 sentences per step.',
-          messages: [{ role: 'user', content: 'Write a narrative for this attack path titled "' + pathName + '":\n\n' + summary }],
+          systemPrompt: 'You are a senior red team operator writing attack path narratives for penetration test reports. Given a numbered sequence of MITRE ATT&CK techniques with target assets and notes, write a clear, technically accurate, third-person prose narrative describing the full attack chain. Write one paragraph per step. For each step explain: what the attacker did, the specific technique used, why it succeeded (what misconfiguration or weakness enabled it), and what defensive control failed or was absent. Use precise security terminology. Do not use bullet points — write flowing paragraphs. Be thorough but concise.',
+          messages: [{ role: 'user', content: 'Write an attack narrative for a pentest report. Path title: "' + pathName + '"\n\nSteps:\n' + summary }],
         }),
       })
       const data = await res.json()
+      if (data.error) throw new Error(data.error)
       setAiNarrative(data.text || 'No response received.')
-    } catch {
-      setAiNarrative('Error contacting AI. Check your GROQ_API_KEY.')
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unknown error'
+      setAiNarrative('Error: ' + msg)
     } finally {
       setLoadingAI(false)
     }
@@ -414,15 +425,29 @@ export default function AttackPathPage() {
 
           {/* AI Narrative */}
           {showNarrative && (
-            <div style={{ marginTop: '20px', background: '#111', border: '1px solid ' + accentBorder, borderRadius: '6px', padding: '20px' }}>
+            <div ref={narrativeRef} style={{ marginTop: '20px', background: '#111', border: '1px solid ' + accentBorder, borderRadius: '6px', padding: '20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                 <span style={{ color: accent, fontSize: '12px', fontWeight: 700 }}>✦ AI ATTACK NARRATIVE</span>
-                <button onClick={() => setShowNarrative(false)} style={{ background: 'none', border: 'none', color: '#555', cursor: 'pointer', fontSize: '14px' }}>✕</button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {aiNarrative && !loadingAI && (
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(aiNarrative).then(() => { setNarrativeCopied(true); setTimeout(() => setNarrativeCopied(false), 2000) }) }}
+                      style={{ background: narrativeCopied ? 'rgba(0,255,65,0.2)' : '#1a1a1a', border: '1px solid ' + accentBorder, color: accent, padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontFamily: 'JetBrains Mono, monospace', fontSize: '10px' }}
+                    >
+                      {narrativeCopied ? '✓ COPIED' : '⎘ COPY'}
+                    </button>
+                  )}
+                  <button onClick={() => { setShowNarrative(false); setAiNarrative('') }} style={{ background: 'none', border: 'none', color: '#555', cursor: 'pointer', fontSize: '14px', padding: '0 4px' }}>✕</button>
+                </div>
               </div>
               {loadingAI ? (
-                <p style={{ color: '#555', fontSize: '12px', margin: 0 }}>Generating narrative...</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0' }}>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: accent, animation: 'pulse 1.2s ease-in-out infinite' }} />
+                  <span style={{ color: '#555', fontSize: '12px' }}>Generating narrative...</span>
+                  <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}`}</style>
+                </div>
               ) : (
-                <p style={{ color: '#ccc', fontSize: '13px', lineHeight: '1.7', margin: 0, whiteSpace: 'pre-wrap' }}>{aiNarrative}</p>
+                <p style={{ color: '#ccc', fontSize: '13px', lineHeight: '1.8', margin: 0, whiteSpace: 'pre-wrap' }}>{aiNarrative}</p>
               )}
             </div>
           )}
