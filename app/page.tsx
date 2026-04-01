@@ -164,6 +164,33 @@ const TOOLS = [
     what: 'A dedicated workspace for Capture The Flag competitions. Includes decoders, hash identifiers, steganography helpers, cipher crackers, and curated writeup references. Designed to be open alongside TryHackMe and HackTheBox challenges.',
     usedFor: ['Active CTF competitions', 'Skill validation', 'Learning new techniques', 'TryHackMe and HackTheBox support'],
   },
+  {
+    href: '/report-generator',
+    label: 'REPORT GENERATOR',
+    color: '#00ff41',
+    icon: '✎',
+    desc: 'AI-assisted pentest report writer',
+    what: 'A full penetration test report builder powered by AI. Fill in engagement details, add findings with severity ratings and CVSS scores, then let the AI draft executive summaries, technical descriptions, and remediation recommendations. Outputs a structured plaintext report ready to copy into Word or a client deliverable.',
+    usedFor: ['Building pentest deliverables', 'Practising report writing', 'MOD-04 Offensive Security capstone', 'Bug bounty writeups'],
+  },
+  {
+    href: '/attack-path',
+    label: 'ATTACK PATH',
+    color: '#ff4136',
+    icon: '⚔',
+    desc: 'MITRE ATT&CK kill chain visualizer',
+    what: 'An interactive kill chain builder aligned to the MITRE ATT&CK framework. Add steps by phase (Recon, Initial Access, Execution, Persistence, Privilege Escalation, Lateral Movement, Exfiltration, Impact), assign real technique IDs (T1595, T1566, etc.), annotate each step with target assets and notes, then generate an AI narrative for your report. Presets for common attack scenarios included.',
+    usedFor: ['Pentest report visualisation', 'Red team campaign planning', 'MITRE ATT&CK study', 'Threat modelling exercises'],
+  },
+  {
+    href: '/shodan',
+    label: 'SHODAN BUILDER',
+    color: '#00d4ff',
+    icon: '◈',
+    desc: 'Shodan query constructor with live preview',
+    what: 'A point-and-click Shodan query builder. Select filters by category (Network, Location, Service, SSL/TLS, HTTP, ICS/IoT), enter values, and the query assembles live in the preview pane. Negate any filter with NOT, load from 20 curated example queries, then copy the query or open Shodan directly. Covers ports, products, countries, orgs, SSL certs, HTTP titles, tags, and more.',
+    usedFor: ['Passive recon (MOD-02)', 'Finding exposed infrastructure', 'ICS/IoT research', 'Attack surface mapping'],
+  },
 ]
 
 const DIFF_COLOR: Record<string, string> = {

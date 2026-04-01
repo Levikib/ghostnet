@@ -19,16 +19,17 @@ const Pre = ({ label, children }: { label?: string; children: string }) => (
     <pre style={{ background: '#050805', border: '1px solid #1a002e', borderRadius: '4px', padding: '1.25rem', overflow: 'auto', color: '#bf5fff', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', lineHeight: 1.7, whiteSpace: 'pre' as const }}>{children}</pre>
   </div>
 )
-const Alert = ({ type, children }: { type: 'info' | 'warn' | 'danger' | 'tip'; children: React.ReactNode }) => {
+const Alert = ({ type, children }: { type: 'info' | 'warn' | 'danger' | 'tip' | 'beginner'; children: React.ReactNode }) => {
   const c: Record<string, [string, string, string]> = {
-    info:   ['#bf5fff', 'rgba(191,95,255,0.05)', 'NOTE'],
-    warn:   ['#ffb347', 'rgba(255,179,71,0.05)', 'WARNING'],
-    danger: ['#ff4136', 'rgba(255,65,54,0.06)',  'CRITICAL'],
-    tip:    ['#00ff41', 'rgba(0,255,65,0.04)',   'PRO TIP'],
+    info:     ['#bf5fff', 'rgba(191,95,255,0.05)', 'NOTE'],
+    warn:     ['#ffb347', 'rgba(255,179,71,0.05)', 'WARNING'],
+    danger:   ['#ff4136', 'rgba(255,65,54,0.06)',  'CRITICAL'],
+    tip:      ['#00ff41', 'rgba(0,255,65,0.04)',   'PRO TIP'],
+    beginner: ['#00d4ff', 'rgba(0,212,255,0.05)',  'BEGINNER NOTE'],
   }
   const [color, bg, label] = c[type]
   return (
-    <div style={{ background: bg, borderLeft: `3px solid ${color}`, padding: '1rem 1.25rem', borderRadius: '0 4px 4px 0', margin: '1.5rem 0', border: `1px solid ${color}33`, borderLeftColor: color }}>
+    <div style={{ background: bg, borderLeft: '3px solid ' + color, padding: '1rem 1.25rem', borderRadius: '0 4px 4px 0', margin: '1.5rem 0', border: '1px solid ' + color + '33', borderLeftColor: color }}>
       <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color, letterSpacing: '0.2em', marginBottom: '6px' }}>{label}</div>
       <div style={{ color: '#8a9a8a', fontSize: '0.85rem', lineHeight: 1.7 }}>{children}</div>
     </div>
@@ -101,6 +102,9 @@ export default function OffensiveModule() {
 
       {/* 01 */}
       <H2>01 — Penetration Testing Methodology & Phases</H2>
+      <Alert type="beginner">
+        In plain English: a penetration test (&quot;pentest&quot;) is when a company hires you to try to hack them — legally. The goal is to find the weaknesses before real attackers do. The only thing that makes it legal is written permission. Everything a pentester does looks identical to what a criminal hacker does from a technical standpoint — the difference is entirely in the authorisation. Never probe a system without explicit written permission from its owner.
+      </Alert>
       <P>Penetration testing is a structured, authorised attempt to compromise a system to identify security weaknesses before malicious actors do. The key word is authorised — a signed scope-of-work document is what separates a penetration tester from a criminal.</P>
 
       <H3>The Five Phases</H3>
@@ -146,6 +150,9 @@ PHASE 5: POST-EXPLOITATION & REPORTING
 
       {/* 02 */}
       <H2>02 — Reconnaissance: Active Scanning with Nmap</H2>
+      <Alert type="beginner">
+        A &quot;port&quot; is a numbered channel that a service listens on. Port 80 = HTTP (websites). Port 22 = SSH (remote terminal). Port 443 = HTTPS. Every server typically has thousands of ports — most closed, some open. Nmap knocks on each port and records which ones respond, and what software answered. This tells an attacker (or defender) the entire attack surface of a machine. Think of it like walking around a building checking every door and window, noting which are unlocked and what lock brand they use.
+      </Alert>
       <P>Nmap (Network Mapper) is the industry-standard tool for network discovery and security auditing. It identifies live hosts, open ports, running services, software versions, and operating systems. Mastering Nmap is non-negotiable for any security professional.</P>
 
       <Pre label="// NMAP — COMPLETE REFERENCE">{`# Install
@@ -371,6 +378,9 @@ hashcat -m 5600 captured_hash.txt /usr/share/wordlists/rockyou.txt
 
       {/* 06 */}
       <H2>06 — Web Application Attacks: OWASP Top 10</H2>
+      <Alert type="beginner">
+        OWASP (Open Web Application Security Project) publishes a list of the 10 most common and critical web vulnerabilities, updated every few years based on real-world breach data. These are not theoretical — every item on the list has caused major breaches. If you understand and can identify all 10, you can assess the security posture of almost any web application. The free PortSwigger Web Security Academy (portswigger.net/web-security) has a full lab for every single one — it is the best free resource in web security.
+      </Alert>
       <Table headers={['RANK', 'VULNERABILITY', 'WHAT IT ENABLES', 'EXAMPLE']} rows={[
         ['A01', 'Broken Access Control', 'Access other users\' data, admin functions', 'Change ?user_id=123 to ?user_id=124 in URL'],
         ['A02', 'Cryptographic Failures', 'Steal passwords, PII, financial data', 'Passwords stored in MD5, HTTP instead of HTTPS'],
@@ -548,6 +558,9 @@ hashcat -m 1000 hash.txt -a 1 wordlist1.txt wordlist2.txt`}</Pre>
 
       {/* 09 */}
       <H2>09 — Exploitation with Metasploit Framework</H2>
+      <Alert type="beginner">
+        Metasploit is a framework that organises hundreds of exploit modules, payloads, and post-exploitation tools into a single interface. Think of it as a library: you search for an exploit by name or CVE, load it, set the target IP, choose a payload (what runs on the target after exploitation), and fire. A &quot;payload&quot; is what you want to happen after a successful exploit — usually a reverse shell (the target connects back to you and gives you a command prompt). Meterpreter is an advanced payload that runs entirely in memory and gives you powerful built-in tools.
+      </Alert>
       <Pre label="// METASPLOIT — COMPLETE WORKFLOW">{`sudo apt install metasploit-framework
 sudo msfdb init   # initialise database
 msfconsole        # launch
@@ -590,6 +603,9 @@ msf6> run   # SOCKS proxy on port 1080 → pivot through target`}</Pre>
 
       {/* 10 */}
       <H2>10 — Privilege Escalation: Linux & Windows</H2>
+      <Alert type="beginner">
+        When you first gain access to a system through an exploit, you usually land as a low-privilege user — like a regular employee account with limited access. Privilege escalation means finding a way to become the most powerful user: root on Linux (can do anything) or SYSTEM/Administrator on Windows. The techniques involve finding misconfigurations: software running as root that you can manipulate, files writable by everyone, scheduled tasks running as admin, or unpatched local kernel vulnerabilities. GTFOBins (gtfobins.github.io) is the essential reference for Linux privesc one-liners.
+      </Alert>
       <P>After initial access, you typically have low-privilege shell access. Privilege escalation is the process of gaining higher permissions — root on Linux, SYSTEM on Windows. This is often where the real skill shows.</P>
 
       <H3>Linux Privilege Escalation</H3>

@@ -30,7 +30,10 @@ const TOOLS = [
   { href: '/terminal',      label: 'RESEARCH TERMINAL',desc: 'Interactive command runner',       color: '#00d4ff' },
   { href: '/payload',       label: 'PAYLOAD GENERATOR',desc: '40+ attack payloads',             color: '#bf5fff' },
   { href: '/crypto-tracer', label: 'BLOCKCHAIN TRACER', desc: 'Trace transactions on-chain',    color: '#ffb347' },
-  { href: '/ctf',           label: 'CTF TOOLKIT',       desc: 'Capture-the-flag resources',     color: '#00ffff' },
+  { href: '/ctf',             label: 'CTF TOOLKIT',        desc: 'Capture-the-flag resources',      color: '#00ffff' },
+  { href: '/report-generator', label: 'REPORT GENERATOR', desc: 'AI pentest report builder',       color: '#00ff41' },
+  { href: '/attack-path',    label: 'ATTACK PATH',        desc: 'MITRE ATT&CK kill chain builder', color: '#ff4136' },
+  { href: '/shodan',         label: 'SHODAN BUILDER',     desc: 'Shodan query constructor',        color: '#00d4ff' },
 ]
 
 function Nav() {
