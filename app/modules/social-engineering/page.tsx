@@ -15,6 +15,12 @@ const H2 = ({ children }: { children: React.ReactNode }) => (
   </h2>
 )
 const P = ({ children }: { children: React.ReactNode }) => <p style={{ color: '#9a8a9a', lineHeight: 1.8, marginBottom: '1rem', fontSize: '0.9rem' }}>{children}</p>
+const Note = ({ children }: { children: React.ReactNode }) => (
+  <div style={{ background: 'rgba(255,110,199,0.05)', border: '1px solid rgba(255,110,199,0.2)', borderRadius: '6px', padding: '1rem 1.25rem', marginBottom: '1.5rem', marginTop: '0.5rem' }}>
+    <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#ff6ec7', letterSpacing: '0.15em', marginBottom: '6px' }}>BEGINNER NOTE</div>
+    <p style={{ color: '#8a9a9a', fontSize: '0.82rem', lineHeight: 1.7, margin: 0, fontFamily: 'sans-serif' }}>{children}</p>
+  </div>
+)
 
 export default function SocialEngineering() {
   return (
@@ -35,6 +41,7 @@ export default function SocialEngineering() {
       </div>
 
       <H2>01 — Psychology of Manipulation</H2>
+      <P>Social engineering is the art of manipulating people into taking actions they wouldn't normally take. Unlike hacking software, it targets the human operating the software. It is consistently the number one initial access vector in real-world breaches — because a person can be tricked even when the technology is perfectly secure.</P>
       <P>Social engineering exploits human psychology, not software. Understanding these principles is both the attack and the defence.</P>
       <Pre label="// CIALDINI'S 6 PRINCIPLES — HOW ATTACKERS USE THEM">{`# 1. AUTHORITY
 # Pretend to be: IT department, CEO, auditor, government
@@ -70,6 +77,7 @@ export default function SocialEngineering() {
 # Fear, greed, curiosity, urgency, helpfulness`}</Pre>
 
       <H2>02 — Phishing Infrastructure</H2>
+      <Note>Phishing is sending fake emails (or messages) designed to look legitimate. The goal is to steal credentials, install malware, or trick someone into transferring money. 'Spear phishing' is targeted at a specific person using personalized details. 'Whaling' targets executives. The infrastructure — domains, servers, tracking pixels — is what makes professional phishing campaigns hard to detect.</Note>
       <Pre label="// BUILD A PROFESSIONAL PHISHING CAMPAIGN">{`# Gophish — open-source phishing framework
 # Download: https://getgophish.com
 
@@ -108,6 +116,7 @@ unzip gophish*.zip && chmod +x gophish
 # Which departments clicked most`}</Pre>
 
       <H2>03 — Spear Phishing — Targeted Attacks</H2>
+      <P>Generic phishing casts a wide net — millions of emails with obvious red flags. Spear phishing is the sniper version: one email, one target, customized with real details from their LinkedIn, company website, and social media. Detection rates for spear phishing are much lower because the email looks completely legitimate to the recipient.</P>
       <Pre label="// OSINT → CUSTOM TARGETED EMAIL">{`# Step 1: Reconnaissance on target
 # LinkedIn: job title, department, manager, projects, technologies used
 # Company website: team page, press releases, partners
@@ -143,6 +152,7 @@ msfvenom -p windows/x64/meterpreter/reverse_https \
 # Maltego — relationship mapping`}</Pre>
 
       <H2>04 — Vishing (Voice Phishing)</H2>
+      <Note>Vishing (voice phishing) uses phone calls instead of email. The caller impersonates IT support, executives, vendors, or government agencies. It is extremely effective because most people are conditioned to be helpful on the phone and feel social pressure not to challenge an authority figure. Real-time MFA bypass (reading back the OTP code) is one of the most damaging modern variants.</Note>
       <Pre label="// PHONE-BASED SOCIAL ENGINEERING SCRIPTS">{`# Caller ID spoofing: 
 # SpoofCard, MySudo, Twilio (with custom CallerID)
 # Make it appear you're calling from internal extension
@@ -210,6 +220,7 @@ sudo setoolkit
 # Executes embedded PowerShell → reverse shell`}</Pre>
 
       <H2>06 — Physical Social Engineering</H2>
+      <P>Physical social engineering means bypassing physical security through deception rather than technology. Tailgating (following someone through a secure door), badge cloning, and USB drops have compromised organizations with multi-million dollar technical security stacks. Humans are trained to be polite, helpful, and non-confrontational — all of which attackers exploit.</P>
       <Pre label="// PHYSICAL INTRUSION TECHNIQUES">{`# Tailgating:
 # Follow authorized person through secure door
 # Carry boxes (people hold doors for people with stuff)
@@ -246,6 +257,7 @@ sudo setoolkit
 # "I'm here for the 2pm meeting with [real employee name from LinkedIn]"`}</Pre>
 
       <H2>07 — Defence & Awareness Training</H2>
+      <Note>The most effective defense against social engineering is a culture where employees feel empowered to challenge unusual requests, verify identities through a second channel, and report suspicious contacts without fear of embarrassment. Technical controls like DMARC and hardware MFA help, but the human layer is what ultimately stops these attacks.</Note>
       <Pre label="// BUILDING HUMAN FIREWALL">{`# Why technical controls fail:
 # Even perfect security → one call to the help desk
 # → "I forgot my password, can you reset it? I'm the CFO"

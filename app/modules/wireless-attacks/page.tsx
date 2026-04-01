@@ -14,6 +14,13 @@ const H2 = ({ children }: { children: React.ReactNode }) => (
     <span style={{ color: '#2a3800', marginRight: '8px' }}>//</span>{children}
   </h2>
 )
+const P = ({ children }: { children: React.ReactNode }) => <p style={{ color: '#8a9a8a', lineHeight: 1.8, marginBottom: '1rem', fontSize: '0.9rem' }}>{children}</p>
+const Note = ({ children }: { children: React.ReactNode }) => (
+  <div style={{ background: 'rgba(170,255,0,0.05)', border: '1px solid rgba(170,255,0,0.2)', borderRadius: '6px', padding: '1rem 1.25rem', marginBottom: '1.5rem', marginTop: '0.5rem' }}>
+    <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#aaff00', letterSpacing: '0.15em', marginBottom: '6px' }}>BEGINNER NOTE</div>
+    <p style={{ color: '#8a9a9a', fontSize: '0.82rem', lineHeight: 1.7, margin: 0, fontFamily: 'sans-serif' }}>{children}</p>
+  </div>
+)
 
 export default function WirelessAttacks() {
   return (
@@ -33,6 +40,8 @@ export default function WirelessAttacks() {
       </div>
 
       <H2>01 — Wireless Setup</H2>
+      <P>Wireless security testing requires a network adapter that supports 'monitor mode' (passively capturing all packets, not just those addressed to you) and 'packet injection' (sending custom packets). Most built-in laptop WiFi cards do not support these. An external USB adapter like the Alfa AWUS036ACH is the standard choice.</P>
+      <Note>In normal mode, your WiFi card ignores packets not meant for it — like how you ignore conversations across a room. Monitor mode is like suddenly being able to hear every conversation in the building simultaneously. Packet injection lets you inject fake packets — like writing someone else's name on an envelope.</Note>
       <Pre label="// HARDWARE AND SOFTWARE REQUIREMENTS">{`# Wireless adapter with monitor mode + packet injection:
 # Recommended: Alfa AWUS036ACH, AWUS036AXML
 # Check: iw list | grep "monitor"
@@ -54,6 +63,8 @@ iwconfig wlan0mon
 sudo apt install aircrack-ng hashcat hcxtools hcxdumptool wireshark`}</Pre>
 
       <H2>02 — WPA2 Cracking</H2>
+      <P>WPA2 authentication involves a 4-way handshake between the client and access point when connecting. This handshake contains enough information to verify a password guess offline — meaning once you capture it, you can attempt unlimited password guesses without the network even knowing. The security entirely depends on password strength.</P>
+      <Note>Cracking WPA2 does NOT mean breaking the encryption in real-time. It means capturing the handshake (a mathematical proof that you know the password) and then trying millions of password guesses locally on your machine until one produces the same proof. If the password is 'password123', it falls instantly. A random 15-character password would take longer than the universe's age.</Note>
       <Pre label="// CAPTURE AND CRACK WPA2 HANDSHAKE">{`# Step 1: Scan for networks
 sudo airodump-ng wlan0mon
 # Note: BSSID (AP MAC), Channel, ESSID (network name)
@@ -84,6 +95,7 @@ hashcat -m 22000 hash.hc22000 rockyou.txt -r rules/best64.rule
 # Or: cewl target.com -d 3 -m 6 > cewl.txt  (words from their website)`}</Pre>
 
       <H2>03 — PMKID Attack (No Client Needed)</H2>
+      <P>The PMKID attack is a game-changer for WPA2 auditing: it does not require waiting for a legitimate client to connect, nor does it require sending deauthentication frames (which are noisy and detectable). The access point broadcasts the PMKID in its first EAPOL frame, which is accessible to any listening device.</P>
       <Pre label="// CRACK WPA2 WITHOUT WAITING FOR HANDSHAKE">{`# PMKID is derived from: PMKID = HMAC-SHA1(PMK, "PMK Name" || AP_MAC || CLIENT_MAC)
 # Contained in first EAPOL frame from AP
 # No need to wait for or force a client connection!
@@ -102,6 +114,7 @@ hashcat -m 22000 pmkid.hc22000 /usr/share/wordlists/rockyou.txt
 sudo hcxdumptool -i wlan0mon --filterlist_ap=BSSID.txt --filtermode=2 -o pmkid.pcapng`}</Pre>
 
       <H2>04 — Evil Twin Attack</H2>
+      <Note>An evil twin is a fake WiFi access point with the same name (SSID) as a legitimate one. When a user's device searches for known networks and connects to your fake AP, all their traffic flows through you. This is particularly effective in corporate environments using WPA-Enterprise, where employees authenticate with domain credentials.</Note>
       <Pre label="// CREATE FAKE ACCESS POINT — STEAL CREDENTIALS">{`# Evil Twin = clone legitimate AP → lure users to connect
 # When they authenticate → capture credentials
 
@@ -140,6 +153,7 @@ wifi.recon on
 wifi.ap on`}</Pre>
 
       <H2>05 — WPS Exploitation</H2>
+      <P>WPS (WiFi Protected Setup) was designed to make connecting devices easier — you press a button or enter an 8-digit PIN. The PIN is the vulnerability: it is verified in two halves, reducing the brute force space from 100 million combinations to just 11,000. Many consumer routers have no lockout mechanism, making WPS cracking trivially easy.</P>
       <Pre label="// BREAK WPS PIN IN HOURS">{`# WPS (WiFi Protected Setup) PIN is 8 digits
 # Split into two 4-digit halves checked separately
 # Brute force space: 11,000 combinations (not 100,000,000)

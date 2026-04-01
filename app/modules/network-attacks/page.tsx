@@ -15,6 +15,12 @@ const Pre = ({ label, children }: { label?: string; children: string }) => (
   </div>
 )
 const P = ({ children }: { children: React.ReactNode }) => <p style={{ color: '#8a9a9a', lineHeight: 1.8, marginBottom: '1rem', fontSize: '0.9rem' }}>{children}</p>
+const Note = ({ children }: { children: React.ReactNode }) => (
+  <div style={{ background: 'rgba(0,255,255,0.05)', border: '1px solid rgba(0,255,255,0.2)', borderRadius: '6px', padding: '1rem 1.25rem', marginBottom: '1.5rem', marginTop: '0.5rem' }}>
+    <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#00ffff', letterSpacing: '0.15em', marginBottom: '6px' }}>BEGINNER NOTE</div>
+    <p style={{ color: '#8a9a9a', fontSize: '0.82rem', lineHeight: 1.7, margin: 0, fontFamily: 'sans-serif' }}>{children}</p>
+  </div>
+)
 
 export default function NetworkAttacks() {
   return (
@@ -35,6 +41,8 @@ export default function NetworkAttacks() {
       </div>
 
       <H2>01 — OSI Model Attack Surface Map</H2>
+      <P>Every network attack targets a specific layer of the OSI model — the 7-layer framework that describes how data travels from your application down to physical cables. Understanding which layer an attack operates at tells you which tools detect it and which defenses stop it.</P>
+      <Note>The OSI model can feel abstract at first. Think of it like this: when you load a website, your request travels DOWN through the layers on your machine (Application to Physical), crosses the network, then travels back UP on the server. Attacks can intercept or manipulate data at any layer.</Note>
       <Pre label="// WHICH ATTACKS LIVE AT WHICH LAYER">{`# Layer 1 — Physical
 # Cable tapping, rogue access point, hardware keylogger
 
@@ -58,6 +66,8 @@ export default function NetworkAttacks() {
 # Tools: sslstrip, bettercap, dnschef`}</Pre>
 
       <H2>02 — Wireshark Mastery</H2>
+      <P>Wireshark captures every packet passing through your network interface, letting you see exactly what data is being transmitted. Security analysts use it to investigate breaches, find leaked credentials, and understand attack patterns. It is the most essential tool in network security.</P>
+      <Note>A 'packet' is a small chunk of data — every website you load, email you send, and video you watch is broken into thousands of packets. Wireshark lets you see each one. Think of it as being able to open and read every envelope passing through a post office.</Note>
       <P>Wireshark is the most important tool in network security. Learn to read traffic like a native language.</P>
       <Pre label="// ESSENTIAL WIRESHARK FILTERS FOR SECURITY ANALYSIS">{`# Basic protocol filters:
 http          # HTTP traffic only
@@ -131,6 +141,7 @@ tshark -r capture.pcap -Y arp -T fields \
   -e arp.src.hw_mac -e arp.src.proto_ipv4 | sort | uniq -d`}</Pre>
 
       <H2>03 — ARP Spoofing & MITM</H2>
+      <P>ARP (Address Resolution Protocol) is how your computer finds the MAC address (hardware address) of devices on your local network. The flaw: ARP has no authentication whatsoever — any device can claim to be any IP. ARP spoofing exploits this to intercept all traffic between two devices, making a Man-in-the-Middle attack possible on any local network.</P>
       <P>ARP has no authentication — any machine can claim to be any IP. This is the foundation of most LAN-based attacks.</P>
       <Pre label="// ARP SPOOFING — INTERCEPT ALL TRAFFIC">{`# How ARP works:
 # "Who has 192.168.1.1?" → broadcast
@@ -169,6 +180,8 @@ net.sniff on          # capture traffic
 sudo bettercap -eval "net.probe on; arp.spoof on; net.sniff on"`}</Pre>
 
       <H2>04 — SSL Stripping</H2>
+      <P>SSL Stripping downgrades a victim's HTTPS connection to HTTP without their knowledge. You become a translator in the middle — you talk HTTPS to the server, HTTP to the victim — meaning you can read everything they send, including passwords.</P>
+      <Note>HTTPS encrypts your traffic so no one in the middle can read it. But if an attacker can catch your request BEFORE you connect — when you first type 'bank.com' without the 'https://' — they can serve you an HTTP version while connecting to the real HTTPS site themselves. Your browser shows HTTP, not the padlock, but most users don't notice.</Note>
       <Pre label="// DOWNGRADE HTTPS TO HTTP TO READ ENCRYPTED TRAFFIC">{`# When victim goes to http://bank.com → you redirect to HTTPS
 # But victim sees HTTP → you see their credentials
 
@@ -203,6 +216,7 @@ tail -f sslstrip.log
 # Check: https://hstspreload.org`}</Pre>
 
       <H2>05 — DNS Poisoning & Spoofing</H2>
+      <P>DNS is the internet's phone book — it translates domain names like 'google.com' into IP addresses. Like ARP, standard DNS has no authentication. If you control the DNS response a victim receives, you control where their browser connects — even if they typed the correct URL.</P>
       <Pre label="// REDIRECT DNS QUERIES TO MALICIOUS SERVERS">{`# DNS has no authentication (DNSSEC rarely implemented)
 # Poison the cache → redirect any domain to your IP
 
@@ -314,6 +328,7 @@ sudo yersinia stp -attack 2
 # Enable BPDU Guard on edge ports`}</Pre>
 
       <H2>08 — Lateral Movement via Network</H2>
+      <Note>Lateral movement means spreading from one compromised machine to others inside the same network. After gaining initial access (e.g., through phishing), an attacker doesn't stop — they move sideways to find more valuable systems like database servers or domain controllers. This is why network segmentation matters: it limits how far an attacker can move.</Note>
       <Pre label="// MOVE THROUGH THE NETWORK AFTER INITIAL ACCESS">{`# CrackMapExec — Swiss army knife for network lateral movement
 pip install crackmapexec
 

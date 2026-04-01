@@ -14,6 +14,13 @@ const H2 = ({ children }: { children: React.ReactNode }) => (
     <span style={{ color: '#200038', marginRight: '8px' }}>//</span>{children}
   </h2>
 )
+const P = ({ children }: { children: React.ReactNode }) => <p style={{ color: '#8a8a9a', lineHeight: 1.8, marginBottom: '1rem', fontSize: '0.9rem' }}>{children}</p>
+const Note = ({ children }: { children: React.ReactNode }) => (
+  <div style={{ background: 'rgba(124,77,255,0.05)', border: '1px solid rgba(124,77,255,0.2)', borderRadius: '6px', padding: '1rem 1.25rem', marginBottom: '1.5rem', marginTop: '0.5rem' }}>
+    <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#7c4dff', letterSpacing: '0.15em', marginBottom: '6px' }}>BEGINNER NOTE</div>
+    <p style={{ color: '#8a9a9a', fontSize: '0.82rem', lineHeight: 1.7, margin: 0, fontFamily: 'sans-serif' }}>{children}</p>
+  </div>
+)
 
 export default function MobileSecurity() {
   return (
@@ -33,6 +40,8 @@ export default function MobileSecurity() {
       </div>
 
       <H2>01 — Android Architecture Attack Surface</H2>
+      <P>Mobile application security is a discipline distinct from web security. Apps are distributed as compiled binaries (APKs on Android), can be decompiled and analyzed offline, run on user-controlled hardware (which may be rooted), and communicate over networks that the attacker may also control. The attack surface spans static analysis, dynamic analysis, network interception, and physical device access.</P>
+      <Note>An APK file is essentially a ZIP file containing your app's compiled code, resources, and manifest. When security researchers say they 'decompile an APK', they mean converting the compiled bytecode back into readable Java/Kotlin code using tools like jadx. This lets you read the source code of any Android app, looking for hardcoded secrets, weak authentication, or vulnerable code paths.</Note>
       <Pre label="// WHERE ANDROID APPS ARE VULNERABLE">{`# APK structure (rename .apk to .zip to see):
 # AndroidManifest.xml — permissions, components, exported activities
 # classes.dex — compiled Java/Kotlin bytecode
@@ -51,6 +60,7 @@ export default function MobileSecurity() {
 # 8. Content providers with SQL injection`}</Pre>
 
       <H2>02 — Static Analysis</H2>
+      <P>Static analysis means examining the app without running it — reading the code, configurations, and resources. This is where most obvious vulnerabilities are found: hardcoded API keys, cleartext HTTP URLs, debug flags left on, and exported components that bypass authentication.</P>
       <Pre label="// ANALYSE APK WITHOUT RUNNING IT">{`# Step 1: Decompile APK
 # Install apktool:
 sudo apt install apktool
@@ -80,6 +90,8 @@ docker run -it --rm -p 8000:8000 opensecurity/mobile-security-framework-mobsf:la
 # Full automated analysis: secrets, permissions, code issues, network calls`}</Pre>
 
       <H2>03 — Dynamic Analysis with ADB</H2>
+      <P>ADB (Android Debug Bridge) is a command-line tool that lets you communicate with an Android device or emulator. For security testing, it lets you install apps, execute shell commands, interact with the filesystem, monitor logs in real-time, and start activities directly — bypassing any in-app authentication flows.</P>
+      <Note>A key insight in Android security: activities (screens) in an app can be started directly from the command line with ADB if they are 'exported' (accessible from outside the app). If the developer forgot to add permission checks to an admin screen and left it exported, you can jump directly to it, bypassing the login screen entirely.</Note>
       <Pre label="// INTERACT WITH APP AT RUNTIME">{`# Android Debug Bridge — USB or WiFi connection to device
 sudo apt install adb
 
@@ -116,6 +128,7 @@ adb backup -noapk com.target.app
 # Convert backup: java -jar android-backup-extractor.jar backup.ab backup.tar`}</Pre>
 
       <H2>04 — Frida — Dynamic Instrumentation</H2>
+      <Note>Frida works by injecting a JavaScript runtime into a running process. Your scripts can then 'hook' any function — intercepting calls, reading arguments, changing return values, or logging behavior. This is how SSL pinning is bypassed: you hook the certificate validation function and make it always return 'valid', regardless of the actual certificate.</Note>
       <Pre label="// HOOK FUNCTIONS AT RUNTIME — BYPASS ANYTHING">{`# Frida lets you inject JavaScript into running processes
 # Hook any function → inspect/modify arguments and return values
 
@@ -159,6 +172,7 @@ Java.perform(function() {
 frida -U com.target.app -l crypto_logger.js  # See what's encrypted/decrypted`}</Pre>
 
       <H2>05 — SSL Pinning Bypass</H2>
+      <P>SSL pinning is an app-level defense that validates not just that a certificate is valid, but that it matches a specific expected certificate (or key hash). It prevents proxy interception even if you install a custom CA certificate on the device. Bypassing it is usually the first step in mobile app penetration testing.</P>
       <Pre label="// INTERCEPT HTTPS TRAFFIC FROM MOBILE APPS">{`# Apps with SSL pinning validate the EXACT certificate
 # Even if you install your Burp cert → SSL error
 # Must bypass the pinning check
