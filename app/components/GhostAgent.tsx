@@ -208,7 +208,7 @@ export default function GhostAgent() {
       <button
         onClick={() => setOpen(!open)}
         style={{
-          position: 'fixed', bottom: '24px', right: '24px', zIndex: 1000,
+          position: 'fixed', bottom: '24px', right: '24px', zIndex: 9000,
           width: '52px', height: '52px', borderRadius: '8px',
           background: open ? 'rgba(0,212,255,0.15)' : 'rgba(0,255,65,0.1)',
           border: `1px solid ${open ? 'rgba(0,212,255,0.5)' : 'rgba(0,255,65,0.4)'}`,
@@ -234,7 +234,7 @@ export default function GhostAgent() {
       {/* Chat panel */}
       {open && (
         <div style={{
-          position: 'fixed', bottom: '88px', right: '24px', zIndex: 999,
+          position: 'fixed', bottom: '88px', right: '24px', zIndex: 9001,
           width: '420px', height: '600px',
           background: '#080c0a',
           border: '1px solid rgba(0,212,255,0.2)',
