@@ -1,6 +1,7 @@
-'use client'
-import React, { useState } from 'react'
-import Link from 'next/link'
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
 
 const CATEGORIES = [
   {
@@ -81,7 +82,7 @@ ct = bytes.fromhex('YOUR_HEX_HERE')
 for key in range(256):
     pt = bytes([c ^ key for c in ct])
     if all(32 <= b <= 126 for b in pt):
-        print(f'Key {key}: {pt.decode()}')
+        print(f'Key ${key}: ${pt.decode()}')
 "
 
 # Multi-byte XOR (repeated key):
@@ -344,13 +345,13 @@ python3 -c "import urllib.parse; print(urllib.parse.unquote('%48%65%6C%6C%6F'))"
 # Drag "Magic" operation → paste mystery text → it auto-detects` },
     ]
   },
-]
+];
 
 export default function CTFPage() {
-  const [activeCategory, setActiveCategory] = useState('WEB')
-  const [expandedItem, setExpandedItem] = useState<string | null>(null)
+  const [activeCategory, setActiveCategory] = useState('WEB');
+  const [expandedItem, setExpandedItem] = useState<string | null>(null);
 
-  const cat = CATEGORIES.find(c => c.name === activeCategory)!
+  const cat = CATEGORIES.find(c => c.name === activeCategory)!;
 
   return (
     <div>
@@ -363,7 +364,7 @@ export default function CTFPage() {
         <div style={{ marginTop: '12px', background: 'rgba(0,255,65,0.03)', border: '1px solid rgba(0,255,65,0.12)', borderRadius: '4px', padding: '10px 14px' }}>
           <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#00ff41', letterSpacing: '0.1em', marginRight: '8px' }}>WHAT IS A CTF</span>
           <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: '#5a6a5a', lineHeight: 1.6 }}>
-            Capture The Flag competitions are legal hacking puzzles where you find a hidden &quot;flag&quot; string (e.g. <code style={{ color: '#00ff41', background: 'rgba(0,255,65,0.08)', padding: '1px 5px', borderRadius: '2px' }}>HTB{'{'flag{'}'}</code>) by solving security challenges. Categories: <strong style={{ color: '#8a9a8a' }}>WEB</strong> (find SQLi, XSS, IDOR bugs), <strong style={{ color: '#8a9a8a' }}>CRYPTO</strong> (break weak ciphers, RSA), <strong style={{ color: '#8a9a8a' }}>FORENSICS</strong> (analyse files, network captures), <strong style={{ color: '#8a9a8a' }}>PWNABLE</strong> (exploit programs with memory bugs). Click a category below to see cheatsheets. Start with <strong style={{ color: '#8a9a8a' }}>picoCTF</strong> if you are new — it is beginner-friendly and always available.
+            Capture The Flag competitions are legal hacking puzzles where you find a hidden "flag" string (e.g. <code style={{ color: '#00ff41', background: 'rgba(0,255,65,0.08)', padding: '1px 5px', borderRadius: '2px' }}>HTB&#123;flag&#125;</code>) by solving security challenges. Categories: <strong style={{ color: '#8a9a8a' }}>WEB</strong> (find SQLi, XSS, IDOR bugs), <strong style={{ color: '#8a9a8a' }}>CRYPTO</strong> (break weak ciphers, RSA), <strong style={{ color: '#8a9a8a' }}>FORENSICS</strong> (analyse files, network captures), <strong style={{ color: '#8a9a8a' }}>PWNABLE</strong> (exploit programs with memory bugs). Click a category below to see cheatsheets. Start with <strong style={{ color: '#8a9a8a' }}>picoCTF</strong> if you are new — it is beginner-friendly and always available.
           </span>
         </div>
       </div>
@@ -401,8 +402,8 @@ export default function CTFPage() {
       {/* Items */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: '#1a2e1e', borderRadius: '6px', overflow: 'hidden', border: '1px solid #1a2e1e' }}>
         {cat.items.map((item, i) => {
-          const key = `${cat.name}-${i}`
-          const open = expandedItem === key
+          const key = `${cat.name}-${i}`;
+          const open = expandedItem === key;
           return (
             <div key={i} style={{ background: '#0e1410' }}>
               <div onClick={() => setExpandedItem(open ? null : key)} style={{ padding: '14px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: `3px solid ${cat.color}` }}>
@@ -417,7 +418,7 @@ export default function CTFPage() {
                 </div>
               )}
             </div>
-          )
+          );
         })}
       </div>
 
@@ -459,5 +460,5 @@ export default function CTFPage() {
         </Link>
       </div>
     </div>
-  )
+  );
 }
