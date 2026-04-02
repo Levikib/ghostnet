@@ -82,7 +82,7 @@ export default function OSINTLab() {
       <div style={{ background: '#0a1318', border: '1px solid #1a2e1e', borderRadius: '6px', padding: '1.5rem', marginBottom: '2rem' }}>
         <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#2a5a6a', letterSpacing: '0.2em', marginBottom: '1rem' }}>LAB ENVIRONMENT SETUP</div>
         <P>These labs use entirely passive techniques — you never send packets directly to the target. All data comes from public sources: DNS, search engines, certificate logs, and Shodan. A standard Linux terminal with internet access is all you need.</P>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
+        <div className="grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
           <div style={{ background: '#050805', border: '1px solid #1a2e1e', borderRadius: '4px', padding: '1rem' }}>
             <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: accent, letterSpacing: '0.15em', marginBottom: '8px' }}>REQUIRED TOOLS</div>
             <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: '#5a7a5a', lineHeight: 1.8 }}>

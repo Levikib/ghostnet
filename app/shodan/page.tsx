@@ -206,7 +206,7 @@ export default function ShodanPage() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: '24px', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: '24px', alignItems: 'start' }} className="grid-sidebar-right">
         {/* Left — Filter builder */}
         <div>
           {/* Free text + controls */}

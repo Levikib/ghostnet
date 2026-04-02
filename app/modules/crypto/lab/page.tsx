@@ -82,7 +82,7 @@ export default function CryptoLab() {
       <div style={{ background: '#0f0b05', border: '1px solid #2e1e00', borderRadius: '6px', padding: '1.5rem', marginBottom: '2rem' }}>
         <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#5a4a2a', letterSpacing: '0.2em', marginBottom: '1rem' }}>LAB ENVIRONMENT SETUP</div>
         <P>Labs 01-03 (tracing and forensics) only require Python 3 and internet access — they are fully passive. Labs 04-06 require a local Ethereum development environment using Foundry to safely deploy and exploit contracts without real funds.</P>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
+        <div className="grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
           <div style={{ background: '#050805', border: '1px solid #2e1e00', borderRadius: '4px', padding: '1rem' }}>
             <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: accent, letterSpacing: '0.15em', marginBottom: '8px' }}>TOOLS NEEDED</div>
             <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: '#5a7a5a', lineHeight: 1.8 }}>

@@ -86,7 +86,7 @@ export default function TorLab() {
       <div style={{ background: '#0a130a', border: '1px solid #1a2e1e', borderRadius: '6px', padding: '1.5rem', marginBottom: '2rem' }}>
         <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#3a6a3a', letterSpacing: '0.2em', marginBottom: '1rem' }}>LAB ENVIRONMENT SETUP</div>
         <P>These exercises require a Linux environment. Ubuntu 22.04 LTS (bare metal or VM) is recommended. WSL2 works for most exercises but has limitations with GUI tools like Wireshark.</P>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
+        <div className="grid-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
           <div style={{ background: '#050805', border: '1px solid #1a2e1e', borderRadius: '4px', padding: '1rem' }}>
             <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: accent, letterSpacing: '0.15em', marginBottom: '8px' }}>REQUIRED TOOLS</div>
             <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: '#5a7a5a', lineHeight: 1.8 }}>
