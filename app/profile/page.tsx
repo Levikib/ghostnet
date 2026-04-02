@@ -10,19 +10,19 @@ const mono = 'JetBrains Mono, monospace'
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const ALL_MODULES = [
-  { id: 'tor',               num: '01', label: 'Tor & Dark Web',       color: '#00ff41', href: '/modules/tor',               labId: 'tor-lab',               xpMax: 130 },
+  { id: 'tor',               num: '01', label: 'Tor & Dark Web',       color: '#00ff41', href: '/modules/tor',               labId: 'tor-lab',               xpMax: 345 },
   { id: 'osint',             num: '02', label: 'OSINT & Surveillance',  color: '#00d4ff', href: '/modules/osint',             labId: 'osint-lab',             xpMax: 130 },
   { id: 'crypto',            num: '03', label: 'Crypto & Blockchain',   color: '#ffb347', href: '/modules/crypto',            labId: 'crypto-lab',            xpMax: 120 },
   { id: 'offensive',         num: '04', label: 'Offensive Security',    color: '#bf5fff', href: '/modules/offensive',         labId: 'offensive-lab',         xpMax: 130 },
-  { id: 'active-directory',  num: '05', label: 'Active Directory',      color: '#ff4136', href: '/modules/active-directory',  labId: 'ad-lab',                xpMax: 145 },
-  { id: 'web-attacks',       num: '06', label: 'Web Attacks',           color: '#00d4ff', href: '/modules/web-attacks',       labId: 'web-lab',               xpMax: 120 },
+  { id: 'active-directory',  num: '05', label: 'Active Directory',      color: '#ff4136', href: '/modules/active-directory',  labId: 'active-directory-lab',  xpMax: 145 },
+  { id: 'web-attacks',       num: '06', label: 'Web Attacks',           color: '#00d4ff', href: '/modules/web-attacks',       labId: 'web-attacks-lab',       xpMax: 120 },
   { id: 'malware',           num: '07', label: 'Malware Analysis',      color: '#00ff41', href: '/modules/malware',           labId: 'malware-lab',           xpMax: 130 },
-  { id: 'network-attacks',   num: '08', label: 'Network Attacks',       color: '#00ffff', href: '/modules/network-attacks',   labId: 'network-lab',           xpMax: 125 },
-  { id: 'cloud-security',    num: '09', label: 'Cloud Security',        color: '#ff9500', href: '/modules/cloud-security',    labId: 'cloud-lab',             xpMax: 145 },
-  { id: 'social-engineering',num: '10', label: 'Social Engineering',    color: '#ff6ec7', href: '/modules/social-engineering',labId: 'social-lab',            xpMax: 120 },
+  { id: 'network-attacks',   num: '08', label: 'Network Attacks',       color: '#00ffff', href: '/modules/network-attacks',   labId: 'network-attacks-lab',   xpMax: 125 },
+  { id: 'cloud-security',    num: '09', label: 'Cloud Security',        color: '#ff9500', href: '/modules/cloud-security',    labId: 'cloud-security-lab',    xpMax: 145 },
+  { id: 'social-engineering',num: '10', label: 'Social Engineering',    color: '#ff6ec7', href: '/modules/social-engineering',labId: 'social-engineering-lab',xpMax: 120 },
   { id: 'red-team',          num: '11', label: 'Red Team Ops',          color: '#ff3333', href: '/modules/red-team',          labId: 'red-team-lab',          xpMax: 135 },
-  { id: 'wireless-attacks',  num: '12', label: 'Wireless Attacks',      color: '#aaff00', href: '/modules/wireless-attacks',  labId: 'wireless-lab',          xpMax: 135 },
-  { id: 'mobile-security',   num: '13', label: 'Mobile Security',       color: '#7c4dff', href: '/modules/mobile-security',   labId: 'mobile-lab',            xpMax: 130 },
+  { id: 'wireless-attacks',  num: '12', label: 'Wireless Attacks',      color: '#aaff00', href: '/modules/wireless-attacks',  labId: 'wireless-attacks-lab',  xpMax: 135 },
+  { id: 'mobile-security',   num: '13', label: 'Mobile Security',       color: '#7c4dff', href: '/modules/mobile-security',   labId: 'mobile-security-lab',   xpMax: 130 },
 ]
 
 const RANK_NAMES = ['Ghost', 'Specter', 'Phantom', 'Wraith', 'Legend'] as const

@@ -10,74 +10,19 @@ interface Progress {
 }
 
 const LABS = [
-  { id: 'tor-1', module: 'MOD-01', label: 'Tor Installation & Verification', xp: 100 },
-  { id: 'tor-2', module: 'MOD-01', label: 'Circuit Analysis with Nyx', xp: 150 },
-  { id: 'tor-3', module: 'MOD-01', label: 'Deploy Hidden Service', xp: 200 },
-  { id: 'tor-4', module: 'MOD-01', label: 'Opsec Verification', xp: 150 },
-  { id: 'tor-5', module: 'MOD-01', label: 'Traffic Analysis', xp: 200 },
-  { id: 'osint-1', module: 'MOD-02', label: 'Domain Footprinting', xp: 100 },
-  { id: 'osint-2', module: 'MOD-02', label: 'Shodan Recon', xp: 150 },
-  { id: 'osint-3', module: 'MOD-02', label: 'Google Dorking', xp: 100 },
-  { id: 'osint-4', module: 'MOD-02', label: 'Social Media Intel', xp: 150 },
-  { id: 'osint-5', module: 'MOD-02', label: 'Metadata Forensics', xp: 200 },
-  { id: 'osint-6', module: 'MOD-02', label: 'Full Target Profile', xp: 300 },
-  { id: 'crypto-1', module: 'MOD-03', label: 'Transaction Tracing', xp: 200 },
-  { id: 'crypto-2', module: 'MOD-03', label: 'Wallet Forensics', xp: 200 },
-  { id: 'crypto-3', module: 'MOD-03', label: 'Smart Contract Vuln Lab', xp: 300 },
-  { id: 'crypto-4', module: 'MOD-03', label: 'Flash Loan Lab', xp: 300 },
-  { id: 'crypto-5', module: 'MOD-03', label: 'On-Chain Forensics', xp: 250 },
-  { id: 'crypto-6', module: 'MOD-03', label: 'Mini Audit Report', xp: 400 },
-  { id: 'off-1', module: 'MOD-04', label: 'Nmap Recon', xp: 100 },
-  { id: 'off-2', module: 'MOD-04', label: 'Web App Enumeration', xp: 150 },
-  { id: 'off-3', module: 'MOD-04', label: 'SQL Injection', xp: 200 },
-  { id: 'off-4', module: 'MOD-04', label: 'Password Attacks', xp: 150 },
-  { id: 'off-5', module: 'MOD-04', label: 'Metasploit Chain', xp: 300 },
-  { id: 'off-6', module: 'MOD-04', label: 'Privilege Escalation + Report', xp: 400 },
-  { id: 'ad-1', module: 'MOD-05', label: 'Enumerate AD with BloodHound', xp: 150 },
-  { id: 'ad-2', module: 'MOD-05', label: 'Kerberoasting Attack', xp: 200 },
-  { id: 'ad-3', module: 'MOD-05', label: 'Pass-the-Hash Lateral Movement', xp: 250 },
-  { id: 'ad-4', module: 'MOD-05', label: 'DCSync and Domain Dominance', xp: 300 },
-  { id: 'ad-5', module: 'MOD-05', label: 'Golden Ticket Persistence', xp: 350 },
-  { id: 'web-1', module: 'MOD-06', label: 'Advanced SQL Injection', xp: 150 },
-  { id: 'web-2', module: 'MOD-06', label: 'Stored XSS Chain', xp: 200 },
-  { id: 'web-3', module: 'MOD-06', label: 'SSRF to Cloud Creds', xp: 250 },
-  { id: 'web-4', module: 'MOD-06', label: 'Deserialization Exploit', xp: 300 },
-  { id: 'web-5', module: 'MOD-06', label: 'GraphQL Attack', xp: 200 },
-  { id: 'mal-1', module: 'MOD-07', label: 'Static Analysis with Ghidra', xp: 200 },
-  { id: 'mal-2', module: 'MOD-07', label: 'Dynamic Sandbox Analysis', xp: 200 },
-  { id: 'mal-3', module: 'MOD-07', label: 'Ransomware Anatomy Lab', xp: 300 },
-  { id: 'mal-4', module: 'MOD-07', label: 'YARA Rule Writing', xp: 250 },
-  { id: 'mal-5', module: 'MOD-07', label: 'Memory Forensics', xp: 300 },
-  { id: 'net-1', module: 'MOD-08', label: 'Wireshark Traffic Analysis', xp: 100 },
-  { id: 'net-2', module: 'MOD-08', label: 'ARP Spoofing MITM', xp: 200 },
-  { id: 'net-3', module: 'MOD-08', label: 'DNS Poisoning', xp: 200 },
-  { id: 'net-4', module: 'MOD-08', label: 'Packet Crafting with Scapy', xp: 250 },
-  { id: 'net-5', module: 'MOD-08', label: 'Lateral Movement with CrackMapExec', xp: 300 },
-  { id: 'cloud-1', module: 'MOD-09', label: 'AWS CLI Enumeration', xp: 150 },
-  { id: 'cloud-2', module: 'MOD-09', label: 'S3 Bucket Exploitation', xp: 200 },
-  { id: 'cloud-3', module: 'MOD-09', label: 'IMDS Credential Theft', xp: 300 },
-  { id: 'cloud-4', module: 'MOD-09', label: 'IAM Privilege Escalation', xp: 350 },
-  { id: 'cloud-5', module: 'MOD-09', label: 'Container Escape', xp: 400 },
-  { id: 'se-1', module: 'MOD-10', label: 'OSINT Target Profiling', xp: 150 },
-  { id: 'se-2', module: 'MOD-10', label: 'Gophish Phishing Campaign', xp: 250 },
-  { id: 'se-3', module: 'MOD-10', label: 'Spear Phishing Email', xp: 200 },
-  { id: 'se-4', module: 'MOD-10', label: 'Vishing Script and Call', xp: 200 },
-  { id: 'se-5', module: 'MOD-10', label: 'Physical Intrusion Scenario', xp: 300 },
-  { id: 'rt-1', module: 'MOD-11', label: 'C2 with Sliver Setup', xp: 250 },
-  { id: 'rt-2', module: 'MOD-11', label: 'AV and EDR Evasion', xp: 350 },
-  { id: 'rt-3', module: 'MOD-11', label: 'Persistence Mechanisms', xp: 300 },
-  { id: 'rt-4', module: 'MOD-11', label: 'Lateral Movement Campaign', xp: 400 },
-  { id: 'rt-5', module: 'MOD-11', label: 'Full Exfiltration Simulation', xp: 500 },
-  { id: 'wl-1', module: 'MOD-12', label: 'Monitor Mode and Capture', xp: 100 },
-  { id: 'wl-2', module: 'MOD-12', label: 'WPA2 Handshake Crack', xp: 200 },
-  { id: 'wl-3', module: 'MOD-12', label: 'PMKID Attack', xp: 250 },
-  { id: 'wl-4', module: 'MOD-12', label: 'Evil Twin AP', xp: 300 },
-  { id: 'wl-5', module: 'MOD-12', label: 'WPS Pixie Dust', xp: 250 },
-  { id: 'mob-1', module: 'MOD-13', label: 'APK Static Analysis', xp: 150 },
-  { id: 'mob-2', module: 'MOD-13', label: 'MobSF Automated Scan', xp: 150 },
-  { id: 'mob-3', module: 'MOD-13', label: 'Frida SSL Pinning Bypass', xp: 300 },
-  { id: 'mob-4', module: 'MOD-13', label: 'Drozer Component Attack', xp: 250 },
-  { id: 'mob-5', module: 'MOD-13', label: 'ADB Runtime Exploitation', xp: 200 },
+  { id: 'tor-lab', module: 'MOD-01', label: 'Tor Network Lab', xp: 345 },
+  { id: 'osint-lab', module: 'MOD-02', label: 'OSINT Investigation Lab', xp: 130 },
+  { id: 'crypto-lab', module: 'MOD-03', label: 'Crypto Forensics Lab', xp: 120 },
+  { id: 'offensive-lab', module: 'MOD-04', label: 'Offensive Security Lab', xp: 130 },
+  { id: 'active-directory-lab', module: 'MOD-05', label: 'Active Directory Lab', xp: 145 },
+  { id: 'web-attacks-lab', module: 'MOD-06', label: 'Web Attacks Lab', xp: 120 },
+  { id: 'malware-lab', module: 'MOD-07', label: 'Malware Analysis Lab', xp: 130 },
+  { id: 'network-attacks-lab', module: 'MOD-08', label: 'Network Attacks Lab', xp: 125 },
+  { id: 'cloud-security-lab', module: 'MOD-09', label: 'Cloud Security Lab', xp: 145 },
+  { id: 'social-engineering-lab', module: 'MOD-10', label: 'Social Engineering Lab', xp: 120 },
+  { id: 'red-team-lab', module: 'MOD-11', label: 'Red Team Operations Lab', xp: 135 },
+  { id: 'wireless-attacks-lab', module: 'MOD-12', label: 'Wireless Attacks Lab', xp: 135 },
+  { id: 'mobile-security-lab', module: 'MOD-13', label: 'Mobile Security Lab', xp: 130 },
 ]
 
 const RANKS = [
@@ -133,9 +78,15 @@ export default function ProgressTracker() {
   const [noteModule, setNoteModule] = useState('MOD-01')
   const [justEarned, setJustEarned] = useState(0)
 
-  useEffect(() => {
+  const loadProgress = () => {
     const saved = localStorage.getItem('ghostnet_progress')
     if (saved) setProgress(JSON.parse(saved))
+  }
+
+  useEffect(() => {
+    loadProgress()
+    window.addEventListener('ghostnet_progress_updated', loadProgress)
+    return () => window.removeEventListener('ghostnet_progress_updated', loadProgress)
   }, [])
 
   const save = (p: Progress) => {
