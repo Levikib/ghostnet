@@ -444,23 +444,107 @@ function MessageBubble({ msg }: { msg: Message }) {
   )
 }
 
+const WELCOME_MESSAGE: Message = {
+  role: 'assistant',
+  content: `GHOST online.\n\nI'm your embedded security research agent. Ask me anything — concepts, commands, tool syntax, attack vectors, defensive strategies, or anything you're stuck on in your labs.\n\nWhat are you working on?`,
+  timestamp: new Date(),
+}
+
+const RANKS = [
+  { title: 'Script Kiddie', xp: 0 },
+  { title: 'Recon Agent', xp: 500 },
+  { title: 'Threat Hunter', xp: 1500 },
+  { title: 'Exploit Dev', xp: 3000 },
+  { title: 'Red Operator', xp: 5000 },
+  { title: 'Ghost Tier', xp: 8000 },
+  { title: 'Ghost Operative', xp: 12000 },
+  { title: 'Phantom', xp: 18000 },
+  { title: 'Wraith', xp: 26000 },
+  { title: 'Shadow God', xp: 36000 },
+]
+
+function getRankFromXP(xp: number): string {
+  let rank = RANKS[0].title
+  for (const r of RANKS) {
+    if (xp >= r.xp) rank = r.title
+    else break
+  }
+  return rank
+}
+
+function getSkillGuidance(rank: string): string {
+  if (rank === 'Script Kiddie') return 'Explain concepts from first principles, define all jargon, use analogies.'
+  if (rank === 'Recon Agent') return 'Explain concepts clearly but assume basic Linux/networking knowledge.'
+  if (rank === 'Threat Hunter') return 'Assume solid fundamentals, focus on technique depth and tool flags.'
+  if (rank === 'Exploit Dev') return 'Go deep on exploit mechanics, edge cases, and tool internals.'
+  if (rank === 'Red Operator') return 'Advanced adversary simulation focus, operational security, evasion.'
+  if (rank === 'Ghost Tier') return 'Expert level — focus on novel techniques, research, and tooling internals.'
+  if (rank === 'Ghost Operative') return 'Elite — assume deep expertise, engage at research/zero-day discussion level.'
+  if (rank === 'Phantom') return 'Master level — brief, dense, no hand-holding needed.'
+  if (rank === 'Wraith') return 'Grandmaster — peer-level technical exchange, minimal explanation.'
+  return 'Legend tier — engage as a technical peer and research collaborator.'
+}
+
+const HISTORY_KEY = 'ghost_chat_history'
+const HISTORY_MAX = 20
+
+function saveHistory(msgs: Message[]) {
+  try {
+    const toSave = msgs.slice(-HISTORY_MAX).map(m => ({
+      role: m.role,
+      content: m.content,
+      timestamp: m.timestamp.toISOString(),
+    }))
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(toSave))
+  } catch (_) {}
+}
+
+function loadHistory(): Message[] | null {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed) || parsed.length === 0) return null
+    return parsed.map((m: { role: 'user' | 'assistant'; content: string; timestamp: string }) => ({
+      role: m.role,
+      content: m.content,
+      timestamp: new Date(m.timestamp),
+    }))
+  } catch (_) {
+    return null
+  }
+}
+
 export default function GhostAgent() {
   const [open, setOpen] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'assistant',
-      content: `GHOST online.\n\nI'm your embedded security research agent. Ask me anything — concepts, commands, tool syntax, attack vectors, defensive strategies, or anything you're stuck on in your labs.\n\nWhat are you working on?`,
-      timestamp: new Date(),
-    }
-  ])
+  const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [userRank, setUserRank] = useState<{ rank: string; xp: number; labsCompleted: number }>({ rank: 'Script Kiddie', xp: 0, labsCompleted: 0 })
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const pathname = usePathname()
 
   const moduleCtx = getPageContext(pathname)
+
+  // Load history and user progress on mount
+  useEffect(() => {
+    const saved = loadHistory()
+    if (saved && saved.length > 0) {
+      setMessages(saved)
+    }
+
+    try {
+      const raw = localStorage.getItem('ghostnet_progress')
+      if (raw) {
+        const data = JSON.parse(raw)
+        const xp = typeof data.xp === 'number' ? data.xp : 0
+        const labsCompleted = typeof data.labsCompleted === 'number' ? data.labsCompleted : (Array.isArray(data.completedLabs) ? data.completedLabs.length : 0)
+        setUserRank({ rank: getRankFromXP(xp), xp, labsCompleted })
+      }
+    } catch (_) {}
+  }, [])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -470,24 +554,32 @@ export default function GhostAgent() {
     if (open) inputRef.current?.focus()
   }, [open])
 
+  const clearHistory = () => {
+    try { localStorage.removeItem(HISTORY_KEY) } catch (_) {}
+    setMessages([WELCOME_MESSAGE])
+  }
+
   const send = async () => {
     const text = input.trim()
     if (!text || loading) return
 
     const userMsg: Message = { role: 'user', content: text, timestamp: new Date() }
-    setMessages(prev => [...prev, userMsg])
+    const nextMessages = [...messages, userMsg]
+    setMessages(nextMessages)
     setInput('')
     setLoading(true)
     setError('')
 
     try {
-      const history = [...messages, userMsg].map(m => ({ role: m.role, content: m.content }))
+      const history = nextMessages.map(m => ({ role: m.role, content: m.content }))
+
+      const userProfileSection = '## USER PROFILE\nRank: ' + userRank.rank + '\nXP: ' + userRank.xp + '\nLabs completed: ' + userRank.labsCompleted + '\nSkill level guidance: ' + getSkillGuidance(userRank.rank)
 
       const res = await fetch('/api/ghost', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          systemPrompt: `${SYSTEM_PROMPT}\n\nCURRENT MODULE CONTEXT: ${moduleCtx}`,
+          systemPrompt: userProfileSection + '\n\n' + SYSTEM_PROMPT + '\n\nCURRENT MODULE CONTEXT: ' + moduleCtx,
           messages: history,
         }),
       })
@@ -497,7 +589,9 @@ export default function GhostAgent() {
       if (data.error) throw new Error(data.error)
 
       const reply = data.text || 'No response.'
-      setMessages(prev => [...prev, { role: 'assistant', content: reply, timestamp: new Date() }])
+      const finalMessages = [...nextMessages, { role: 'assistant' as const, content: reply, timestamp: new Date() }]
+      setMessages(finalMessages)
+      saveHistory(finalMessages)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Connection failed'
       setError(msg)
@@ -607,11 +701,26 @@ export default function GhostAgent() {
           }}>
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#00ff41', boxShadow: '0 0 8px #00ff41', animation: 'pulse-green 2s infinite', flexShrink: 0 }} />
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '11px', fontWeight: 700, color: '#00d4ff', letterSpacing: '0.15em' }}>GHOST AGENT</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: '#00d4ff', letterSpacing: '0.15em' }}>GHOST AGENT</div>
+                <div style={{
+                  fontSize: '7px', fontWeight: 700, letterSpacing: '0.08em',
+                  padding: '2px 6px', borderRadius: '3px',
+                  background: 'rgba(0,255,65,0.1)', border: '1px solid rgba(0,255,65,0.3)',
+                  color: '#00ff41',
+                }}>{userRank.rank.toUpperCase()}</div>
+              </div>
               <div style={{ fontSize: '8px', color: '#2a5a6a', letterSpacing: '0.1em', marginTop: '1px' }}>
                 {moduleCtx.split('\n')[0].replace('LOCATION:', '').trim().toUpperCase().slice(0, 50)}
               </div>
             </div>
+            <button
+              onClick={clearHistory}
+              title="Clear chat history"
+              style={{ background: 'none', border: '1px solid rgba(255,65,54,0.2)', borderRadius: '3px', cursor: 'pointer', color: '#ff4136', fontSize: '7px', padding: '2px 5px', fontFamily: 'JetBrains Mono, monospace', letterSpacing: '0.05em', opacity: 0.7 }}
+              onMouseEnter={e => { (e.target as HTMLElement).style.opacity = '1'; (e.target as HTMLElement).style.borderColor = 'rgba(255,65,54,0.5)' }}
+              onMouseLeave={e => { (e.target as HTMLElement).style.opacity = '0.7'; (e.target as HTMLElement).style.borderColor = 'rgba(255,65,54,0.2)' }}
+            >CLEAR</button>
             <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2a5a6a', fontSize: '16px', padding: '0 4px', lineHeight: 1 }}>×</button>
           </div>
 
@@ -688,7 +797,7 @@ export default function GhostAgent() {
               </button>
             </div>
             <div style={{ fontSize: '8px', color: '#1a3a3a', marginTop: '6px', letterSpacing: '0.08em' }}>
-              ENTER to send · SHIFT+ENTER for new line · powered by Claude
+              ENTER to send · SHIFT+ENTER for new line · powered by Groq llama-3.3-70b
             </div>
           </div>
         </div>

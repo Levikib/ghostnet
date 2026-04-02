@@ -43,7 +43,7 @@ export default function WirelessAttacks() {
         <span>&#8250;</span><span style={{ color: accent }}>MOD-12 // WIRELESS ATTACKS</span>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
           <span style={{ padding: '3px 10px', background: 'rgba(170,255,0,0.08)', border: '1px solid rgba(170,255,0,0.3)', borderRadius: '3px', color: accent, fontSize: '8px' }}>CONCEPT</span>
-          <Link href="/modules/wireless-attacks/lab" style={{ textDecoration: 'none', padding: '3px 10px', border: '1px solid #1a2010', borderRadius: '3px', color: '#5a6a3a', fontSize: '8px' }}>LAB &#8594;</Link>
+          <Link href="/modules/wireless-attacks/lab" style={{ textDecoration: 'none', padding: '3px 10px', background: 'rgba(170,255,0,0.1)', border: '1px solid rgba(170,255,0,0.5)', borderRadius: '3px', color: '#aaff00', fontSize: '8px', letterSpacing: '0.15em', fontWeight: 700 }}>LAB &#8594;</Link>
         </div>
       </div>
 
@@ -613,9 +613,19 @@ ssh -p 443 user@YOUR_VPS -D 1080  # SOCKS proxy
 # ✓ Guest network isolated from main LAN
 # ✓ Change default admin credentials on router`}</Pre>
 
-      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #2a3800', display: 'flex', justifyContent: 'space-between' }}>
-        <Link href="/" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#5a6a3a' }}>&#8592; DASHBOARD</Link>
-        <Link href="/modules/wireless-attacks/lab" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: accent, padding: '8px 20px', border: 'rgba(170,255,0,0.4) 1px solid', borderRadius: '4px', background: 'rgba(170,255,0,0.06)' }}>PROCEED TO LAB &#8594;</Link>
+      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #1a2e1e' }}>
+        <div style={{ background: 'rgba(170,255,0,0.04)', border: '1px solid rgba(170,255,0,0.2)', borderRadius: '8px', padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: '#3a4a1a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>READY TO PRACTICE?</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1rem', color: '#aaff00', marginBottom: '0.5rem', fontWeight: 600 }}>MOD-12 Interactive Lab</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#5a7a5a', marginBottom: '1.5rem' }}>5 steps &middot; 135 XP &middot; Real commands &middot; Flag captures</div>
+          <Link href="/modules/wireless-attacks/lab" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.85rem', color: '#aaff00', padding: '12px 32px', border: '1px solid rgba(170,255,0,0.6)', borderRadius: '6px', background: 'rgba(170,255,0,0.1)', fontWeight: 700, letterSpacing: '0.12em', boxShadow: '0 0 20px rgba(170,255,0,0.15)', display: 'inline-block' }}>
+            LAUNCH LAB &#8594;
+          </Link>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Link href="/modules/red-team" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a6a3a' }}>&#8592; MOD-11: RED TEAM</Link>
+          <Link href="/modules/mobile-security" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a6a3a' }}>MOD-13: MOBILE SECURITY &#8594;</Link>
+        </div>
       </div>
     </div>
   )

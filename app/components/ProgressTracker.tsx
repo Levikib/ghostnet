@@ -128,7 +128,7 @@ const defaultProgress: Progress = {
 export default function ProgressTracker() {
   const [open, setOpen] = useState(false)
   const [progress, setProgress] = useState<Progress>(defaultProgress)
-  const [tab, setTab] = useState<'progress' | 'notes'>('progress')
+  const [tab, setTab] = useState<'progress' | 'goals' | 'notes'>('progress')
   const [noteText, setNoteText] = useState('')
   const [noteModule, setNoteModule] = useState('MOD-01')
   const [justEarned, setJustEarned] = useState(0)
@@ -151,12 +151,34 @@ export default function ProgressTracker() {
     const newXp = completed ? progress.xp - labXp : progress.xp + labXp
     if (!completed) setJustEarned(labXp)
     setTimeout(() => setJustEarned(0), 2000)
-    save({ ...progress, completedLabs: newCompleted, xp: Math.max(0, newXp), lastActivity: new Date().toISOString() })
+    const nowIso = new Date().toISOString()
+    const prevDay = progress.lastActivity ? new Date(progress.lastActivity).toDateString() : ''
+    const todayStr = new Date().toDateString()
+    const ystStr = new Date(Date.now() - 86400000).toDateString()
+    let newStreak = progress.streak
+    if (!completed) {
+      if (prevDay === ystStr) newStreak = progress.streak + 1
+      else if (prevDay !== todayStr) newStreak = 1
+    }
+    save({ ...progress, completedLabs: newCompleted, xp: Math.max(0, newXp), lastActivity: nowIso, streak: newStreak })
   }
 
   const saveNote = () => {
     save({ ...progress, notes: { ...progress.notes, [noteModule]: noteText } })
   }
+
+  // Streak calculation
+  const today = new Date().toDateString()
+  const lastAct = progress.lastActivity ? new Date(progress.lastActivity).toDateString() : ''
+  const yesterday = new Date(Date.now() - 86400000).toDateString()
+  const streakActive = lastAct === today || lastAct === yesterday
+
+  // Daily goals
+  const dailyGoals = [
+    { id: 'goal-lab', label: 'Complete 1 lab step', done: progress.lastActivity === today },
+    { id: 'goal-3labs', label: 'Complete 3 lab steps today', done: false },
+    { id: 'goal-module', label: 'Finish any full module lab', done: false },
+  ]
 
   const rank = getRank(progress.xp)
   const nextRank = getNextRank(progress.xp)
@@ -228,8 +250,8 @@ export default function ProgressTracker() {
                 </div>
               </div>
             )}
-            <div style={{ display: 'flex', gap: '4px', marginTop: '8px' }}>
-              {(['progress', 'notes'] as const).map(t => (
+            <div style={{ display: 'flex', gap: '4px', marginTop: '8px', flexWrap: 'wrap' as const }}>
+              {(['progress', 'goals', 'notes'] as const).map(t => (
                 <button key={t} onClick={() => setTab(t)} style={{ background: tab === t ? 'rgba(0,255,65,0.1)' : 'transparent', border: '1px solid ' + (tab === t ? 'rgba(0,255,65,0.3)' : '#1a2e1e'), borderRadius: '3px', padding: '2px 8px', cursor: 'pointer', fontSize: '7px', color: tab === t ? '#00ff41' : '#3a6a3a', letterSpacing: '0.1em' }}>{t.toUpperCase()}</button>
               ))}
             </div>
@@ -261,6 +283,50 @@ export default function ProgressTracker() {
                 </div>
               )
             })}
+
+            {tab === 'goals' && (
+              <div>
+                {/* Streak */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', background: streakActive ? 'rgba(255,179,71,0.06)' : 'rgba(0,0,0,0.2)', border: '1px solid ' + (streakActive ? 'rgba(255,179,71,0.2)' : '#1a2e1e'), borderRadius: '6px', marginBottom: '10px' }}>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: streakActive ? 'rgba(255,179,71,0.2)' : 'rgba(58,106,58,0.2)', border: '2px solid ' + (streakActive ? '#ffb347' : '#3a6a3a'), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '13px', color: streakActive ? '#ffb347' : '#3a6a3a' }}>{progress.streak}</div>
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: streakActive ? '#ffb347' : '#3a6a3a' }}>{progress.streak} day streak</div>
+                    <div style={{ fontSize: '7px', color: '#3a6a3a', marginTop: '1px' }}>
+                      {streakActive ? 'Active today — keep it going!' : 'Log in and complete a lab to keep your streak'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Daily goals */}
+                <div style={{ fontSize: '8px', color: '#3a6a3a', letterSpacing: '0.12em', marginBottom: '6px' }}>DAILY GOALS</div>
+                {dailyGoals.map(g => (
+                  <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '5px 6px', borderRadius: '4px', marginBottom: '4px', background: g.done ? 'rgba(0,255,65,0.04)' : 'transparent', border: '1px solid ' + (g.done ? 'rgba(0,255,65,0.15)' : '#1a2e1e') }}>
+                    <div style={{ width: '12px', height: '12px', borderRadius: '3px', border: '1px solid ' + (g.done ? '#00ff41' : '#1a2e1e'), background: g.done ? 'rgba(0,255,65,0.15)' : 'transparent', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {g.done && <span style={{ fontSize: '8px', color: '#00ff41' }}>+</span>}
+                    </div>
+                    <span style={{ fontSize: '0.65rem', color: g.done ? '#8a9a8a' : '#5a7a5a', flex: 1 }}>{g.label}</span>
+                    {g.done && <span style={{ fontSize: '7px', color: '#00ff41' }}>+50 XP</span>}
+                  </div>
+                ))}
+
+                {/* XP summary */}
+                <div style={{ marginTop: '10px', padding: '6px 8px', background: 'rgba(0,255,65,0.04)', borderRadius: '4px', border: '1px solid #1a2e1e' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '7px', color: '#3a6a3a' }}>
+                    <span>TOTAL XP</span><span style={{ color: '#00ff41' }}>{progress.xp.toLocaleString()}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '7px', color: '#3a6a3a', marginTop: '3px' }}>
+                    <span>LABS DONE</span><span>{doneLabs}/{totalLabs}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '7px', color: '#3a6a3a', marginTop: '3px' }}>
+                    <span>RANK</span><span style={{ color: rank.color }}>{rank.title.toUpperCase()}</span>
+                  </div>
+                </div>
+
+                <a href="/leaderboard" style={{ display: 'block', textAlign: 'center', marginTop: '8px', padding: '5px', background: 'rgba(0,212,255,0.06)', border: '1px solid rgba(0,212,255,0.2)', borderRadius: '4px', fontSize: '7px', color: '#00d4ff', textDecoration: 'none', letterSpacing: '0.1em' }}>
+                  VIEW LEADERBOARD &gt;&gt;
+                </a>
+              </div>
+            )}
 
             {tab === 'notes' && (
               <div>

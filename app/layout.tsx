@@ -7,6 +7,7 @@ import GhostAgent from './components/GhostAgent'
 import ProgressTracker from './components/ProgressTracker'
 import CheatSheet from './components/CheatSheet'
 import CVEFeed from './components/CVEFeed'
+import ErrorBoundary from './components/ErrorBoundary'
 import { AuthProvider } from './components/AuthProvider'
 import { createClient } from '../lib/supabase/client'
 
@@ -37,14 +38,14 @@ function NavAuth() {
   if (email) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-        <span style={{ fontFamily: mono, fontSize: '7.5px', color: '#2a6a2a', letterSpacing: '0.08em', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {email.toUpperCase()}
-        </span>
+        <Link href="/profile" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '7.5px', color: '#00ff41', letterSpacing: '0.08em', maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '2px 8px', borderRadius: '3px', border: '1px solid rgba(0,255,65,0.25)', background: 'rgba(0,255,65,0.05)' }}>
+          ◈ {email.toUpperCase()}
+        </Link>
         <button
           onClick={handleLogout}
-          style={{ background: 'transparent', border: '1px solid rgba(255,65,54,0.25)', borderRadius: '3px', padding: '2px 8px', cursor: 'pointer', fontFamily: mono, fontSize: '7px', color: '#3a2020', letterSpacing: '0.1em', transition: 'all 0.15s' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,65,54,0.6)'; (e.currentTarget as HTMLElement).style.color = '#ff4136' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,65,54,0.25)'; (e.currentTarget as HTMLElement).style.color = '#3a2020' }}
+          style={{ background: 'transparent', border: '1px solid rgba(255,65,54,0.4)', borderRadius: '3px', padding: '2px 8px', cursor: 'pointer', fontFamily: mono, fontSize: '7px', color: '#ff4136', letterSpacing: '0.1em', transition: 'all 0.15s' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,65,54,0.1)'; (e.currentTarget as HTMLElement).style.borderColor = '#ff4136' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,65,54,0.4)' }}
         >
           LOGOUT
         </button>
@@ -125,7 +126,7 @@ function Nav() {
           </div>
           <div className="nav-logo-text">
             <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '12px', color: '#00ff41', fontWeight: 700, letterSpacing: '0.12em', lineHeight: 1 }}>GHOSTNET</div>
-            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#1a3a1a', letterSpacing: '0.18em', lineHeight: 1, marginTop: '3px' }}>SECURITY RESEARCH PLATFORM</div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#3a6a3a', letterSpacing: '0.18em', lineHeight: 1, marginTop: '3px' }}>SECURITY RESEARCH PLATFORM</div>
           </div>
         </Link>
 
@@ -138,12 +139,24 @@ function Nav() {
           <Link href="/" style={{
             textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '8px',
             letterSpacing: '0.12em', padding: '5px 11px', borderRadius: '4px', flexShrink: 0,
-            color: isDash ? '#00ff41' : '#2a5a2a',
+            color: isDash ? '#00ff41' : '#4a9a4a',
             background: isDash ? 'rgba(0,255,65,0.07)' : 'transparent',
             border: isDash ? '1px solid rgba(0,255,65,0.25)' : '1px solid transparent',
             transition: 'all 0.15s',
           }}>
             ⌂ DASHBOARD
+          </Link>
+
+          {/* LEADERBOARD */}
+          <Link href="/leaderboard" style={{
+            textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '8px',
+            letterSpacing: '0.12em', padding: '5px 11px', borderRadius: '4px', flexShrink: 0,
+            color: '#00d4ff',
+            background: 'transparent',
+            border: '1px solid transparent',
+            transition: 'all 0.15s',
+          }}>
+            ◈ BOARD
           </Link>
 
           {/* MODULES DROPDOWN */}
@@ -153,7 +166,7 @@ function Nav() {
               border: modulesOpen || !!activeModule ? '1px solid rgba(0,255,65,0.22)' : '1px solid transparent',
               borderRadius: '4px', cursor: 'pointer', padding: '5px 11px',
               fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', letterSpacing: '0.12em',
-              color: modulesOpen || !!activeModule ? '#00ff41' : '#2a5a2a',
+              color: modulesOpen || !!activeModule ? '#00ff41' : '#4a9a4a',
               display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.15s',
             }}>
               ◈ MODULES
@@ -171,11 +184,11 @@ function Nav() {
                     const active = path.startsWith(m.href)
                     return (
                       <div key={m.href} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 8px', borderRadius: '5px', border: active ? `1px solid ${m.color}25` : '1px solid #0a170a', background: active ? `${m.color}07` : '#030a03' }}>
-                        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#1a3a1a', flexShrink: 0, minWidth: '16px' }}>{m.code}</span>
+                        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#3a6a3a', flexShrink: 0, minWidth: '16px' }}>{m.code}</span>
                         <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7.5px', color: m.color, flex: 1, letterSpacing: '0.04em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.label}</span>
                         <div style={{ display: 'flex', gap: '3px', flexShrink: 0 }}>
-                          <Link href={m.href} onClick={() => setModulesOpen(false)} style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '6.5px', padding: '2px 6px', borderRadius: '2px', letterSpacing: '0.08em', color: !isLab && active ? m.color : '#253525', background: !isLab && active ? `${m.color}12` : 'transparent', border: `1px solid ${!isLab && active ? `${m.color}28` : '#0d1d0d'}` }}>CONCEPT</Link>
-                          <Link href={`${m.href}/lab`} onClick={() => setModulesOpen(false)} style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '6.5px', padding: '2px 6px', borderRadius: '2px', letterSpacing: '0.08em', color: isLab && active ? m.color : '#253525', background: isLab && active ? `${m.color}12` : 'transparent', border: `1px solid ${isLab && active ? `${m.color}28` : '#0d1d0d'}` }}>LAB</Link>
+                          <Link href={m.href} onClick={() => setModulesOpen(false)} style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '6.5px', padding: '2px 6px', borderRadius: '2px', letterSpacing: '0.08em', color: !isLab && active ? m.color : '#5a8a5a', background: !isLab && active ? `${m.color}12` : 'transparent', border: `1px solid ${!isLab && active ? `${m.color}28` : '#1a3a1a'}` }}>CONCEPT</Link>
+                          <Link href={`${m.href}/lab`} onClick={() => setModulesOpen(false)} style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '6.5px', padding: '2px 6px', borderRadius: '2px', letterSpacing: '0.08em', color: isLab && active ? m.color : '#5a8a5a', background: isLab && active ? `${m.color}12` : 'transparent', border: `1px solid ${isLab && active ? `${m.color}28` : '#1a3a1a'}` }}>LAB</Link>
                         </div>
                       </div>
                     )
@@ -192,7 +205,7 @@ function Nav() {
               border: toolsOpen ? '1px solid rgba(0,255,65,0.22)' : '1px solid transparent',
               borderRadius: '4px', cursor: 'pointer', padding: '5px 11px',
               fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', letterSpacing: '0.12em',
-              color: toolsOpen ? '#00ff41' : '#2a5a2a',
+              color: toolsOpen ? '#00ff41' : '#4a9a4a',
               display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.15s',
             }}>
               ⚡ TOOLS
@@ -213,9 +226,9 @@ function Nav() {
                     <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: t.color, boxShadow: `0 0 5px ${t.color}`, flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: t.color, letterSpacing: '0.08em', fontWeight: 600 }}>{t.label}</div>
-                      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#1a3a1a', marginTop: '1px' }}>{t.desc}</div>
+                      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#4a7a4a', marginTop: '1px' }}>{t.desc}</div>
                     </div>
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#1a3a1a' }}>→</span>
+                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#4a7a4a' }}>→</span>
                   </Link>
                 ))}
               </div>
@@ -230,8 +243,8 @@ function Nav() {
                 <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#1a3a1a' }}>MOD-{activeModule.code}</span>
                 <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: activeModule.color, letterSpacing: '0.04em', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activeModule.label.toUpperCase()}</span>
                 <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#1a3a1a' }}>›</span>
-                <Link href={activeModule.href} style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', padding: '2px 8px', borderRadius: '3px', color: !isLab ? activeModule.color : '#253525', background: !isLab ? `${activeModule.color}10` : 'transparent', border: `1px solid ${!isLab ? `${activeModule.color}28` : '#0d1d0d'}`, letterSpacing: '0.08em' }}>CONCEPT</Link>
-                <Link href={`${activeModule.href}/lab`} style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', padding: '2px 8px', borderRadius: '3px', color: isLab ? activeModule.color : '#253525', background: isLab ? `${activeModule.color}10` : 'transparent', border: `1px solid ${isLab ? `${activeModule.color}28` : '#0d1d0d'}`, letterSpacing: '0.08em' }}>LAB</Link>
+                <Link href={activeModule.href} style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', padding: '2px 8px', borderRadius: '3px', color: !isLab ? activeModule.color : '#5a8a5a', background: !isLab ? `${activeModule.color}10` : 'transparent', border: `1px solid ${!isLab ? `${activeModule.color}28` : '#1a3a1a'}`, letterSpacing: '0.08em' }}>CONCEPT</Link>
+                <Link href={`${activeModule.href}/lab`} style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', padding: '2px 8px', borderRadius: '3px', color: isLab ? activeModule.color : '#5a8a5a', background: isLab ? `${activeModule.color}10` : 'transparent', border: `1px solid ${isLab ? `${activeModule.color}28` : '#1a3a1a'}`, letterSpacing: '0.08em' }}>LAB</Link>
               </div>
             </>
           )}
@@ -242,7 +255,7 @@ function Nav() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
               <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00ff41', boxShadow: '0 0 8px rgba(0,255,65,0.8)' }} />
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7.5px', color: '#1a5a1a', letterSpacing: '0.1em' }}>GHOST ONLINE</span>
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7.5px', color: '#3a8a3a', letterSpacing: '0.1em' }}>GHOST ONLINE</span>
             </div>
             <NavAuth />
           </div>
@@ -318,6 +331,24 @@ function Nav() {
   )
 }
 
+function OfflineBanner() {
+  const [offline, setOffline] = useState(false)
+  useEffect(() => {
+    const on = () => setOffline(true)
+    const off = () => setOffline(false)
+    window.addEventListener('offline', on)
+    window.addEventListener('online', off)
+    setOffline(!navigator.onLine)
+    return () => { window.removeEventListener('offline', on); window.removeEventListener('online', off) }
+  }, [])
+  if (!offline) return null
+  return (
+    <div style={{ background: 'rgba(255,179,71,0.08)', borderBottom: '1px solid rgba(255,179,71,0.25)', padding: '6px 16px', textAlign: 'center', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: '#ffb347', letterSpacing: '0.1em' }}>
+      OFFLINE MODE — AI features and cloud sync unavailable. Progress saves locally.
+    </div>
+  )
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -326,19 +357,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <AuthProvider>
+          <OfflineBanner />
           <Nav />
           <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '2.5rem 1.5rem', minHeight: 'calc(100vh - 80px)' }}>
-            {children}
+            <ErrorBoundary label="Page">{children}</ErrorBoundary>
           </main>
           <footer style={{ borderTop: '1px solid #0a180a', padding: '1.25rem', textAlign: 'center' }}>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: '#0f2a0f', letterSpacing: '0.25em' }}>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: '#3a6a3a', letterSpacing: '0.25em' }}>
               GHOSTNET // SECURITY RESEARCH PLATFORM // FOR EDUCATIONAL AND AUTHORISED USE ONLY
             </span>
           </footer>
-          <GhostAgent />
-          <ProgressTracker />
-          <CheatSheet />
-          <CVEFeed />
+          <ErrorBoundary label="Ghost Agent"><GhostAgent /></ErrorBoundary>
+          <ErrorBoundary label="Progress Tracker"><ProgressTracker /></ErrorBoundary>
+          <ErrorBoundary label="Cheat Sheet"><CheatSheet /></ErrorBoundary>
+          <ErrorBoundary label="CVE Feed"><CVEFeed /></ErrorBoundary>
         </AuthProvider>
       </body>
     </html>

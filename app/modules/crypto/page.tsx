@@ -64,7 +64,7 @@ export default function CryptoModule() {
         <span style={{ color: '#ffb347' }}>MOD-03 // CRYPTO & BLOCKCHAIN SECURITY</span>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
           <span style={{ padding: '3px 10px', background: 'rgba(255,179,71,0.08)', border: '1px solid rgba(255,179,71,0.3)', borderRadius: '3px', color: '#ffb347', fontSize: '8px', letterSpacing: '0.15em' }}>CONCEPT</span>
-          <Link href="/modules/crypto/lab" style={{ textDecoration: 'none', padding: '3px 10px', background: 'transparent', border: '1px solid #1a2e1e', borderRadius: '3px', color: '#5a7a5a', fontSize: '8px', letterSpacing: '0.15em' }}>LAB →</Link>
+          <Link href="/modules/crypto/lab" style={{ textDecoration: 'none', padding: '3px 10px', background: 'rgba(255,179,71,0.1)', border: '1px solid rgba(255,179,71,0.5)', borderRadius: '3px', color: '#ffb347', fontSize: '8px', letterSpacing: '0.15em', fontWeight: 700 }}>LAB →</Link>
         </div>
       </div>
 
@@ -751,11 +751,19 @@ balance = exchange.fetch_balance()
 orders = exchange.fetch_open_orders('BTC/USDT')`}</Pre>
 
       {/* Footer */}
-      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #2e1e00', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Link href="/modules/osint" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#5a7a5a' }}>← MOD-02: OSINT</Link>
-        <Link href="/modules/crypto/lab" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#ffb347', padding: '8px 20px', border: '1px solid rgba(255,179,71,0.4)', borderRadius: '4px', background: 'rgba(255,179,71,0.06)' }}>
-          PROCEED TO LAB → MOD-03-LAB
-        </Link>
+      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #1a2e1e' }}>
+        <div style={{ background: 'rgba(255,179,71,0.04)', border: '1px solid rgba(255,179,71,0.2)', borderRadius: '8px', padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: '#5a4a1a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>READY TO PRACTICE?</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1rem', color: '#ffb347', marginBottom: '0.5rem', fontWeight: 600 }}>MOD-03 Interactive Lab</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#5a7a5a', marginBottom: '1.5rem' }}>5 steps &middot; 120 XP &middot; Real commands &middot; Flag captures</div>
+          <Link href="/modules/crypto/lab" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.85rem', color: '#ffb347', padding: '12px 32px', border: '1px solid rgba(255,179,71,0.6)', borderRadius: '6px', background: 'rgba(255,179,71,0.1)', fontWeight: 700, letterSpacing: '0.12em', boxShadow: '0 0 20px rgba(255,179,71,0.15)', display: 'inline-block' }}>
+            LAUNCH LAB &#8594;
+          </Link>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Link href="/modules/osint" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a6a3a' }}>&#8592; MOD-02: OSINT</Link>
+          <Link href="/modules/offensive" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a6a3a' }}>MOD-04: OFFENSIVE &#8594;</Link>
+        </div>
       </div>
     </div>
   )

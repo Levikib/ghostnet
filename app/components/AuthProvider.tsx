@@ -190,12 +190,12 @@ export function NavUserBadge() {
         }}>
           <div style={{ padding: '6px 10px 8px', borderBottom: '1px solid #0d1f0d', marginBottom: '4px' }}>
             <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: rankColor, fontWeight: 700 }}>{rank.toUpperCase()}</div>
-            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#2a4a2a', marginTop: '2px' }}>{profile.xp.toLocaleString()} XP · {profile.streak_days}d streak</div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#5a8a5a', marginTop: '2px' }}>{profile.xp.toLocaleString()} XP · {profile.streak_days}d streak</div>
           </div>
-          <a href="/profile" onClick={() => setMenuOpen(false)} style={{ display: 'block', textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: '#3a6a3a', padding: '5px 10px', borderRadius: '3px', letterSpacing: '0.08em' }}>
+          <a href="/profile" onClick={() => setMenuOpen(false)} style={{ display: 'block', textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: '#00ff41', padding: '5px 10px', borderRadius: '3px', letterSpacing: '0.08em' }}>
             ◈ MY PROFILE
           </a>
-          <button onClick={() => { signOut(); setMenuOpen(false) }} style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: '#3a4a3a', padding: '5px 10px', borderRadius: '3px', cursor: 'pointer', letterSpacing: '0.08em' }}>
+          <button onClick={() => { signOut(); setMenuOpen(false) }} style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: '#ff4136', padding: '5px 10px', borderRadius: '3px', cursor: 'pointer', letterSpacing: '0.08em' }}>
             ⎋ SIGN OUT
           </button>
         </div>

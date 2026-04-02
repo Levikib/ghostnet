@@ -49,7 +49,7 @@ export default function SocialEngineering() {
         <span>&#8250;</span><span style={{ color: accent }}>MOD-10 // SOCIAL ENGINEERING</span>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
           <span style={{ padding: '3px 10px', background: 'rgba(255,110,199,0.08)', border: '1px solid rgba(255,110,199,0.3)', borderRadius: '3px', color: accent, fontSize: '8px' }}>CONCEPT</span>
-          <Link href="/modules/social-engineering/lab" style={{ textDecoration: 'none', padding: '3px 10px', border: '1px solid #1a1020', borderRadius: '3px', color: '#6a4a5a', fontSize: '8px' }}>LAB &#8594;</Link>
+          <Link href="/modules/social-engineering/lab" style={{ textDecoration: 'none', padding: '3px 10px', background: 'rgba(255,110,199,0.1)', border: '1px solid rgba(255,110,199,0.5)', borderRadius: '3px', color: '#ff6ec7', fontSize: '8px', letterSpacing: '0.15em', fontWeight: 700 }}>LAB &#8594;</Link>
         </div>
       </div>
 
@@ -599,9 +599,19 @@ sudo setoolkit
         ]}
       />
 
-      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #3a0028', display: 'flex', justifyContent: 'space-between' }}>
-        <Link href="/" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#6a4a5a' }}>&#8592; DASHBOARD</Link>
-        <Link href="/modules/social-engineering/lab" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: accent, padding: '8px 20px', border: 'rgba(255,110,199,0.4) 1px solid', borderRadius: '4px', background: 'rgba(255,110,199,0.06)' }}>PROCEED TO LAB &#8594;</Link>
+      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #1a2e1e' }}>
+        <div style={{ background: 'rgba(255,110,199,0.04)', border: '1px solid rgba(255,110,199,0.2)', borderRadius: '8px', padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: '#5a1a3a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>READY TO PRACTICE?</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1rem', color: '#ff6ec7', marginBottom: '0.5rem', fontWeight: 600 }}>MOD-10 Interactive Lab</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#5a7a5a', marginBottom: '1.5rem' }}>5 steps &middot; 120 XP &middot; Real commands &middot; Flag captures</div>
+          <Link href="/modules/social-engineering/lab" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.85rem', color: '#ff6ec7', padding: '12px 32px', border: '1px solid rgba(255,110,199,0.6)', borderRadius: '6px', background: 'rgba(255,110,199,0.1)', fontWeight: 700, letterSpacing: '0.12em', boxShadow: '0 0 20px rgba(255,110,199,0.15)', display: 'inline-block' }}>
+            LAUNCH LAB &#8594;
+          </Link>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Link href="/modules/cloud-security" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a6a3a' }}>&#8592; MOD-09: CLOUD SECURITY</Link>
+          <Link href="/modules/red-team" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a6a3a' }}>MOD-11: RED TEAM &#8594;</Link>
+        </div>
       </div>
     </div>
   )

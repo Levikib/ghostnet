@@ -237,6 +237,40 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* ── QUICK ACCESS BAR ─────────────────────────────────── */}
+      <div style={{ background: '#030a03', border: '1px solid rgba(0,255,65,0.15)', borderRadius: '8px', padding: '1rem 1.5rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' as const }}>
+        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7.5px', color: '#1a4a1a', letterSpacing: '0.2em', flexShrink: 0 }}>QUICK ACCESS</div>
+        <div style={{ width: '1px', height: '20px', background: '#0d1f0d', flexShrink: 0 }} />
+        {[
+          { label: 'START HERE', href: '/modules/tor', color: '#00ff41', hot: true },
+          { label: 'INTERACTIVE LABS', href: '/modules/tor/lab', color: '#00d4ff', hot: false },
+          { label: 'LEADERBOARD', href: '/leaderboard', color: '#ffb347', hot: false },
+          { label: 'THREAT INTEL', href: '/intel', color: '#ff4136', hot: false },
+          { label: 'PAYLOAD GEN', href: '/payload', color: '#bf5fff', hot: false },
+          { label: 'GHOST AGENT', href: '#ghost', color: '#ff6ec7', hot: false },
+        ].map(item => (
+          <Link
+            key={item.href}
+            href={item.href}
+            style={{
+              textDecoration: 'none',
+              fontFamily: 'JetBrains Mono, monospace',
+              fontSize: '8px',
+              letterSpacing: '0.1em',
+              padding: '5px 14px',
+              borderRadius: '4px',
+              color: item.color,
+              border: '1px solid ' + item.color + (item.hot ? '60' : '30'),
+              background: item.color + (item.hot ? '15' : '08'),
+              boxShadow: item.hot ? '0 0 12px ' + item.color + '25' : 'none',
+              transition: 'all 0.15s',
+            }}
+          >
+            {item.hot ? '[ ' + item.label + ' ]' : item.label}
+          </Link>
+        ))}
+      </div>
+
       {/* ── HOW IT WORKS ─────────────────────────────────────── */}
       <div style={{ background: '#030a03', border: '1px solid #0d1f0d', borderRadius: '8px', padding: '1.75rem 2rem', marginBottom: '3rem' }}>
         <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: '#1a4a1a', letterSpacing: '0.25em', marginBottom: '1.25rem' }}>HOW THIS PLATFORM WORKS</div>
@@ -300,11 +334,11 @@ export default function Dashboard() {
               </div>
 
               <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
-                <Link href={m.href} style={{ textDecoration: 'none', flex: 1, textAlign: 'center' as const, fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', letterSpacing: '0.12em', padding: '8px', borderRadius: '4px', color: m.color, border: '1px solid ' + m.color + '33', background: m.color + '08' }}>
-                  [ CONCEPT ]
+                <Link href={m.href} style={{ textDecoration: 'none', flex: 1, textAlign: 'center' as const, fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', letterSpacing: '0.12em', padding: '8px', borderRadius: '4px', color: m.color + 'aa', border: '1px solid ' + m.color + '22', background: 'transparent' }}>
+                  CONCEPT
                 </Link>
-                <Link href={m.href + '/lab'} style={{ textDecoration: 'none', flex: 1, textAlign: 'center' as const, fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', letterSpacing: '0.12em', padding: '8px', borderRadius: '4px', color: '#1a4a1a', border: '1px solid #0d1f0d', background: 'transparent' }}>
-                  [ LAB → ]
+                <Link href={m.href + '/lab'} style={{ textDecoration: 'none', flex: 1, textAlign: 'center' as const, fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', letterSpacing: '0.12em', padding: '8px', borderRadius: '4px', color: m.color, border: '1px solid ' + m.color + '55', background: m.color + '12', boxShadow: '0 0 10px ' + m.color + '18', fontWeight: 600 }}>
+                  LAUNCH LAB
                 </Link>
               </div>
             </div>
@@ -455,11 +489,11 @@ export default function Dashboard() {
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }}>
-              <Link href={picked.href} style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', letterSpacing: '0.15em', padding: '12px 28px', borderRadius: '5px', color: picked.color, border: '1px solid ' + picked.color + '50', background: picked.color + '12', display: 'block', textAlign: 'center' as const, fontWeight: 600 }}>
-                START CONCEPT →
+              <Link href={picked.href} style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', letterSpacing: '0.15em', padding: '12px 28px', borderRadius: '5px', color: picked.color + 'bb', border: '1px solid ' + picked.color + '30', background: 'transparent', display: 'block', textAlign: 'center' as const }}>
+                READ CONCEPT
               </Link>
-              <Link href={picked.href + '/lab'} style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', letterSpacing: '0.15em', padding: '10px 28px', borderRadius: '5px', color: '#2a5a2a', border: '1px solid #0d1f0d', background: 'transparent', display: 'block', textAlign: 'center' as const }}>
-                JUMP TO LAB →
+              <Link href={picked.href + '/lab'} style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', letterSpacing: '0.15em', padding: '12px 28px', borderRadius: '5px', color: picked.color, border: '1px solid ' + picked.color + '60', background: picked.color + '15', display: 'block', textAlign: 'center' as const, fontWeight: 700, boxShadow: '0 0 16px ' + picked.color + '22' }}>
+                LAUNCH LAB →
               </Link>
             </div>
           </div>

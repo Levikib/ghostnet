@@ -465,11 +465,19 @@ GET /?cachebuster=RANDOM HTTP/1.1
 go install github.com/Hackmanit/Web-Cache-Vulnerability-Scanner@latest
 wcvs -u https://target.com`}</Pre>
 
-      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #003a4a', display: 'flex', justifyContent: 'space-between' }}>
-        <Link href="/" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#5a7a5a' }}>← DASHBOARD</Link>
-        <Link href="/modules/web-attacks/lab" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#00d4ff', padding: '8px 20px', border: '1px solid rgba(0,212,255,0.4)', borderRadius: '4px', background: 'rgba(0,212,255,0.06)' }}>
-          PROCEED TO LAB →
-        </Link>
+      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #1a2e1e' }}>
+        <div style={{ background: 'rgba(0,212,255,0.04)', border: '1px solid rgba(0,212,255,0.2)', borderRadius: '8px', padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: '#1a4a5a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>READY TO PRACTICE?</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1rem', color: '#00d4ff', marginBottom: '0.5rem', fontWeight: 600 }}>MOD-06 Interactive Lab</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#5a7a5a', marginBottom: '1.5rem' }}>5 steps &middot; 120 XP &middot; Real commands &middot; Flag captures</div>
+          <Link href="/modules/web-attacks/lab" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.85rem', color: '#00d4ff', padding: '12px 32px', border: '1px solid rgba(0,212,255,0.6)', borderRadius: '6px', background: 'rgba(0,212,255,0.1)', fontWeight: 700, letterSpacing: '0.12em', boxShadow: '0 0 20px rgba(0,212,255,0.15)', display: 'inline-block' }}>
+            LAUNCH LAB &#8594;
+          </Link>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Link href="/modules/active-directory" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a6a3a' }}>&#8592; MOD-05: ACTIVE DIRECTORY</Link>
+          <Link href="/modules/malware" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a6a3a' }}>MOD-07: MALWARE &#8594;</Link>
+        </div>
       </div>
     </div>
   )
