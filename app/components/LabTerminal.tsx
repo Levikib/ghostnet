@@ -23,6 +23,8 @@ interface Props {
   steps: LabStep[]
   /** Called when all steps complete */
   onComplete?: (totalXp: number) => void
+  /** Called when lab is restarted */
+  onRestart?: () => void
 }
 
 function normalise(s: string) {
@@ -37,7 +39,7 @@ function checkAnswer(input: string, answers: string[]): boolean {
   })
 }
 
-export default function LabTerminal({ labId, moduleId, title, accent, steps, onComplete }: Props) {
+export default function LabTerminal({ labId, moduleId, title, accent, steps, onComplete, onRestart }: Props) {
   const [currentStep, setCurrentStep] = useState(0)
   const [input, setInput] = useState('')
   const [lines, setLines] = useState<{ text: string; type: 'cmd' | 'out' | 'err' | 'sys' | 'flag' }[]>([])
@@ -95,6 +97,29 @@ export default function LabTerminal({ labId, moduleId, title, accent, steps, onC
       step: currentStep,
       done,
     }))
+
+    // Sync to ghostnet_progress so ProgressTracker + Profile stay in sync
+    if (done) {
+      try {
+        const raw = localStorage.getItem('ghostnet_progress')
+        const gp = raw ? JSON.parse(raw) : { completedLabs: [], xp: 0, streak: 0, lastActivity: '', notes: {} }
+        if (!gp.completedLabs.includes(labId)) {
+          gp.completedLabs = [...gp.completedLabs, labId]
+          gp.xp = (gp.xp || 0) + newXp
+          const todayStr = new Date().toDateString()
+          const prevDay = gp.lastActivity ? new Date(gp.lastActivity).toDateString() : ''
+          const ystStr = new Date(Date.now() - 86400000).toDateString()
+          if (prevDay === ystStr) gp.streak = (gp.streak || 0) + 1
+          else if (prevDay !== todayStr) gp.streak = 1
+          gp.lastActivity = new Date().toISOString()
+          localStorage.setItem('ghostnet_progress', JSON.stringify(gp))
+          window.dispatchEvent(new Event('ghostnet_progress_updated'))
+        }
+      } catch {
+        // ignore
+      }
+    }
+
     // Supabase if logged in
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -375,6 +400,21 @@ export default function LabTerminal({ labId, moduleId, title, accent, steps, onC
               setAllDone(false)
               setLines([{ text: 'Lab reset. Starting from step 1...', type: 'sys' }])
               localStorage.removeItem('lab_' + labId)
+              // Remove from ghostnet_progress so XP and completedLabs reset
+              try {
+                const raw = localStorage.getItem('ghostnet_progress')
+                if (raw) {
+                  const gp = JSON.parse(raw)
+                  const removed = gp.completedLabs.includes(labId)
+                  gp.completedLabs = gp.completedLabs.filter((id: string) => id !== labId)
+                  if (removed) {
+                    // Can't reliably subtract XP since we don't know original amount, just leave XP
+                    localStorage.setItem('ghostnet_progress', JSON.stringify(gp))
+                    window.dispatchEvent(new Event('ghostnet_progress_updated'))
+                  }
+                }
+              } catch {}
+              onRestart?.()
             }}
             style={{ background: 'rgba(0,255,65,0.05)', border: '1px solid rgba(0,255,65,0.2)', borderRadius: '4px', padding: '3px 10px', cursor: 'pointer', fontFamily: mono, fontSize: '7px', color: '#00ff41', letterSpacing: '0.1em' }}
           >
