@@ -1,9 +1,14 @@
 'use client'
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import LabTerminal, { LabStep } from '../../../components/LabTerminal'
+import FreeLabTerminal from '../../../components/FreeLabTerminal'
 
 const accent = '#aaff00'
+const moduleId = 'wireless-attacks'
+const moduleName = 'Wireless Attacks'
+const moduleNum = '12'
+const xpTotal = 135
 
 const steps: LabStep[] = [
   {
@@ -56,35 +61,190 @@ const steps: LabStep[] = [
 ]
 
 export default function WirelessAttacksLab() {
+  const [guidedDone, setGuidedDone] = useState(false)
+  const [freeLaunched, setFreeLaunched] = useState(false)
+  const [earnedXp, setEarnedXp] = useState(0)
+  const [showKeywords, setShowKeywords] = useState(false)
+
+  useEffect(() => {
+    const saved = localStorage.getItem('lab_wireless-attacks-lab')
+    if (saved) {
+      const d = JSON.parse(saved)
+      if (d.done) { setGuidedDone(true); setEarnedXp(d.xp || 0) }
+    }
+  }, [])
+
   return (
     <div>
+      {/* Breadcrumb */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: '#4a6a00' }}>
         <Link href="/" style={{ color: '#4a6a00', textDecoration: 'none' }}>GHOSTNET</Link>
         <span>&#8250;</span>
         <Link href="/modules/wireless-attacks" style={{ color: '#4a6a00', textDecoration: 'none' }}>WIRELESS ATTACKS</Link>
         <span>&#8250;</span>
         <span style={{ color: accent }}>LAB</span>
-      </div>
-
-      <div style={{ marginBottom: '2rem' }}>
-        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: '#4a6a00', letterSpacing: '0.2em', marginBottom: '0.5rem' }}>MOD-12 &#8250; INTERACTIVE LAB</div>
-        <h1 style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.6rem', fontWeight: 700, color: accent, margin: 0 }}>Wireless Attacks Lab</h1>
-        <p style={{ color: '#6a7a4a', fontSize: '0.85rem', marginTop: '0.75rem', lineHeight: 1.7 }}>
-          Monitor mode, WPA2 handshake capture, hashcat cracking, evil twin attacks, and Bluetooth recon.
-          Complete all 5 steps to earn 135 XP.
-        </p>
-        <div style={{ marginTop: '1rem', background: 'rgba(0,0,0,0.3)', border: '1px solid #aaff0022', borderRadius: '6px', padding: '1rem 1.25rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#5a8a5a', lineHeight: 1.8 }}>
-          <span style={{ color: accent, fontWeight: 600 }}>HOW TO USE THIS LAB:</span> Read each step objective, type the command or answer in the terminal below, and press Enter. Type <span style={{ color: '#ffb347' }}>hint</span> if you get stuck. Earn XP and capture flags on key steps. Progress saves automatically.
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px', alignItems: 'center' }}>
+          <Link href="/modules/wireless-attacks" style={{ textDecoration: 'none', padding: '3px 10px', border: '1px solid #2a3a00', borderRadius: '3px', color: '#4a6a00', fontSize: '7.5px', letterSpacing: '0.1em' }}>&#8592; CONCEPT</Link>
+          <span style={{ padding: '3px 10px', background: 'rgba(170,255,0,0.1)', border: '1px solid rgba(170,255,0,0.4)', borderRadius: '3px', color: accent, fontSize: '7.5px', letterSpacing: '0.1em', fontWeight: 700 }}>LAB ACTIVE</span>
         </div>
       </div>
 
-      <LabTerminal
-        labId="wireless-attacks-lab"
-        moduleId="wireless-attacks"
-        title="Wireless Attacks Lab"
-        accent={accent}
-        steps={steps}
-      />
+      {/* Progress banner */}
+      <div style={{ background: 'rgba(170,255,0,0.04)', border: '1px solid rgba(170,255,0,0.15)', borderRadius: '6px', padding: '10px 16px', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '6px' }}>
+          {[{ label: 'PHASE 1', done: true, active: !guidedDone }, { label: 'PHASE 2', done: guidedDone, active: guidedDone }].map((p, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: p.done ? accent : '#2a3a00', border: p.active ? '2px solid ' + accent : '1px solid #2a3a00', boxShadow: p.active ? '0 0 6px ' + accent : 'none' }} />
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: p.done ? accent : '#3a5a00', letterSpacing: '0.1em' }}>{p.label}</span>
+              {i === 0 && <span style={{ fontSize: '7px', color: '#2a3a00', margin: '0 2px' }}>—</span>}
+            </div>
+          ))}
+        </div>
+        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7.5px', color: '#6a7a40' }}>
+          MOD-{moduleNum} &nbsp;·&nbsp; {moduleName.toUpperCase()} &nbsp;·&nbsp; {xpTotal} XP AVAILABLE
+        </div>
+        {guidedDone && (
+          <div style={{ marginLeft: 'auto', fontFamily: 'JetBrains Mono, monospace', fontSize: '7.5px', color: accent, fontWeight: 700 }}>
+            &#10003; GUIDED PHASE COMPLETE — LAUNCH FREE LAB BELOW
+          </div>
+        )}
+      </div>
+
+      {/* PHASE 1 */}
+      <div style={{ marginBottom: '3rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.25rem' }}>
+          <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'rgba(170,255,0,0.1)', border: '1px solid rgba(170,255,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '10px', color: accent, fontWeight: 700 }}>1</span>
+          </div>
+          <div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: '#3a5a00', letterSpacing: '0.2em', marginBottom: '2px' }}>PHASE 1 — GUIDED LEARNING</div>
+            <h1 style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.4rem', fontWeight: 700, color: accent, margin: 0 }}>Wireless Attacks Lab</h1>
+          </div>
+        </div>
+
+        <p style={{ color: '#6a7a4a', fontSize: '0.85rem', marginBottom: '1rem', lineHeight: 1.7, fontFamily: 'JetBrains Mono, monospace' }}>
+          Monitor mode, WPA2 handshake capture, hashcat cracking, evil twin attacks, and Bluetooth recon.
+          Type real commands, earn XP, and capture flags. Complete all 5 steps to unlock Phase 2.
+        </p>
+
+        <div style={{ background: 'rgba(170,255,0,0.03)', border: '1px solid rgba(170,255,0,0.12)', borderRadius: '6px', padding: '1rem 1.25rem', marginBottom: '1.25rem', fontFamily: 'JetBrains Mono, monospace' }}>
+          <div style={{ fontSize: '7px', color: '#2a3a00', letterSpacing: '0.25em', marginBottom: '8px' }}>KEY CONCEPTS COVERED IN THIS LAB</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {['Monitor mode', 'WPA2 handshake', 'PMKID attack', 'Hashcat cracking', 'Evil twin AP', 'Deauth attacks', 'Bluetooth scanning', 'WPS vulnerabilities'].map(c => (
+              <span key={c} style={{ fontSize: '7.5px', color: '#6a7a40', background: 'rgba(170,255,0,0.06)', border: '1px solid rgba(170,255,0,0.12)', padding: '2px 8px', borderRadius: '3px' }}>{c}</span>
+            ))}
+          </div>
+        </div>
+
+        <LabTerminal
+          labId="wireless-attacks-lab"
+          moduleId={moduleId}
+          title="Wireless Attacks Lab"
+          accent={accent}
+          steps={steps}
+          onComplete={(xp) => { setGuidedDone(true); setEarnedXp(xp) }}
+        />
+      </div>
+
+      {/* PHASE 2 */}
+      <div id="free-lab" style={{ marginBottom: '3rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.25rem' }}>
+          <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: guidedDone ? 'rgba(170,255,0,0.15)' : 'rgba(0,0,0,0.3)', border: '1px solid ' + (guidedDone ? 'rgba(170,255,0,0.4)' : '#2a3a00'), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '10px', color: guidedDone ? accent : '#3a5a00', fontWeight: 700 }}>2</span>
+          </div>
+          <div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: guidedDone ? '#6a7a40' : '#3a5a00', letterSpacing: '0.2em', marginBottom: '2px' }}>PHASE 2 — FREE LAB ENVIRONMENT</div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.1rem', fontWeight: 700, color: guidedDone ? accent : '#3a5a00' }}>Full Wireless Attacks Practice Sandbox</div>
+          </div>
+          {guidedDone && !freeLaunched && (
+            <div style={{ marginLeft: 'auto', fontFamily: 'JetBrains Mono, monospace', fontSize: '7.5px', color: '#ffb347', background: 'rgba(255,179,71,0.08)', border: '1px solid rgba(255,179,71,0.2)', padding: '3px 10px', borderRadius: '3px' }}>
+              GUIDED PHASE COMPLETE
+            </div>
+          )}
+        </div>
+
+        {!freeLaunched ? (
+          <div style={{ background: guidedDone ? 'rgba(170,255,0,0.04)' : '#050600', border: '1px solid ' + (guidedDone ? 'rgba(170,255,0,0.25)' : '#151a00'), borderRadius: '10px', padding: '2.5rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+            {guidedDone && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg, transparent, ' + accent + ', transparent)' }} />}
+            <div style={{ fontSize: '7px', color: guidedDone ? '#6a7a40' : '#2a3a00', letterSpacing: '0.3em', marginBottom: '1rem' }}>
+              {guidedDone ? 'READY FOR COMPREHENSIVE TESTING' : 'COMPLETE GUIDED PHASE TO UNLOCK'}
+            </div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.2rem', color: guidedDone ? accent : '#3a5a00', fontWeight: 700, marginBottom: '0.5rem' }}>
+              LAUNCH FULL LAB ENVIRONMENT
+            </div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', color: '#6a7a40', marginBottom: '0.75rem', lineHeight: 1.7 }}>
+              Free-form terminal sandbox for Wireless Attacks
+            </div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: '#3a5a00', marginBottom: '2rem', lineHeight: 1.7 }}>
+              Command history &nbsp;·&nbsp; Tab autocomplete &nbsp;·&nbsp; Real command simulation &nbsp;·&nbsp; No restrictions
+            </div>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '2rem' }}>
+              {['aircrack-ng suite', 'wifiphisher attacks', 'Bluetooth recon', 'WPS cracking', 'PMKID capture', 'Hashcat GPU cracking'].map(feat => (
+                <div key={feat} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: guidedDone ? accent : '#2a3a00' }} />
+                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7.5px', color: guidedDone ? '#6a7a40' : '#2a3a00' }}>{feat}</span>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => guidedDone && setFreeLaunched(true)}
+              disabled={!guidedDone}
+              style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.9rem', fontWeight: 700, letterSpacing: '0.15em', padding: '14px 40px', border: '1px solid ' + (guidedDone ? 'rgba(170,255,0,0.6)' : '#2a3a00'), borderRadius: '6px', background: guidedDone ? 'rgba(170,255,0,0.12)' : 'transparent', color: guidedDone ? accent : '#2a3a00', cursor: guidedDone ? 'pointer' : 'not-allowed', boxShadow: guidedDone ? '0 0 24px rgba(170,255,0,0.18)' : 'none', transition: 'all 0.2s' }}
+            >
+              {guidedDone ? '&#9658; LAUNCH FREE LAB ENVIRONMENT' : '&#128274; COMPLETE GUIDED PHASE FIRST'}
+            </button>
+            {!guidedDone && <div style={{ marginTop: '1rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#2a3a00' }}>Complete all 5 guided steps above to unlock the free lab environment</div>}
+          </div>
+        ) : (
+          <div style={{ border: '1px solid ' + accent + '30', borderRadius: '10px', overflow: 'hidden', background: '#050600' }}>
+            <FreeLabTerminal moduleId={moduleId} moduleName={moduleName} accent={accent} onClose={() => setFreeLaunched(false)} />
+            <div style={{ padding: '8px 16px', background: '#070800', borderTop: '1px solid ' + accent + '15', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: accent, boxShadow: '0 0 5px ' + accent }} />
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7.5px', color: '#3a5a00' }}>
+                You are in free practice mode. Ask <span style={{ color: accent }}>GHOST AGENT</span> (bottom-right) for hints on any wireless attack technique.
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Quick reference */}
+      <div style={{ marginBottom: '2rem' }}>
+        <button onClick={() => setShowKeywords(!showKeywords)} style={{ background: 'transparent', border: '1px solid #2a3a00', borderRadius: '5px', padding: '8px 16px', cursor: 'pointer', fontFamily: 'JetBrains Mono, monospace', fontSize: '7.5px', color: '#3a5a00', letterSpacing: '0.1em', marginBottom: showKeywords ? '12px' : 0 }}>
+          {showKeywords ? '▼' : '▶'} QUICK REFERENCE — WIRELESS COMMANDS
+        </button>
+        {showKeywords && (
+          <div style={{ background: '#050600', border: '1px solid #151a00', borderRadius: '6px', padding: '1.25rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '8px' }}>
+              {[
+                ['airmon-ng check kill && airmon-ng start wlan0', 'Enable monitor mode cleanly'],
+                ['airodump-ng wlan0mon', 'Scan for nearby networks'],
+                ['airodump-ng --bssid BSSID -c CHAN -w cap wlan0mon', 'Capture target AP traffic'],
+                ['aireplay-ng --deauth 5 -a BSSID wlan0mon', 'Force client reconnection for handshake'],
+                ['hcxpcapngtool cap.cap -o hash.hcwpax', 'Convert capture to hashcat format'],
+                ['hashcat -m 22000 hash.hcwpax rockyou.txt', 'Crack WPA2 with wordlist'],
+                ['wifiphisher -e "TargetSSID" -aI wlan0mon -kI wlan1', 'Evil twin with captive portal'],
+                ['hcitool scan', 'Scan for Bluetooth devices'],
+                ['hcitool lescan', 'Scan for BLE devices'],
+                ['reaver -i wlan0mon -b BSSID -vv', 'WPS brute force attack'],
+                ['wash -i wlan0mon', 'Find WPS-enabled APs'],
+                ['airbase-ng -e "FreeWifi" -c 6 wlan0mon', 'Create fake open AP'],
+              ].map(([cmd, desc]) => (
+                <div key={cmd} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', padding: '6px 8px', background: '#030400', borderRadius: '4px' }}>
+                  <code style={{ color: accent, fontSize: '0.72rem', flexShrink: 0 }}>{cmd}</code>
+                  <span style={{ color: '#6a7a40', fontSize: '0.7rem' }}>{desc}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Footer nav */}
+      <div style={{ paddingTop: '2rem', borderTop: '1px solid #151a00', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+        <Link href="/modules/wireless-attacks" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a5a00' }}>&#8592; BACK TO CONCEPT</Link>
+        <Link href="/modules/mobile-security/lab" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a5a00' }}>MOD-13 MOBILE SECURITY LAB &#8594;</Link>
+      </div>
     </div>
   )
 }
