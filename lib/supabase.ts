@@ -88,7 +88,7 @@ export function getRank(xp: number): GhostRank {
 }
 
 export const RANK_COLORS: Record<GhostRank, string> = {
-  Ghost:   '#2a6a2a',
+  Ghost:   '#4a9a4a',
   Specter: '#00d4ff',
   Phantom: '#bf5fff',
   Wraith:  '#ff4136',
