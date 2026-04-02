@@ -289,7 +289,7 @@ export default function AttackPathPage() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px', alignItems: 'start' }} className="grid-sidebar-right">
         {/* Left — Builder */}
         <div>
           {/* Path name + presets */}

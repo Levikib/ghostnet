@@ -3,6 +3,8 @@
 ## Stack
 Next.js 14 (App Router), TypeScript, Tailwind, JetBrains Mono font, terminal/hacker aesthetic.
 Babel compiler (NOT SWC) — .babelrc exists, do not remove it.
+Supabase — auth, postgres, realtime. Client: lib/supabase.ts (browser), lib/supabase-server.ts (API routes only).
+Groq API — llama-3.3-70b-versatile, 2048 max tokens, via /api/ghost route.
 
 ## Critical Rules
 - NEVER use template literals with bash variables like ${VAR} inside JSX/TSX — use string concatenation or replace with placeholder text like ADDR_HERE
@@ -29,11 +31,22 @@ app/
     red-team/           — MOD-11 #ff3333
     wireless-attacks/   — MOD-12 #aaff00
     mobile-security/    — MOD-13 #7c4dff
+  auth/page.tsx         — Login/register page (works offline if Supabase not configured)
+  profile/page.tsx      — User profile, badges, lab history
   components/
     GhostAgent.tsx      — AI chat widget, bottom-right, uses Groq API via /api/ghost
     ProgressTracker.tsx — XP tracker, bottom-left above CheatSheet
     CheatSheet.tsx      — Quick ref, bottom-left lowest
     CVEFeed.tsx         — Live CVEs, bottom-right above GhostAgent
+    AuthProvider.tsx    — Supabase auth context + NavUserBadge (rank pill in nav)
+lib/
+  supabase.ts           — Browser Supabase client, type defs, rank utils
+  supabase-server.ts    — Server-side Supabase client (API routes only)
+supabase-schema.sql     — Full DB schema + seed (run in Supabase SQL Editor)
+api/
+  ghost/route.ts        — Groq AI chat endpoint
+  progress/route.ts     — Lab completion + XP award (POST) / progress fetch (GET)
+  auth/callback/route.ts — Email confirmation redirect handler
 
 ## Floating Widget Layout (FIXED positions — do not change)
 Bottom-left stack (no overlap):

@@ -560,11 +560,19 @@ export default function GhostAgent() {
 
   return (
     <>
+      <style>{`
+        .ghost-btn{position:fixed;bottom:24px;right:24px;z-index:9000}
+        .ghost-panel{position:fixed;bottom:70px;right:24px;z-index:9001;width:420px;max-height:60vh}
+        @media(max-width:768px){
+          .ghost-btn{bottom:12px;right:12px}
+          .ghost-panel{bottom:54px;right:8px;left:8px;width:auto;max-height:70vh}
+        }
+      `}</style>
       {/* Floating trigger button */}
       <button
         onClick={() => setOpen(!open)}
+        className="ghost-btn"
         style={{
-          position: 'fixed', bottom: '24px', right: '24px', zIndex: 9000,
           height: '32px', borderRadius: '6px',
           background: open ? 'rgba(0,212,255,0.12)' : 'rgba(0,255,65,0.08)',
           border: '1px solid ' + (open ? 'rgba(0,212,255,0.5)' : 'rgba(0,255,65,0.35)'),
@@ -581,9 +589,7 @@ export default function GhostAgent() {
 
       {/* Chat panel */}
       {open && (
-        <div style={{
-          position: 'fixed', bottom: '70px', right: '24px', zIndex: 9001,
-          width: '420px', maxHeight: '60vh',
+        <div className="ghost-panel" style={{
           background: '#080c0a',
           border: '1px solid rgba(0,212,255,0.2)',
           borderRadius: '10px',

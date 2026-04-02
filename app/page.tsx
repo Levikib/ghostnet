@@ -240,7 +240,7 @@ export default function Dashboard() {
       {/* ── HOW IT WORKS ─────────────────────────────────────── */}
       <div style={{ background: '#030a03', border: '1px solid #0d1f0d', borderRadius: '8px', padding: '1.75rem 2rem', marginBottom: '3rem' }}>
         <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: '#1a4a1a', letterSpacing: '0.25em', marginBottom: '1.25rem' }}>HOW THIS PLATFORM WORKS</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem' }}>
+        <div className="grid-4-responsive" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem' }}>
           {[
             { num: '01', title: 'PICK A MODULE', body: 'Choose from 13 topics across the full offensive security spectrum — from beginner anonymity to expert red team ops.', color: '#00ff41' },
             { num: '02', title: 'READ THE CONCEPT', body: 'Deep-dive documentation: theory, tools, commands, and real-world examples. Understand the why, not just the how.', color: '#00d4ff' },
@@ -273,7 +273,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+        <div className="grid-3-responsive" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
           {MODULES.map(m => (
             <div key={m.href} style={{ background: '#030a03', border: '1px solid ' + m.color + '18', borderRadius: '8px', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '10px', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg, transparent, ' + m.color + '40, transparent)' }} />
@@ -379,7 +379,7 @@ export default function Dashboard() {
       <div style={{ background: '#030a03', border: '1px solid #0d1f0d', borderRadius: '8px', padding: '1.75rem 2rem', marginBottom: '3rem' }}>
         <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: '#1a4a1a', letterSpacing: '0.25em', marginBottom: '4px' }}>WHERE TO START</div>
         <h2 style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1rem', color: '#00ff41', margin: '0 0 1.25rem', fontWeight: 600, letterSpacing: '0.1em' }}>RECOMMENDED LEARNING PATHS</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem' }}>
+        <div className="grid-3-responsive" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem' }}>
           {[
             {
               title: 'COMPLETE BEGINNER',
@@ -421,7 +421,7 @@ export default function Dashboard() {
         </p>
 
         {/* Module selector grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '1.5rem' }}>
+        <div className="grid-4-responsive" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '1.5rem' }}>
           {MODULES.map(m => (
             <button
               key={m.href}

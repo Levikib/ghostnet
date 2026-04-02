@@ -177,10 +177,18 @@ export default function ProgressTracker() {
         </div>
       )}
 
+      <style>{`
+        .pt-btn{position:fixed;bottom:62px;left:24px;z-index:9000}
+        .pt-panel{position:fixed;bottom:100px;left:24px;z-index:9001;width:320px;max-height:40vh}
+        @media(max-width:768px){
+          .pt-btn{bottom:54px;left:8px}
+          .pt-panel{bottom:96px;left:8px;right:8px;width:auto;max-height:55vh}
+        }
+      `}</style>
       <button
         onClick={() => setOpen(!open)}
+        className="pt-btn"
         style={{
-          position: 'fixed', bottom: '62px', left: '24px', zIndex: 9000,
           background: 'rgba(0,255,65,0.08)', border: '1px solid rgba(0,255,65,0.3)',
           borderRadius: '6px', padding: '4px 10px', cursor: 'pointer',
           fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: '#00ff41',
@@ -193,9 +201,7 @@ export default function ProgressTracker() {
       </button>
 
       {open && (
-        <div style={{
-          position: 'fixed', bottom: '100px', left: '24px', zIndex: 9001,
-          width: '320px', maxHeight: '40vh',
+        <div className="pt-panel" style={{
           background: '#080c0a', border: '1px solid rgba(0,255,65,0.2)',
           borderRadius: '10px', display: 'flex', flexDirection: 'column',
           fontFamily: 'JetBrains Mono, monospace', overflow: 'hidden',
