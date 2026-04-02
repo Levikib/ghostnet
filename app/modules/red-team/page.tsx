@@ -30,7 +30,7 @@ export default function RedTeam() {
         <span>›</span><span style={{ color: accent }}>RED TEAM OPERATIONS</span>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
           <span style={{ padding: '3px 10px', background: `rgba(255,51,51,0.08)`, border: `1px solid rgba(255,51,51,0.3)`, borderRadius: '3px', color: accent, fontSize: '8px' }}>CONCEPT</span>
-          <Link href="/modules/red-team/lab" style={{ textDecoration: 'none', padding: '3px 10px', border: '1px solid #1a1010', borderRadius: '3px', color: '#6a3a3a', fontSize: '8px' }}>LAB →</Link>
+          <Link href="/modules/red-team/lab" style={{ textDecoration: 'none', padding: '3px 10px', background: 'rgba(255,51,51,0.1)', border: '1px solid rgba(255,51,51,0.5)', borderRadius: '3px', color: '#ff3333', fontSize: '8px', letterSpacing: '0.15em', fontWeight: 700 }}>LAB →</Link>
         </div>
       </div>
 
@@ -319,9 +319,19 @@ for i, chunk in enumerate(chunks):
 # steghide embed -cf image.jpg -sf secret.txt
 # Image uploaded normally → your server downloads → extract`}</Pre>
 
-      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: `1px solid #3a0000`, display: 'flex', justifyContent: 'space-between' }}>
-        <Link href="/" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#6a3a3a' }}>← DASHBOARD</Link>
-        <Link href="/modules/red-team/lab" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: accent, padding: '8px 20px', border: `1px solid rgba(255,51,51,0.4)`, borderRadius: '4px', background: `rgba(255,51,51,0.06)` }}>PROCEED TO LAB →</Link>
+      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #1a2e1e' }}>
+        <div style={{ background: 'rgba(255,51,51,0.04)', border: '1px solid rgba(255,51,51,0.2)', borderRadius: '8px', padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: '#5a1a1a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>READY TO PRACTICE?</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1rem', color: '#ff3333', marginBottom: '0.5rem', fontWeight: 600 }}>MOD-11 Interactive Lab</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#5a7a5a', marginBottom: '1.5rem' }}>5 steps &middot; 135 XP &middot; Real commands &middot; Flag captures</div>
+          <Link href="/modules/red-team/lab" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.85rem', color: '#ff3333', padding: '12px 32px', border: '1px solid rgba(255,51,51,0.6)', borderRadius: '6px', background: 'rgba(255,51,51,0.1)', fontWeight: 700, letterSpacing: '0.12em', boxShadow: '0 0 20px rgba(255,51,51,0.15)', display: 'inline-block' }}>
+            LAUNCH LAB &#8594;
+          </Link>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Link href="/modules/social-engineering" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a6a3a' }}>&#8592; MOD-10: SOCIAL ENGINEERING</Link>
+          <Link href="/modules/wireless-attacks" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a6a3a' }}>MOD-12: WIRELESS &#8594;</Link>
+        </div>
       </div>
     </div>
   )

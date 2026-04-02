@@ -30,7 +30,7 @@ export default function NetworkAttacks() {
         <span>›</span><span style={{ color: accent }}>NETWORK ATTACKS</span>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
           <span style={{ padding: '3px 10px', background: `rgba(0,255,255,0.08)`, border: `1px solid rgba(0,255,255,0.3)`, borderRadius: '3px', color: accent, fontSize: '8px' }}>CONCEPT</span>
-          <Link href="/modules/network-attacks/lab" style={{ textDecoration: 'none', padding: '3px 10px', border: '1px solid #1a2e2e', borderRadius: '3px', color: '#5a7a7a', fontSize: '8px' }}>LAB →</Link>
+          <Link href="/modules/network-attacks/lab" style={{ textDecoration: 'none', padding: '3px 10px', background: 'rgba(0,255,255,0.1)', border: '1px solid rgba(0,255,255,0.5)', borderRadius: '3px', color: '#00ffff', fontSize: '8px', letterSpacing: '0.15em', fontWeight: 700 }}>LAB →</Link>
         </div>
       </div>
 
@@ -398,9 +398,19 @@ def http_header(pkt):
 
 sniff(filter="tcp port 80", prn=http_header)`}</Pre>
 
-      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: `1px solid #003a3a`, display: 'flex', justifyContent: 'space-between' }}>
-        <Link href="/" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#5a7a7a' }}>← DASHBOARD</Link>
-        <Link href="/modules/network-attacks/lab" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: accent, padding: '8px 20px', border: `1px solid rgba(0,255,255,0.4)`, borderRadius: '4px', background: `rgba(0,255,255,0.06)` }}>PROCEED TO LAB →</Link>
+      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #1a2e1e' }}>
+        <div style={{ background: 'rgba(0,255,255,0.04)', border: '1px solid rgba(0,255,255,0.2)', borderRadius: '8px', padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: '#1a4a4a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>READY TO PRACTICE?</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1rem', color: '#00ffff', marginBottom: '0.5rem', fontWeight: 600 }}>MOD-08 Interactive Lab</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#5a7a5a', marginBottom: '1.5rem' }}>5 steps &middot; 125 XP &middot; Real commands &middot; Flag captures</div>
+          <Link href="/modules/network-attacks/lab" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.85rem', color: '#00ffff', padding: '12px 32px', border: '1px solid rgba(0,255,255,0.6)', borderRadius: '6px', background: 'rgba(0,255,255,0.1)', fontWeight: 700, letterSpacing: '0.12em', boxShadow: '0 0 20px rgba(0,255,255,0.15)', display: 'inline-block' }}>
+            LAUNCH LAB &#8594;
+          </Link>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Link href="/modules/malware" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a6a3a' }}>&#8592; MOD-07: MALWARE</Link>
+          <Link href="/modules/cloud-security" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a6a3a' }}>MOD-09: CLOUD SECURITY &#8594;</Link>
+        </div>
       </div>
     </div>
   )

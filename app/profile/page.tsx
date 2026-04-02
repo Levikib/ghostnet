@@ -79,10 +79,30 @@ export default function ProfilePage() {
     loadData()
   }, [user, isSupabaseConfigured])
 
-  if (loading || !user || !profile) {
+  if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', fontFamily: 'JetBrains Mono, monospace', color: '#2a5a2a', fontSize: '0.8rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', fontFamily: 'JetBrains Mono, monospace', color: '#4a8a4a', fontSize: '0.8rem' }}>
         LOADING PROFILE...
+      </div>
+    )
+  }
+
+  // User exists but profile row not found — show a fallback with their email
+  if (user && !profile) {
+    return (
+      <div style={{ maxWidth: '600px', margin: '4rem auto', fontFamily: 'JetBrains Mono, monospace' }}>
+        <div style={{ background: '#030a03', border: '1px solid #00ff4122', borderRadius: '10px', padding: '2rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '2rem', color: '#00ff41', marginBottom: '1rem' }}>◈</div>
+          <div style={{ fontSize: '1rem', color: '#00ff41', marginBottom: '0.5rem' }}>OPERATOR LOGGED IN</div>
+          <div style={{ fontSize: '0.75rem', color: '#4a8a4a', marginBottom: '1.5rem' }}>{user.email}</div>
+          <div style={{ fontSize: '0.68rem', color: '#3a6a3a', lineHeight: 1.6, marginBottom: '1.5rem' }}>
+            Profile data not found. This usually means the Supabase schema has not been applied yet,
+            or your account was created before the user_profiles table existed.
+          </div>
+          <div style={{ fontSize: '0.68rem', color: '#2a5a2a' }}>
+            Run the schema from <span style={{ color: '#ffb347' }}>supabase-schema.sql</span> in your Supabase SQL editor to enable full profile tracking.
+          </div>
+        </div>
       </div>
     )
   }

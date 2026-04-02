@@ -43,7 +43,7 @@ export default function MobileSecurity() {
         <span>&#8250;</span><span style={{ color: accent }}>MOD-13 // MOBILE SECURITY</span>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
           <span style={{ padding: '3px 10px', background: 'rgba(124,77,255,0.08)', border: '1px solid rgba(124,77,255,0.3)', borderRadius: '3px', color: accent, fontSize: '8px' }}>CONCEPT</span>
-          <Link href="/modules/mobile-security/lab" style={{ textDecoration: 'none', padding: '3px 10px', border: '1px solid #1a1030', borderRadius: '3px', color: '#4a3a6a', fontSize: '8px' }}>LAB &#8594;</Link>
+          <Link href="/modules/mobile-security/lab" style={{ textDecoration: 'none', padding: '3px 10px', background: 'rgba(124,77,255,0.1)', border: '1px solid rgba(124,77,255,0.5)', borderRadius: '3px', color: '#7c4dff', fontSize: '8px', letterSpacing: '0.15em', fontWeight: 700 }}>LAB &#8594;</Link>
         </div>
       </div>
 
@@ -716,9 +716,19 @@ emulator -avd Pixel_6 -http-proxy localhost:8080
         ]}
       />
 
-      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #200038', display: 'flex', justifyContent: 'space-between' }}>
-        <Link href="/" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#4a3a6a' }}>&#8592; DASHBOARD</Link>
-        <Link href="/modules/mobile-security/lab" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: accent, padding: '8px 20px', border: 'rgba(124,77,255,0.4) 1px solid', borderRadius: '4px', background: 'rgba(124,77,255,0.06)' }}>PROCEED TO LAB &#8594;</Link>
+      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #1a2e1e' }}>
+        <div style={{ background: 'rgba(124,77,255,0.04)', border: '1px solid rgba(124,77,255,0.2)', borderRadius: '8px', padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: '#2a1a4a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>READY TO PRACTICE?</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1rem', color: '#7c4dff', marginBottom: '0.5rem', fontWeight: 600 }}>MOD-13 Interactive Lab</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#5a7a5a', marginBottom: '1.5rem' }}>5 steps &middot; 130 XP &middot; Real commands &middot; Flag captures</div>
+          <Link href="/modules/mobile-security/lab" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.85rem', color: '#7c4dff', padding: '12px 32px', border: '1px solid rgba(124,77,255,0.6)', borderRadius: '6px', background: 'rgba(124,77,255,0.1)', fontWeight: 700, letterSpacing: '0.12em', boxShadow: '0 0 20px rgba(124,77,255,0.15)', display: 'inline-block' }}>
+            LAUNCH LAB &#8594;
+          </Link>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Link href="/modules/wireless-attacks" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a6a3a' }}>&#8592; MOD-12: WIRELESS ATTACKS</Link>
+          <Link href="/" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a6a3a' }}>&#8592; BACK TO DASHBOARD</Link>
+        </div>
       </div>
     </div>
   )

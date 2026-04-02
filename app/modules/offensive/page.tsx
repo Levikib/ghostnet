@@ -64,7 +64,7 @@ export default function OffensiveModule() {
         <span style={{ color: '#bf5fff' }}>MOD-04 // OFFENSIVE SECURITY</span>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
           <span style={{ padding: '3px 10px', background: 'rgba(191,95,255,0.08)', border: '1px solid rgba(191,95,255,0.3)', borderRadius: '3px', color: '#bf5fff', fontSize: '8px', letterSpacing: '0.15em' }}>CONCEPT</span>
-          <Link href="/modules/offensive/lab" style={{ textDecoration: 'none', padding: '3px 10px', background: 'transparent', border: '1px solid #1a2e1e', borderRadius: '3px', color: '#5a7a5a', fontSize: '8px', letterSpacing: '0.15em' }}>LAB →</Link>
+          <Link href="/modules/offensive/lab" style={{ textDecoration: 'none', padding: '3px 10px', background: 'rgba(191,95,255,0.1)', border: '1px solid rgba(191,95,255,0.5)', borderRadius: '3px', color: '#bf5fff', fontSize: '8px', letterSpacing: '0.15em', fontWeight: 700 }}>LAB →</Link>
         </div>
       </div>
 
@@ -826,11 +826,19 @@ reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Run /v Backdoor /t REG_SZ
       <Alert type="tip">The best pentest reports are ones the client can hand directly to their development team to fix every issue without follow-up questions. Every finding needs: exact reproduction steps, exact fix recommendation, and evidence screenshot. Vague findings = unprofessional report = no repeat business.</Alert>
 
       {/* Footer */}
-      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #1a002e', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Link href="/modules/crypto" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#5a7a5a' }}>← MOD-03: CRYPTO</Link>
-        <Link href="/modules/offensive/lab" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#bf5fff', padding: '8px 20px', border: '1px solid rgba(191,95,255,0.4)', borderRadius: '4px', background: 'rgba(191,95,255,0.06)' }}>
-          PROCEED TO LAB → MOD-04-LAB
-        </Link>
+      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #1a2e1e' }}>
+        <div style={{ background: 'rgba(191,95,255,0.04)', border: '1px solid rgba(191,95,255,0.2)', borderRadius: '8px', padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: '#3a1a5a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>READY TO PRACTICE?</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1rem', color: '#bf5fff', marginBottom: '0.5rem', fontWeight: 600 }}>MOD-04 Interactive Lab</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#5a7a5a', marginBottom: '1.5rem' }}>5 steps &middot; 130 XP &middot; Real commands &middot; Flag captures</div>
+          <Link href="/modules/offensive/lab" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.85rem', color: '#bf5fff', padding: '12px 32px', border: '1px solid rgba(191,95,255,0.6)', borderRadius: '6px', background: 'rgba(191,95,255,0.1)', fontWeight: 700, letterSpacing: '0.12em', boxShadow: '0 0 20px rgba(191,95,255,0.15)', display: 'inline-block' }}>
+            LAUNCH LAB &#8594;
+          </Link>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Link href="/modules/crypto" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a6a3a' }}>&#8592; MOD-03: CRYPTO</Link>
+          <Link href="/modules/active-directory" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a6a3a' }}>MOD-05: ACTIVE DIRECTORY &#8594;</Link>
+        </div>
       </div>
     </div>
   )
