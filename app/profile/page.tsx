@@ -130,30 +130,48 @@ export default function ProfilePage() {
 
   // Load localStorage data immediately (works offline)
   useEffect(() => {
-    setLocalProgress(readLocalProgress())
-    setLabStats(readLocalLabData())
-    setDataLoading(false)
+    const loadLocal = () => {
+      setLocalProgress(readLocalProgress())
+      setLabStats(prev => {
+        // Only replace with localStorage data if Supabase not loaded
+        const localData = readLocalLabData()
+        return localData.length > 0 ? localData : prev
+      })
+      setDataLoading(false)
+    }
+    loadLocal()
+    // Re-sync whenever LabTerminal fires a completion event
+    window.addEventListener('ghostnet_progress_updated', loadLocal)
+    return () => window.removeEventListener('ghostnet_progress_updated', loadLocal)
   }, [])
 
   // Layer Supabase data on top if available
-  useEffect(() => {
+  const loadSupabaseData = async () => {
     if (!user || !isSupabaseConfigured) return
-    async function loadSupabaseData() {
-      try {
-        const [{ data: allBadges }, { data: userBadges }, { data: labProgress }] = await Promise.all([
-          supabase.from('badges').select('*').order('requirement_value'),
-          supabase.from('user_badges').select('badge_id, earned_at').eq('user_id', user!.id),
-          supabase.from('lab_progress').select('*').eq('user_id', user!.id).eq('completed', true).order('completed_at', { ascending: false }),
-        ])
-        if (allBadges) {
-          const earnedIds = new Set((userBadges || []).map((b: { badge_id: string }) => b.badge_id))
-          const earnedMap = Object.fromEntries((userBadges || []).map((b: { badge_id: string; earned_at: string }) => [b.badge_id, b.earned_at]))
-          setBadges(allBadges.map((b: BadgeWithStatus) => ({ ...b, earned: earnedIds.has(b.id), earned_at: earnedMap[b.id] })))
-        }
-        if (labProgress && labProgress.length > 0) setLabStats(labProgress)
-      } catch {}
-    }
+    try {
+      const [{ data: allBadges }, { data: userBadges }, { data: labProgress }] = await Promise.all([
+        supabase.from('badges').select('*').order('requirement_value'),
+        supabase.from('user_badges').select('badge_id, earned_at').eq('user_id', user!.id),
+        supabase.from('lab_progress').select('*').eq('user_id', user!.id).eq('completed', true).order('completed_at', { ascending: false }),
+      ])
+      if (allBadges) {
+        const earnedIds = new Set((userBadges || []).map((b: { badge_id: string }) => b.badge_id))
+        const earnedMap = Object.fromEntries((userBadges || []).map((b: { badge_id: string; earned_at: string }) => [b.badge_id, b.earned_at]))
+        setBadges(allBadges.map((b: BadgeWithStatus) => ({ ...b, earned: earnedIds.has(b.id), earned_at: earnedMap[b.id] })))
+      }
+      if (labProgress && labProgress.length > 0) setLabStats(labProgress)
+    } catch {}
+  }
+
+  useEffect(() => {
     loadSupabaseData()
+  }, [user, isSupabaseConfigured])
+
+  // Re-fetch Supabase after lab completion (triggered by LabTerminal)
+  useEffect(() => {
+    const onRefresh = () => loadSupabaseData()
+    window.addEventListener('ghostnet_profile_refresh', onRefresh)
+    return () => window.removeEventListener('ghostnet_profile_refresh', onRefresh)
   }, [user, isSupabaseConfigured])
 
   // ── Loading state ──
@@ -286,7 +304,7 @@ export default function ProfilePage() {
 
           {/* Stat cards */}
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignSelf: 'flex-start' }}>
-            <StatCard label="LABS DONE" value={completedCount} color="#00ff41" sub={completedCount + '/65 total'} />
+            <StatCard label="LABS DONE" value={completedCount} color="#00ff41" sub={completedCount + '/13 labs'} />
             <StatCard label="TOTAL XP" value={xp.toLocaleString()} color={rankColor} />
             <StatCard label="MODULES" value={modulesStarted} color="#00d4ff" sub={modulesStarted + '/13'} />
             <StatCard label="STREAK" value={streak} color="#ffb347" sub={streak > 0 ? 'days active' : 'start today'} />
@@ -297,15 +315,26 @@ export default function ProfilePage() {
         {/* Recent activity strip */}
         {recentLabs.length > 0 && (
           <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #0d1f0d' }}>
-            <div style={{ fontSize: '7px', color: '#1a4a1a', letterSpacing: '0.25em', marginBottom: '8px' }}>RECENT ACTIVITY</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <div style={{ fontSize: '7px', color: '#1a4a1a', letterSpacing: '0.25em' }}>RECENT ACTIVITY</div>
+              {isSupabaseConfigured && (
+                <button
+                  onClick={() => loadSupabaseData()}
+                  style={{ background: 'transparent', border: '1px solid #1a3a1a', borderRadius: '3px', padding: '2px 8px', cursor: 'pointer', fontFamily: mono, fontSize: '6.5px', color: '#3a6a3a', letterSpacing: '0.1em' }}
+                >
+                  ↻ REFRESH
+                </button>
+              )}
+            </div>
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
               {recentLabs.map((lab, i) => {
                 const mod = ALL_MODULES.find(m => m.id === lab.module_id || m.labId === lab.lab_id)
+                const label = mod?.label || lab.lab_id.replace(/-lab$/, '').replace(/-/g, ' ').toUpperCase()
                 const c = mod?.color || '#00ff41'
                 return (
                   <div key={i} style={{ background: c + '0d', border: '1px solid ' + c + '25', borderRadius: '4px', padding: '4px 10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: c }} />
-                    <span style={{ fontSize: '7.5px', color: c }}>{lab.lab_id.replace(/-lab$/, '').toUpperCase()}</span>
+                    <span style={{ fontSize: '7.5px', color: c }}>{label}</span>
                     <span style={{ fontSize: '7px', color: '#ffb347' }}>+{lab.xp_earned} XP</span>
                   </div>
                 )
@@ -364,7 +393,7 @@ export default function ProfilePage() {
             <div style={{ fontSize: '7px', color: '#1a4a1a', letterSpacing: '0.25em', marginBottom: '1rem' }}>COMPLETION OVERVIEW</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {[
-                { label: 'Labs completed', value: completedCount, total: 65, color: '#00ff41' },
+                { label: 'Labs completed', value: completedCount, total: 13, color: '#00ff41' },
                 { label: 'Modules started', value: modulesStarted, total: 13, color: '#00d4ff' },
                 { label: 'Badges earned', value: earnedBadges.length, total: Math.max(badges.length, 31), color: '#bf5fff' },
               ].map(row => (

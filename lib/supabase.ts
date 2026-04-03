@@ -77,6 +77,19 @@ export const RANK_THRESHOLDS = {
   Legend: 15000,
 } as const
 
+// Ordered rank list for UI rendering
+export const RANK_LIST = [
+  { title: 'Ghost',   minXp: 0,     color: '#4a9a4a' },
+  { title: 'Specter', minXp: 1000,  color: '#00d4ff' },
+  { title: 'Phantom', minXp: 3000,  color: '#bf5fff' },
+  { title: 'Wraith',  minXp: 7500,  color: '#ff4136' },
+  { title: 'Legend',  minXp: 15000, color: '#ffb347' },
+] as const
+
+export function getNextRankInfo(xp: number): { title: string; minXp: number; color: string } | null {
+  return RANK_LIST.find(r => xp < r.minXp) || null
+}
+
 export type GhostRank = keyof typeof RANK_THRESHOLDS
 
 export function getRank(xp: number): GhostRank {

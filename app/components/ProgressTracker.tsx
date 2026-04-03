@@ -1,5 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
+import { RANK_LIST, getNextRankInfo } from '../../lib/supabase'
 
 interface Progress {
   completedLabs: string[]
@@ -10,64 +11,44 @@ interface Progress {
 }
 
 const LABS = [
-  { id: 'tor-lab', module: 'MOD-01', label: 'Tor Network Lab', xp: 345 },
-  { id: 'osint-lab', module: 'MOD-02', label: 'OSINT Investigation Lab', xp: 305 },
-  { id: 'crypto-lab', module: 'MOD-03', label: 'Crypto Forensics Lab', xp: 300 },
-  { id: 'offensive-lab', module: 'MOD-04', label: 'Offensive Security Lab', xp: 280 },
-  { id: 'active-directory-lab', module: 'MOD-05', label: 'Active Directory Lab', xp: 235 },
-  { id: 'web-attacks-lab', module: 'MOD-06', label: 'Web Attacks Lab', xp: 225 },
-  { id: 'malware-lab', module: 'MOD-07', label: 'Malware Analysis Lab', xp: 210 },
-  { id: 'network-attacks-lab', module: 'MOD-08', label: 'Network Attacks Lab', xp: 175 },
-  { id: 'cloud-security-lab', module: 'MOD-09', label: 'Cloud Security Lab', xp: 145 },
-  { id: 'social-engineering-lab', module: 'MOD-10', label: 'Social Engineering Lab', xp: 120 },
-  { id: 'red-team-lab', module: 'MOD-11', label: 'Red Team Operations Lab', xp: 135 },
-  { id: 'wireless-attacks-lab', module: 'MOD-12', label: 'Wireless Attacks Lab', xp: 135 },
-  { id: 'mobile-security-lab', module: 'MOD-13', label: 'Mobile Security Lab', xp: 130 },
-]
-
-const RANKS = [
-  { title: 'Script Kiddie', minXp: 0, color: '#5a7a5a' },
-  { title: 'Recon Agent', minXp: 500, color: '#00d4ff' },
-  { title: 'Threat Hunter', minXp: 1500, color: '#00ff41' },
-  { title: 'Exploit Dev', minXp: 3000, color: '#ffb347' },
-  { title: 'Red Operator', minXp: 5000, color: '#ff4136' },
-  { title: 'Ghost Tier', minXp: 8000, color: '#bf5fff' },
-  { title: 'Ghost Operative', minXp: 12000, color: '#bf5fff' },
-  { title: 'Phantom', minXp: 18000, color: '#ff6ec7' },
-  { title: 'Wraith', minXp: 26000, color: '#ff3333' },
-  { title: 'Shadow God', minXp: 36000, color: '#ff9500' },
+  { id: 'tor-lab',                module: 'MOD-01', label: 'Tor Network Lab',           xp: 345 },
+  { id: 'osint-lab',              module: 'MOD-02', label: 'OSINT Investigation Lab',   xp: 305 },
+  { id: 'crypto-lab',             module: 'MOD-03', label: 'Crypto Forensics Lab',      xp: 300 },
+  { id: 'offensive-lab',          module: 'MOD-04', label: 'Offensive Security Lab',    xp: 280 },
+  { id: 'active-directory-lab',   module: 'MOD-05', label: 'Active Directory Lab',      xp: 235 },
+  { id: 'web-attacks-lab',        module: 'MOD-06', label: 'Web Attacks Lab',           xp: 225 },
+  { id: 'malware-lab',            module: 'MOD-07', label: 'Malware Analysis Lab',      xp: 210 },
+  { id: 'network-attacks-lab',    module: 'MOD-08', label: 'Network Attacks Lab',       xp: 175 },
+  { id: 'cloud-security-lab',     module: 'MOD-09', label: 'Cloud Security Lab',        xp: 145 },
+  { id: 'social-engineering-lab', module: 'MOD-10', label: 'Social Engineering Lab',    xp: 120 },
+  { id: 'red-team-lab',           module: 'MOD-11', label: 'Red Team Operations Lab',   xp: 135 },
+  { id: 'wireless-attacks-lab',   module: 'MOD-12', label: 'Wireless Attacks Lab',      xp: 135 },
+  { id: 'mobile-security-lab',    module: 'MOD-13', label: 'Mobile Security Lab',       xp: 130 },
 ]
 
 const MOD_COLORS: Record<string, string> = {
-  'MOD-01': '#00ff41',
-  'MOD-02': '#00d4ff',
-  'MOD-03': '#ffb347',
-  'MOD-04': '#bf5fff',
-  'MOD-05': '#ff4136',
-  'MOD-06': '#00d4ff',
-  'MOD-07': '#00ff41',
-  'MOD-08': '#00ffff',
-  'MOD-09': '#ff9500',
-  'MOD-10': '#ff6ec7',
-  'MOD-11': '#ff3333',
-  'MOD-12': '#aaff00',
+  'MOD-01': '#00ff41', 'MOD-02': '#00d4ff', 'MOD-03': '#ffb347',
+  'MOD-04': '#bf5fff', 'MOD-05': '#ff4136', 'MOD-06': '#00d4ff',
+  'MOD-07': '#00ff41', 'MOD-08': '#00ffff', 'MOD-09': '#ff9500',
+  'MOD-10': '#ff6ec7', 'MOD-11': '#ff3333', 'MOD-12': '#aaff00',
   'MOD-13': '#7c4dff',
 }
 
 function getRank(xp: number) {
-  return [...RANKS].reverse().find(r => xp >= r.minXp) || RANKS[0]
-}
-
-function getNextRank(xp: number) {
-  return RANKS.find(r => xp < r.minXp) || null
+  return [...RANK_LIST].reverse().find(r => xp >= r.minXp) || RANK_LIST[0]
 }
 
 const defaultProgress: Progress = {
-  completedLabs: [],
-  xp: 0,
-  streak: 0,
-  lastActivity: '',
-  notes: {},
+  completedLabs: [], xp: 0, streak: 0, lastActivity: '', notes: {},
+}
+
+function loadFromStorage(): Progress {
+  if (typeof window === 'undefined') return defaultProgress
+  try {
+    const saved = localStorage.getItem('ghostnet_progress')
+    if (saved) return { ...defaultProgress, ...JSON.parse(saved) }
+  } catch {}
+  return defaultProgress
 }
 
 export default function ProgressTracker() {
@@ -78,75 +59,91 @@ export default function ProgressTracker() {
   const [noteModule, setNoteModule] = useState('MOD-01')
   const [justEarned, setJustEarned] = useState(0)
 
-  const loadProgress = () => {
-    const saved = localStorage.getItem('ghostnet_progress')
-    if (saved) setProgress(JSON.parse(saved))
-  }
-
+  // Load on mount and listen for updates from LabTerminal
   useEffect(() => {
-    loadProgress()
-    window.addEventListener('ghostnet_progress_updated', loadProgress)
-    return () => window.removeEventListener('ghostnet_progress_updated', loadProgress)
+    setProgress(loadFromStorage())
+    const onUpdate = () => setProgress(loadFromStorage())
+    window.addEventListener('ghostnet_progress_updated', onUpdate)
+    return () => window.removeEventListener('ghostnet_progress_updated', onUpdate)
   }, [])
 
   const save = (p: Progress) => {
     setProgress(p)
     localStorage.setItem('ghostnet_progress', JSON.stringify(p))
+    window.dispatchEvent(new Event('ghostnet_progress_updated'))
   }
 
-  const toggleLab = (labId: string, labXp: number) => {
-    const completed = progress.completedLabs.includes(labId)
-    const newCompleted = completed
-      ? progress.completedLabs.filter(id => id !== labId)
-      : [...progress.completedLabs, labId]
-    const newXp = completed ? progress.xp - labXp : progress.xp + labXp
-    if (!completed) setJustEarned(labXp)
+  // Manual toggle — only mark complete, never un-complete (XP should be one-directional)
+  const markComplete = (labId: string, labXp: number) => {
+    if (progress.completedLabs.includes(labId)) return // already done — no-op
+    const newCompleted = [...progress.completedLabs, labId]
+    const newXp = progress.xp + labXp
+    setJustEarned(labXp)
     setTimeout(() => setJustEarned(0), 2000)
     const nowIso = new Date().toISOString()
     const prevDay = progress.lastActivity ? new Date(progress.lastActivity).toDateString() : ''
     const todayStr = new Date().toDateString()
     const ystStr = new Date(Date.now() - 86400000).toDateString()
     let newStreak = progress.streak
-    if (!completed) {
-      if (prevDay === ystStr) newStreak = progress.streak + 1
-      else if (prevDay !== todayStr) newStreak = 1
-    }
-    save({ ...progress, completedLabs: newCompleted, xp: Math.max(0, newXp), lastActivity: nowIso, streak: newStreak })
+    if (prevDay === ystStr) newStreak = progress.streak + 1
+    else if (prevDay !== todayStr) newStreak = 1
+    save({ ...progress, completedLabs: newCompleted, xp: newXp, lastActivity: nowIso, streak: newStreak })
   }
 
   const saveNote = () => {
     save({ ...progress, notes: { ...progress.notes, [noteModule]: noteText } })
   }
 
-  // Streak calculation
+  // Computed values
   const today = new Date().toDateString()
   const lastAct = progress.lastActivity ? new Date(progress.lastActivity).toDateString() : ''
   const yesterday = new Date(Date.now() - 86400000).toDateString()
   const streakActive = lastAct === today || lastAct === yesterday
-
-  // Daily goals
-  const dailyGoals = [
-    { id: 'goal-lab', label: 'Complete 1 lab step', done: progress.lastActivity === today },
-    { id: 'goal-3labs', label: 'Complete 3 lab steps today', done: false },
-    { id: 'goal-module', label: 'Finish any full module lab', done: false },
-  ]
-
   const rank = getRank(progress.xp)
-  const nextRank = getNextRank(progress.xp)
+  const nextRank = getNextRankInfo(progress.xp)
   const xpToNext = nextRank ? nextRank.minXp - progress.xp : 0
-  const progressPct = nextRank ? Math.round(((progress.xp - getRank(progress.xp).minXp) / (nextRank.minXp - getRank(progress.xp).minXp)) * 100) : 100
-
-  const modules = ['MOD-01','MOD-02','MOD-03','MOD-04','MOD-05','MOD-06','MOD-07','MOD-08','MOD-09','MOD-10','MOD-11','MOD-12','MOD-13']
+  const progressPct = nextRank
+    ? Math.min(100, Math.round(((progress.xp - rank.minXp) / (nextRank.minXp - rank.minXp)) * 100))
+    : 100
 
   const totalLabs = LABS.length
-  const doneLabs = progress.completedLabs.length
+  const doneLabs = progress.completedLabs.filter(id => LABS.some(l => l.id === id)).length
+
+  // Real daily goals
+  const activityToday = lastAct === today
+  const stepsCompletedToday = (() => {
+    // count lab_* keys completed today
+    if (typeof window === 'undefined') return 0
+    let count = 0
+    LABS.forEach(lab => {
+      try {
+        const raw = localStorage.getItem('lab_' + lab.id)
+        if (raw) {
+          const d = JSON.parse(raw)
+          if (d.completedAt) {
+            const dayOf = new Date(d.completedAt).toDateString()
+            if (dayOf === today) count++
+          }
+        }
+      } catch {}
+    })
+    return count
+  })()
+
+  const dailyGoals = [
+    { id: 'goal-today', label: 'Complete any lab step today', done: activityToday, xp: 50 },
+    { id: 'goal-3',     label: 'Complete 3+ labs total',      done: doneLabs >= 3,  xp: 100 },
+    { id: 'goal-half',  label: 'Reach 50% completion (7 labs)', done: doneLabs >= 7, xp: 250 },
+  ]
+
+  const modules = ['MOD-01','MOD-02','MOD-03','MOD-04','MOD-05','MOD-06','MOD-07','MOD-08','MOD-09','MOD-10','MOD-11','MOD-12','MOD-13']
 
   return (
     <>
       {justEarned > 0 && (
-        <div style={{ position: 'fixed', top: '80px', right: '24px', zIndex: 9500, background: 'rgba(0,255,65,0.12)', border: '1px solid rgba(0,255,65,0.4)', borderRadius: '6px', padding: '8px 16px', fontFamily: 'JetBrains Mono, monospace', fontSize: '13px', color: '#00ff41', animation: 'fadeUp 2s ease forwards' }}>
+        <div style={{ position: 'fixed', top: '80px', right: '24px', zIndex: 9500, background: 'rgba(0,255,65,0.12)', border: '1px solid rgba(0,255,65,0.4)', borderRadius: '6px', padding: '8px 16px', fontFamily: 'JetBrains Mono, monospace', fontSize: '13px', color: '#00ff41', animation: 'ptFadeUp 2s ease forwards', pointerEvents: 'none' }}>
           +{justEarned} XP
-          <style>{`@keyframes fadeUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-30px)}}`}</style>
+          <style>{`@keyframes ptFadeUp{0%{opacity:1;transform:translateY(0)}80%{opacity:1}100%{opacity:0;transform:translateY(-30px)}}`}</style>
         </div>
       )}
 
@@ -158,6 +155,7 @@ export default function ProgressTracker() {
           .pt-panel{bottom:96px;left:8px;right:8px;width:auto;max-height:55vh}
         }
       `}</style>
+
       <button
         onClick={() => setOpen(!open)}
         className="pt-btn"
@@ -170,7 +168,7 @@ export default function ProgressTracker() {
         }}
       >
         <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#00ff41', flexShrink: 0 }} />
-        {progress.xp} XP · {rank.title.toUpperCase()}
+        {progress.xp.toLocaleString()} XP · {rank.title.toUpperCase()}
       </button>
 
       {open && (
@@ -179,6 +177,7 @@ export default function ProgressTracker() {
           borderRadius: '10px', display: 'flex', flexDirection: 'column',
           fontFamily: 'JetBrains Mono, monospace', overflow: 'hidden',
         }}>
+          {/* Header */}
           <div style={{ padding: '10px 14px', borderBottom: '1px solid #1a2e1e', background: 'rgba(0,255,65,0.04)', flexShrink: 0 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
               <span style={{ fontSize: '10px', color: '#00ff41', fontWeight: 700, letterSpacing: '0.15em' }}>PROGRESS TRACKER</span>
@@ -193,11 +192,11 @@ export default function ProgressTracker() {
             {nextRank && (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
-                  <span style={{ fontSize: '7px', color: '#3a6a3a' }}>{xpToNext} XP to {nextRank.title}</span>
+                  <span style={{ fontSize: '7px', color: '#3a6a3a' }}>{xpToNext.toLocaleString()} XP to {nextRank.title}</span>
                   <span style={{ fontSize: '7px', color: '#3a6a3a' }}>{progressPct}%</span>
                 </div>
                 <div style={{ height: '3px', background: '#1a2e1e', borderRadius: '2px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: progressPct + '%', background: '#00ff41', borderRadius: '2px', transition: 'width 0.3s' }} />
+                  <div style={{ height: '100%', width: progressPct + '%', background: rank.color, borderRadius: '2px', transition: 'width 0.4s' }} />
                 </div>
               </div>
             )}
@@ -208,6 +207,7 @@ export default function ProgressTracker() {
             </div>
           </div>
 
+          {/* Body */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '8px 10px' }}>
             {tab === 'progress' && modules.map(mod => {
               const modLabs = LABS.filter(l => l.module === mod)
@@ -222,7 +222,10 @@ export default function ProgressTracker() {
                   {modLabs.map(lab => {
                     const done = progress.completedLabs.includes(lab.id)
                     return (
-                      <div key={lab.id} onClick={() => toggleLab(lab.id, lab.xp)} style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '4px 5px', borderRadius: '3px', cursor: 'pointer', marginBottom: '2px', background: done ? 'rgba(0,255,65,0.04)' : 'transparent', border: '1px solid ' + (done ? 'rgba(0,255,65,0.15)' : 'transparent') }}>
+                      <div key={lab.id}
+                        onClick={() => !done && markComplete(lab.id, lab.xp)}
+                        title={done ? 'Completed' : 'Click to mark complete'}
+                        style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '4px 5px', borderRadius: '3px', cursor: done ? 'default' : 'pointer', marginBottom: '2px', background: done ? 'rgba(0,255,65,0.04)' : 'transparent', border: '1px solid ' + (done ? 'rgba(0,255,65,0.15)' : 'transparent') }}>
                         <div style={{ width: '10px', height: '10px', borderRadius: '2px', border: '1px solid ' + (done ? color : '#1a2e1e'), background: done ? color + '22' : 'transparent', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {done && <span style={{ fontSize: '7px', color }}>✓</span>}
                         </div>
@@ -239,38 +242,39 @@ export default function ProgressTracker() {
               <div>
                 {/* Streak */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', background: streakActive ? 'rgba(255,179,71,0.06)' : 'rgba(0,0,0,0.2)', border: '1px solid ' + (streakActive ? 'rgba(255,179,71,0.2)' : '#1a2e1e'), borderRadius: '6px', marginBottom: '10px' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: streakActive ? 'rgba(255,179,71,0.2)' : 'rgba(58,106,58,0.2)', border: '2px solid ' + (streakActive ? '#ffb347' : '#3a6a3a'), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '13px', color: streakActive ? '#ffb347' : '#3a6a3a' }}>{progress.streak}</div>
+                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: streakActive ? 'rgba(255,179,71,0.2)' : 'rgba(58,106,58,0.2)', border: '2px solid ' + (streakActive ? '#ffb347' : '#3a6a3a'), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '13px', fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, color: streakActive ? '#ffb347' : '#3a6a3a' }}>{progress.streak}</div>
                   <div>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: streakActive ? '#ffb347' : '#3a6a3a' }}>{progress.streak} day streak</div>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: streakActive ? '#ffb347' : '#3a6a3a', fontFamily: 'JetBrains Mono, monospace' }}>{progress.streak} day streak</div>
                     <div style={{ fontSize: '7px', color: '#3a6a3a', marginTop: '1px' }}>
-                      {streakActive ? 'Active today — keep it going!' : 'Log in and complete a lab to keep your streak'}
+                      {streakActive ? 'Active today — keep it going!' : 'Complete a lab to start your streak'}
                     </div>
                   </div>
                 </div>
 
                 {/* Daily goals */}
-                <div style={{ fontSize: '8px', color: '#3a6a3a', letterSpacing: '0.12em', marginBottom: '6px' }}>DAILY GOALS</div>
+                <div style={{ fontSize: '8px', color: '#3a6a3a', letterSpacing: '0.12em', marginBottom: '6px' }}>GOALS</div>
                 {dailyGoals.map(g => (
                   <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '5px 6px', borderRadius: '4px', marginBottom: '4px', background: g.done ? 'rgba(0,255,65,0.04)' : 'transparent', border: '1px solid ' + (g.done ? 'rgba(0,255,65,0.15)' : '#1a2e1e') }}>
                     <div style={{ width: '12px', height: '12px', borderRadius: '3px', border: '1px solid ' + (g.done ? '#00ff41' : '#1a2e1e'), background: g.done ? 'rgba(0,255,65,0.15)' : 'transparent', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {g.done && <span style={{ fontSize: '8px', color: '#00ff41' }}>+</span>}
+                      {g.done && <span style={{ fontSize: '8px', color: '#00ff41' }}>✓</span>}
                     </div>
                     <span style={{ fontSize: '0.65rem', color: g.done ? '#8a9a8a' : '#5a7a5a', flex: 1 }}>{g.label}</span>
-                    {g.done && <span style={{ fontSize: '7px', color: '#00ff41' }}>+50 XP</span>}
+                    {g.done && <span style={{ fontSize: '7px', color: '#00ff41' }}>+{g.xp} XP</span>}
                   </div>
                 ))}
 
                 {/* XP summary */}
                 <div style={{ marginTop: '10px', padding: '6px 8px', background: 'rgba(0,255,65,0.04)', borderRadius: '4px', border: '1px solid #1a2e1e' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '7px', color: '#3a6a3a' }}>
-                    <span>TOTAL XP</span><span style={{ color: '#00ff41' }}>{progress.xp.toLocaleString()}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '7px', color: '#3a6a3a', marginTop: '3px' }}>
-                    <span>LABS DONE</span><span>{doneLabs}/{totalLabs}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '7px', color: '#3a6a3a', marginTop: '3px' }}>
-                    <span>RANK</span><span style={{ color: rank.color }}>{rank.title.toUpperCase()}</span>
-                  </div>
+                  {[
+                    ['TOTAL XP', progress.xp.toLocaleString(), '#00ff41'],
+                    ['LABS DONE', doneLabs + '/' + totalLabs, '#fff'],
+                    ['RANK', rank.title.toUpperCase(), rank.color],
+                    ['STREAK', progress.streak + ' days', '#ffb347'],
+                  ].map(([k, v, c]) => (
+                    <div key={k as string} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '7px', color: '#3a6a3a', marginBottom: '3px' }}>
+                      <span>{k}</span><span style={{ color: c as string }}>{v}</span>
+                    </div>
+                  ))}
                 </div>
 
                 <a href="/leaderboard" style={{ display: 'block', textAlign: 'center', marginTop: '8px', padding: '5px', background: 'rgba(0,212,255,0.06)', border: '1px solid rgba(0,212,255,0.2)', borderRadius: '4px', fontSize: '7px', color: '#00d4ff', textDecoration: 'none', letterSpacing: '0.1em' }}>
@@ -289,7 +293,7 @@ export default function ProgressTracker() {
                 <textarea
                   value={noteText}
                   onChange={e => setNoteText(e.target.value)}
-                  placeholder={'Notes for ' + noteModule + '...\n\nMarkdown supported.'}
+                  placeholder={'Notes for ' + noteModule + '...'}
                   rows={8}
                   style={{ width: '100%', background: 'rgba(0,255,65,0.03)', border: '1px solid #1a2e1e', borderRadius: '4px', padding: '6px', color: '#8a9a8a', fontSize: '0.68rem', fontFamily: 'JetBrains Mono, monospace', resize: 'vertical' as const, outline: 'none', lineHeight: 1.6, boxSizing: 'border-box' as const }}
                 />
