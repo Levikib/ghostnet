@@ -8,7 +8,7 @@ const accent = '#7c4dff'
 const moduleId = 'mobile-security'
 const moduleName = 'Mobile Security'
 const moduleNum = '13'
-const xpTotal = 240
+const xpTotal = 435
 
 const steps: LabStep[] = [
   {
@@ -24,7 +24,7 @@ const steps: LabStep[] = [
     id: 'mobile-02',
     title: 'ADB Shell Access',
     objective: 'Android Debug Bridge (ADB) lets you interact with a device. What ADB command opens a shell on a connected Android device?',
-    hint: 'The command is "adb shell" — simple and direct.',
+    hint: 'The command is "adb shell" - simple and direct.',
     answers: ['adb shell', 'adb -d shell', 'adb shell /system/bin/sh'],
     xp: 20,
     explanation: 'adb shell drops you into an Android shell. Useful commands: pm list packages (list apps), pm dump com.app (app info), am start -n com.app/.Activity (launch activities), content query (read content providers). Root access: adb shell su.'
@@ -129,6 +129,80 @@ const steps: LabStep[] = [
     flag: 'FLAG{mobile_owasp_complete}',
     xp: 25,
     explanation: 'The OWASP Mobile Top 10 is the definitive taxonomy for mobile application vulnerabilities. M1 Improper Platform Usage - misusing platform APIs or permissions. M2 Insecure Data Storage - sensitive data in SharedPreferences, SQLite databases, external storage, log files, or temp files without encryption. M3 Insecure Communication - cleartext HTTP, improper TLS validation, weak cipher suites. M4 Insecure Authentication - broken session handling, weak PIN policies, missing biometric protection. M5 Insufficient Cryptography - hardcoded encryption keys in source code or resources, use of deprecated algorithms like DES or MD5 for sensitive data. M6 Insecure Authorization - failing to verify permissions server-side, relying only on client-side checks. M7 Client Code Quality - buffer overflows, format string bugs, memory leaks in native code. M8 Code Tampering - missing root and tamper detection, unsigned update mechanisms. M9 Reverse Engineering - missing obfuscation, debug symbols left in release builds, easy class-dump extraction. M10 Extraneous Functionality - hidden debug backdoors, test credentials, admin endpoints left in production builds. Primary testing tools: MobSF (automated static and dynamic analysis), AndroBugs (Android-specific issue scanner), QARK (source code and APK analysis), and Drozer (runtime exploitation framework).'
+  },
+  {
+    id: 'mobile-11',
+    title: 'Android Root Detection Bypass',
+    objective: 'Banking apps detect rooted devices and refuse to run. What Frida/Objection command disables root detection checks at runtime?',
+    hint: 'Use Objection after attaching to the target process. The command namespace is "android root".',
+    answers: ['android root disable', 'objection android root disable', 'frida rootdetection'],
+    xp: 25,
+    explanation: 'objection -g com.target.app explore then "android root disable" patches common root detection methods at runtime. What gets bypassed: su binary existence checks, Superuser.apk/SuperSU package detection, build.prop ro.build.tags=test-keys check, /system/xbin/su path check, native library checks. Manual Frida script: Java.perform to hook RootBeer.isRooted() and return false. MagiskHide (older Magisk) hides root from specific apps. Zygisk DenyList is the modern equivalent. SafetyNet/Play Integrity API: hardware-backed attestation is harder to bypass and requires leaked device keys or a modified OS. Practical use: testing banking apps, MDM bypass, game anti-cheat research. Detection note: some apps use native code for root detection and require Frida native hooks with Interceptor.attach().'
+  },
+  {
+    id: 'mobile-12',
+    title: 'Android Content Provider Exploitation',
+    objective: 'An exported content provider exposes user data without access controls. What ADB command queries a content provider URI to extract its data?',
+    hint: 'Use "adb shell content query" with the --uri flag followed by the content:// URI.',
+    answers: ['adb shell content query --uri', 'content query --uri', 'adb shell content query'],
+    xp: 20,
+    explanation: 'adb shell content query --uri content://com.target.app.provider/users returns all rows. Insert: adb shell content insert --uri content://PROVIDER/table --bind column:s:value. Update: content update --uri content://PROVIDER/table --bind col:s:newval. Delete: content delete --uri content://PROVIDER/table --where "id=1". Finding providers: aapt dump xmltree app.apk AndroidManifest.xml | grep provider, or use jadx and search for ContentProvider subclasses. SQL injection via content URI: content query --uri with a crafted --where clause - if the provider builds raw SQL queries. Drozer automation: run app.provider.info -a com.target.app, run app.provider.query content://PROVIDER/table, run scanner.provider.injection for automated SQLi scanning. Real finding: many older Android apps expose SMS, call logs, and contacts via misconfigured providers.'
+  },
+  {
+    id: 'mobile-13',
+    title: 'iOS Jailbreak Detection Bypass',
+    objective: 'What Frida script bypasses common iOS jailbreak detection checks by hooking NSFileManager and returning false for sensitive path existence checks?',
+    hint: 'Objection has a built-in command under the "ios jailbreak" namespace.',
+    answers: ['frida jailbreak bypass', 'ios jailbreak disable', 'objection ios jailbreak disable', 'android jailbreak disable'],
+    xp: 25,
+    explanation: 'objection -g com.target.app explore then "ios jailbreak disable" hooks common detection methods. What it patches: [NSFileManager fileExistsAtPath:] for /Applications/Cydia.app, /bin/bash, /usr/sbin/sshd, /etc/apt. fork() return value (jailed apps cannot fork). system() call (should fail in a sandboxed app). String obfuscation bypass: apps encode paths as Base64 or build them dynamically, requiring a manual Frida script. iOS Integrity attestation: DeviceCheck API and App Attest use hardware keys and are extremely difficult to bypass without Apple signing keys. Manual hook example: ObjC.classes.NSFileManager["- fileExistsAtPath:"].implementation patched to return false for Cydia/substrate paths. Practical: testing mobile banking security controls, MDM compliance bypass research, game cheating analysis.'
+  },
+  {
+    id: 'mobile-14',
+    title: 'APK Repackaging - Patching and Resigning',
+    objective: 'To inject a Frida gadget or modify app behavior permanently, you repackage the APK. What tool reassembles smali code back into a new APK after modification?',
+    hint: 'The same tool used to disassemble the APK. Use the "b" (build) subcommand.',
+    answers: ['apktool b', 'apktool build', 'apktool b app/', 'apktool'],
+    flag: 'FLAG{apk_repackaged}',
+    xp: 25,
+    explanation: 'Full repackaging workflow: 1) Disassemble: apktool d app.apk -o app/. 2) Modify smali code or resources. 3) Reassemble: apktool b app/ -o app_patched.apk. 4) Generate keystore: keytool -genkey -v -keystore my.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias mykey. 5) Sign: jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore my.keystore app_patched.apk mykey. 6) Zipalign: zipalign -v 4 app_patched.apk app_final.apk. 7) Install: adb install app_final.apk. What to inject: Frida gadget (libfrida-gadget.so in lib/arm64-v8a/, gadget config JSON, load call in smali). Certificate pinning removal: find OkHttp/TrustManager smali, patch return-void or return true. Network security config: modify res/xml/network_security_config.xml to allow all traffic. Tamper detection: some apps check their own signature at runtime - patch the signature check too. APK signing scheme v2/v3: modern apps use v2+ signing that covers the whole file, requiring apksigner instead of jarsigner.'
+  },
+  {
+    id: 'mobile-15',
+    title: 'Mobile App Memory Analysis',
+    objective: 'Frida can dump memory from a running app to extract secrets that are only present in RAM (decrypted keys, tokens, passwords). What Frida API reads a specific memory address range?',
+    hint: 'The Frida Memory module has a readByteArray function. Process.enumerateRanges finds candidate regions first.',
+    answers: ['Memory.readByteArray', 'Memory.readUtf8String', 'frida memory dump', 'Process.enumerateRanges'],
+    xp: 25,
+    explanation: 'Process.enumerateRanges("r--") lists all readable memory regions. Memory.readByteArray(ptr("ADDR_HERE"), 256) reads 256 bytes from an address. Full memory dump script: Process.enumerateRanges("r--").forEach iterating each region and calling Memory.readByteArray(r.base, r.size) inside a try/catch. Search for strings: grep through regions for "Bearer ", "password", "token". Fridump tool automates memory dumping. iOS: similar approach with ObjC runtime - [NSString stringValue] hooks capture decrypted strings as they are created. Practical findings: JWT tokens in memory after authentication, AES keys before encryption, username/password before sending to server, crypto material after TLS decryption. Android Keystore: keys stored in TEE (Trusted Execution Environment) cannot be extracted via memory - this is by design. Memory analysis complements static analysis and catches runtime-only secrets.'
+  },
+  {
+    id: 'mobile-16',
+    title: 'Android WebView Security Issues',
+    objective: 'A WebView has JavaScript enabled and addJavascriptInterface() exposes a Java object to JavaScript. What is this vulnerability called that allows JavaScript to invoke Java methods?',
+    hint: 'The name comes directly from the Android API method used to create the bridge between JavaScript and Java.',
+    answers: ['javascript interface', 'addjavascriptinterface', 'java bridge', 'jsbridge', 'javascript bridge'],
+    xp: 20,
+    explanation: 'addJavascriptInterface(obj, "Android") makes obj accessible as window.Android in JavaScript. If JS can run arbitrary code (e.g., via XSS), it can call any public method. Pre-Android 4.2: ALL public methods are accessible including via reflection, giving full RCE. Post-Android 4.2: only @JavascriptInterface annotated methods are exposed. Exploitation: if WebView loads untrusted URLs or has XSS, inject a script tag calling Android.sensitiveMethod(). WebView misconfigurations: setAllowFileAccess(true) plus setJavaScriptEnabled(true) allows reading file:///data/data/com.app/shared_prefs/. setAllowUniversalAccessFromFileURLs(true) enables full cross-origin file read. DeepLink to WebView: an intent passes an attacker-controlled URL to WebView without validation. Testing: MSTG WebView checklist, check for file:// scheme handling, check addJavascriptInterface usage in jadx output. Defence: never load untrusted URLs in WebViews with sensitive interfaces, use WebViewClient.shouldOverrideUrlLoading() to validate all URLs.'
+  },
+  {
+    id: 'mobile-17',
+    title: 'iOS Keychain Security and Extraction',
+    objective: 'On a jailbroken iOS device, what tool dumps all keychain items including passwords stored by apps?',
+    hint: 'A standalone binary tool that runs on-device and uses entitlement wildcards to access all keychain items.',
+    answers: ['keychain-dumper', 'keychaineditor', 'objection ios keychain dump', 'frida keychain'],
+    xp: 25,
+    explanation: 'keychain-dumper dumps all keychain items accessible with an entitlement wildcard. Objection: "ios keychain dump" hooks SecItemCopyMatching via Frida. What is stored in the keychain: passwords (kSecClassGenericPassword, kSecClassInternetPassword), certificates (kSecClassCertificate), cryptographic keys (kSecClassKey). Protection classes: kSecAttrAccessibleWhenUnlocked (accessible when device is unlocked), kSecAttrAccessibleAfterFirstUnlock (accessible after first unlock, survives reboot - a common mistake), kSecAttrAccessibleAlways (NEVER USE - accessible even when device is locked), kSecAttrAccessibleWhenUnlockedThisDeviceOnly (hardware-bound, not included in backups). Backup attack: items WITHOUT ThisDeviceOnly are included in iTunes backups and accessible via iMazing without jailbreak. Testing checklist: verify sensitive items use ThisDeviceOnly, verify correct accessibility level for each item type. Frida script: hook SecItemCopyMatching directly for non-jailbroken testing scenarios.'
+  },
+  {
+    id: 'mobile-18',
+    title: 'Mobile Pentest - Full Methodology',
+    objective: 'What industry standard provides the most comprehensive mobile application security testing guide used by professional mobile pentesters?',
+    hint: 'An OWASP project with both a testing guide (MSTG/MASTG) and a verification standard (MASVS).',
+    answers: ['owasp mstg', 'mstg', 'mobile security testing guide', 'owasp mastg', 'mastg'],
+    flag: 'FLAG{mobile_pentest_complete}',
+    xp: 30,
+    explanation: 'OWASP MASTG (Mobile Application Security Testing Guide) plus MASVS (Mobile Application Security Verification Standard) is the definitive reference for mobile security testing. MASVS levels: L1 (standard security), L2 (defence in depth), R (resiliency against reverse engineering). Full pentest workflow - STATIC ANALYSIS: 1) APK/IPA collection via gplaycli or ipatool. 2) Automated scan: MobSF upload, review findings. 3) Manual decompile: jadx (Android), Hopper/Ghidra (iOS). 4) Secrets search: grep for password, api_key, secret, token in decompiled output. 5) Manifest review: exported components, permissions, backup settings. DYNAMIC ANALYSIS: 1) Proxy setup: Burp plus device cert. 2) Launch app with Frida/Objection attached. 3) Walk all functionality, capture traffic. 4) Test authentication: session tokens, biometric bypass. 5) Test business logic: parameter tampering via Burp. REPORTING: Critical findings: hardcoded credentials, unencrypted sensitive data, authentication bypass. High: SSL pinning bypassable without jailbreak, exported components leaking data. Medium: weak crypto, insecure random. Low: missing certificate transparency, verbose errors. Tools summary: MobSF (static+dynamic), Frida (instrumentation), Objection (automation), Drozer (Android attack framework), Burp Suite (traffic), jadx (decompile), Ghidra (binary analysis), Corellium (cloud iOS/Android).'
   }
 ]
 
@@ -168,7 +242,7 @@ export default function MobileSecurityLab() {
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
               <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: p.done ? accent : '#1a0a3a', border: p.active ? '2px solid ' + accent : '1px solid #1a0a3a', boxShadow: p.active ? '0 0 6px ' + accent : 'none' }} />
               <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: p.done ? accent : '#2a1a5a', letterSpacing: '0.1em' }}>{p.label}</span>
-              {i === 0 && <span style={{ fontSize: '7px', color: '#1a0a3a', margin: '0 2px' }}>—</span>}
+              {i === 0 && <span style={{ fontSize: '7px', color: '#1a0a3a', margin: '0 2px' }}>-</span>}
             </div>
           ))}
         </div>
@@ -177,7 +251,7 @@ export default function MobileSecurityLab() {
         </div>
         {guidedDone && (
           <div style={{ marginLeft: 'auto', fontFamily: 'JetBrains Mono, monospace', fontSize: '7.5px', color: accent, fontWeight: 700 }}>
-            &#10003; GUIDED PHASE COMPLETE — LAUNCH FREE LAB BELOW
+            &#10003; GUIDED PHASE COMPLETE - LAUNCH FREE LAB BELOW
           </div>
         )}
       </div>
@@ -189,20 +263,20 @@ export default function MobileSecurityLab() {
             <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '10px', color: accent, fontWeight: 700 }}>1</span>
           </div>
           <div>
-            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: '#2a1a5a', letterSpacing: '0.2em', marginBottom: '2px' }}>PHASE 1 — GUIDED LEARNING</div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: '#2a1a5a', letterSpacing: '0.2em', marginBottom: '2px' }}>PHASE 1 - GUIDED LEARNING</div>
             <h1 style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.4rem', fontWeight: 700, color: accent, margin: 0 }}>Mobile Security Lab</h1>
           </div>
         </div>
 
         <p style={{ color: '#6a5a8a', fontSize: '0.85rem', marginBottom: '1rem', lineHeight: 1.7, fontFamily: 'JetBrains Mono, monospace' }}>
-          APK decompilation, ADB shell, Frida instrumentation, SSL pinning bypass, iOS data storage, Android intent exploitation, traffic interception, binary protections, deep link hijacking, and OWASP Mobile Top 10.
-          Type real commands, earn XP, and capture flags. Complete all 10 steps to unlock Phase 2.
+          APK decompilation, ADB shell, Frida instrumentation, SSL pinning bypass, iOS data storage, Android intent exploitation, traffic interception, binary protections, deep link hijacking, OWASP Mobile Top 10, root detection bypass, content provider attacks, jailbreak bypass, APK repackaging, memory analysis, WebView exploitation, iOS Keychain extraction, and full pentest methodology.
+          Type real commands, earn XP, and capture flags. Complete all 18 steps to unlock Phase 2.
         </p>
 
         <div style={{ background: 'rgba(124,77,255,0.03)', border: '1px solid rgba(124,77,255,0.12)', borderRadius: '6px', padding: '1rem 1.25rem', marginBottom: '1.25rem', fontFamily: 'JetBrains Mono, monospace' }}>
           <div style={{ fontSize: '7px', color: '#1a0a3a', letterSpacing: '0.25em', marginBottom: '8px' }}>KEY CONCEPTS COVERED IN THIS LAB</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-            {['APK decompilation', 'Dalvik bytecode', 'ADB commands', 'Frida hooking', 'SSL pinning bypass', 'OWASP Mobile Top 10', 'iOS Keychain', 'Objection framework'].map(c => (
+            {['APK decompilation', 'Dalvik bytecode', 'ADB commands', 'Frida hooking', 'SSL pinning bypass', 'OWASP Mobile Top 10', 'iOS Keychain', 'Objection framework', 'Root detection bypass', 'Content providers', 'APK repackaging', 'Memory analysis', 'WebView security', 'MASTG methodology'].map(c => (
               <span key={c} style={{ fontSize: '7.5px', color: '#4a3a8a', background: 'rgba(124,77,255,0.06)', border: '1px solid rgba(124,77,255,0.12)', padding: '2px 8px', borderRadius: '3px' }}>{c}</span>
             ))}
           </div>
@@ -225,7 +299,7 @@ export default function MobileSecurityLab() {
             <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '10px', color: guidedDone ? accent : '#2a1a5a', fontWeight: 700 }}>2</span>
           </div>
           <div>
-            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: guidedDone ? '#4a3a8a' : '#2a1a5a', letterSpacing: '0.2em', marginBottom: '2px' }}>PHASE 2 — FREE LAB ENVIRONMENT</div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: guidedDone ? '#4a3a8a' : '#2a1a5a', letterSpacing: '0.2em', marginBottom: '2px' }}>PHASE 2 - FREE LAB ENVIRONMENT</div>
             <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.1rem', fontWeight: 700, color: guidedDone ? accent : '#2a1a5a' }}>Full Mobile Security Practice Sandbox</div>
           </div>
           {guidedDone && !freeLaunched && (
@@ -265,7 +339,7 @@ export default function MobileSecurityLab() {
             >
               {guidedDone ? '&#9658; LAUNCH FREE LAB ENVIRONMENT' : '&#128274; COMPLETE GUIDED PHASE FIRST'}
             </button>
-            {!guidedDone && <div style={{ marginTop: '1rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#1a0a3a' }}>Complete all 10 guided steps above to unlock the free lab environment</div>}
+            {!guidedDone && <div style={{ marginTop: '1rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#1a0a3a' }}>Complete all 18 guided steps above to unlock the free lab environment</div>}
           </div>
         ) : (
           <div style={{ border: '1px solid ' + accent + '30', borderRadius: '10px', overflow: 'hidden', background: '#040208' }}>
@@ -283,7 +357,7 @@ export default function MobileSecurityLab() {
       {/* Quick reference */}
       <div style={{ marginBottom: '2rem' }}>
         <button onClick={() => setShowKeywords(!showKeywords)} style={{ background: 'transparent', border: '1px solid #1a0a3a', borderRadius: '5px', padding: '8px 16px', cursor: 'pointer', fontFamily: 'JetBrains Mono, monospace', fontSize: '7.5px', color: '#2a1a5a', letterSpacing: '0.1em', marginBottom: showKeywords ? '12px' : 0 }}>
-          {showKeywords ? '▼' : '▶'} QUICK REFERENCE — MOBILE SECURITY COMMANDS
+          {showKeywords ? '▼' : '▶'} QUICK REFERENCE - MOBILE SECURITY COMMANDS
         </button>
         {showKeywords && (
           <div style={{ background: '#040208', border: '1px solid #0d0520', borderRadius: '6px', padding: '1.25rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem' }}>
@@ -291,14 +365,19 @@ export default function MobileSecurityLab() {
               {[
                 ['jadx -d output/ app.apk', 'Decompile APK to Java source'],
                 ['apktool d app.apk', 'Disassemble APK to smali'],
+                ['apktool b app/ -o patched.apk', 'Reassemble modified APK'],
                 ['adb devices', 'List connected Android devices'],
                 ['adb shell pm list packages', 'List all installed apps'],
                 ['adb shell pm dump com.target.app', 'Get app info and permissions'],
                 ['adb shell am start -n com.app/.MainActivity', 'Launch a specific activity'],
+                ['adb shell content query --uri content://PROVIDER/table', 'Query a content provider'],
                 ['frida-ps -Ua', 'List all running apps (USB)'],
                 ['frida -U -n "App Name" -l bypass-ssl.js', 'Attach Frida with SSL bypass script'],
                 ['objection -g com.app explore', 'Start Objection interactive shell'],
                 ['android sslpinning disable', 'Disable SSL pinning (in Objection)'],
+                ['android root disable', 'Disable root detection (in Objection)'],
+                ['ios jailbreak disable', 'Disable jailbreak detection (in Objection)'],
+                ['ios keychain dump', 'Dump iOS keychain items (in Objection)'],
                 ['mobsf', 'Mobile Security Framework static/dynamic analysis'],
                 ['drozer console connect', 'Android attack framework'],
               ].map(([cmd, desc]) => (
