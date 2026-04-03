@@ -489,7 +489,7 @@ What character allows you to chain a second command after the ping command in Li
   |       — pipe output of first to second
     ping -c 1 google.com | id
 
-  backtick — execute and substitute: ping `id`
+  backtick — execute and substitute: ping &#96;id&#96;
   $()     — execute and substitute: ping $(id)
 
 Blind command injection (no output in response):
