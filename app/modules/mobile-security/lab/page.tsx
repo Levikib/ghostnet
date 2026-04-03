@@ -8,7 +8,7 @@ const accent = '#7c4dff'
 const moduleId = 'mobile-security'
 const moduleName = 'Mobile Security'
 const moduleNum = '13'
-const xpTotal = 130
+const xpTotal = 240
 
 const steps: LabStep[] = [
   {
@@ -57,6 +57,78 @@ const steps: LabStep[] = [
     flag: 'FLAG{mobile_storage_analysed}',
     xp: 35,
     explanation: 'NSUserDefaults (.plist files) and the app Documents directory are included in iTunes backups and readable by backup tools like iMazing. Sensitive data here is accessible to anyone with physical device + iTunes backup password. The Keychain is NOT included in standard backups and is hardware-encrypted.'
+  },
+  {
+    id: 'mobile-06',
+    title: 'Android Intent Exploitation',
+    objective: 'An exported Activity has no permission check. What ADB command launches an arbitrary Activity on a connected device?',
+    hint: 'Use adb shell with the am (Activity Manager) tool. The -n flag specifies the component as package/class.',
+    answers: [
+      'adb shell am start -n com.package/.ActivityName',
+      'am start -n',
+      'adb shell am start'
+    ],
+    xp: 20,
+    explanation: 'am start -n com.package/.ActivityName launches Android activities directly from the shell or via ADB. When an Activity is declared with android:exported="true" and has no android:permission attribute in AndroidManifest.xml, any app on the device - or an attacker with ADB access - can invoke it directly, bypassing authentication flows. This is a common misconfiguration that exposes password reset screens, admin panels, and deep link handlers. Beyond activities: am broadcast -a com.package.ACTION sends intents to exported broadcast receivers (useful for triggering hidden functionality). Content provider attacks use adb shell content query --uri content://com.package.provider/data to read provider data without going through the app UI. Drozer automates intent fuzzing: run app.activity.start --component com.package .ActivityName and scanner.activity.browsable to map all exported and browsable attack surface systematically.'
+  },
+  {
+    id: 'mobile-07',
+    title: 'Traffic Interception',
+    objective: 'Intercept HTTPS traffic from a mobile app using Burp Suite as a proxy. What must you install on the device to trust Burp\'s certificate?',
+    hint: 'Burp Suite acts as a man-in-the-middle and presents its own certificate. The device must trust it at the system level.',
+    answers: [
+      'burp ca certificate',
+      'ca certificate',
+      'burp certificate',
+      'system certificate'
+    ],
+    xp: 20,
+    explanation: 'Burp Suite intercepts HTTPS by presenting its own CA certificate to the client. Android 7 (Nougat) and above introduced a change where apps no longer trust user-installed CA certificates by default - only system CAs are trusted. This means simply installing Burp\'s cert to the user store no longer works for most modern apps. To bypass this: on rooted devices, push the cert as a system CA with adb push burp.cer /system/etc/security/cacerts/ (requires remounting /system as writable). Alternatively, decompile the APK with apktool, add a network_security_config.xml that trusts user CAs, repack and reinstall with apktool b and apksigner. The Magisk module MagiskTrustUserCerts automates the system cert installation on rooted devices. Some apps add additional certificate pinning on top of this - those require Frida or Objection bypass as a separate step.'
+  },
+  {
+    id: 'mobile-08',
+    title: 'Binary Protections Analysis',
+    objective: 'Check what binary protections are enabled on an iOS binary. What tool checks for PIE, stack canary, ARC, and binary encryption in iOS apps?',
+    hint: 'A standard macOS/iOS toolchain utility. Also used with the -l flag to inspect load commands.',
+    answers: [
+      'otool',
+      'checksec',
+      'class-dump',
+      'otool -vh',
+      'otool -l'
+    ],
+    flag: 'FLAG{binary_protections_audited}',
+    xp: 25,
+    explanation: 'otool is the macOS/iOS object file analysis tool. otool -vh BINARY shows the Mach-O header and whether PIE (Position Independent Executable) is enabled - without PIE, memory addresses are predictable making ROP chain construction easier. otool -l BINARY | grep crypt checks the LC_ENCRYPTION_INFO load command: cryptid 1 means the binary is FairPlay-encrypted (App Store build), cryptid 0 means it is decrypted (already dumped or sideloaded). checksec --file BINARY reports all protections in a structured format including PIE, stack canary, ARC, and RELRO. Missing stack canary means a stack buffer overflow can directly control the return address. Missing ARC (Automatic Reference Counting) leaves the binary vulnerable to manual memory management bugs. class-dump extracts all Objective-C class definitions, method signatures, and property lists from the binary - this is the starting point for understanding an app\'s internal architecture without source code.'
+  },
+  {
+    id: 'mobile-09',
+    title: 'Deep Link Hijacking',
+    objective: 'Android apps register URL schemes as deep links. What Android file declares which URL schemes an app handles?',
+    hint: 'This XML configuration file at the root of every Android app declares all app components, permissions, and intent filters.',
+    answers: [
+      'androidmanifest.xml',
+      'androidmanifest',
+      'manifest.xml'
+    ],
+    xp: 20,
+    explanation: 'AndroidManifest.xml contains intent-filter declarations that register URL schemes as deep links. An Activity with action android.intent.action.VIEW and a data element with scheme="myapp" will receive all myapp:// URLs opened on the device. The vulnerability: malicious apps can register identical URL schemes. On Android, the last installed app that handles a scheme wins (or the user is prompted to choose). Testing deep links directly: adb shell am start -a android.intent.action.VIEW -d "myapp://reset?token=TESTVALUE" sends a crafted deep link and observes how the app handles the parameters. Common vulnerabilities include parameter injection where the token parameter is used directly in a request without validation, CSRF where a deep link triggers an authenticated action without re-confirming identity, and path traversal in deep link handlers that load local files based on a path in the URL. Always check if deep link parameters flow into WebView.loadUrl() calls, which can lead to JavaScript injection.'
+  },
+  {
+    id: 'mobile-10',
+    title: 'OWASP Mobile Top 10',
+    objective: 'What OWASP Mobile Top 10 category covers hardcoded credentials and insecure key storage in mobile apps?',
+    hint: 'Look at M5 (Insufficient Cryptography) and M2 (Insecure Data Storage) - hardcoded keys and weak storage both appear in the top 10.',
+    answers: [
+      'm10',
+      'insufficient cryptography',
+      'm9',
+      'insecure data storage',
+      'm2'
+    ],
+    flag: 'FLAG{mobile_owasp_complete}',
+    xp: 25,
+    explanation: 'The OWASP Mobile Top 10 is the definitive taxonomy for mobile application vulnerabilities. M1 Improper Platform Usage - misusing platform APIs or permissions. M2 Insecure Data Storage - sensitive data in SharedPreferences, SQLite databases, external storage, log files, or temp files without encryption. M3 Insecure Communication - cleartext HTTP, improper TLS validation, weak cipher suites. M4 Insecure Authentication - broken session handling, weak PIN policies, missing biometric protection. M5 Insufficient Cryptography - hardcoded encryption keys in source code or resources, use of deprecated algorithms like DES or MD5 for sensitive data. M6 Insecure Authorization - failing to verify permissions server-side, relying only on client-side checks. M7 Client Code Quality - buffer overflows, format string bugs, memory leaks in native code. M8 Code Tampering - missing root and tamper detection, unsigned update mechanisms. M9 Reverse Engineering - missing obfuscation, debug symbols left in release builds, easy class-dump extraction. M10 Extraneous Functionality - hidden debug backdoors, test credentials, admin endpoints left in production builds. Primary testing tools: MobSF (automated static and dynamic analysis), AndroBugs (Android-specific issue scanner), QARK (source code and APK analysis), and Drozer (runtime exploitation framework).'
   }
 ]
 
@@ -123,8 +195,8 @@ export default function MobileSecurityLab() {
         </div>
 
         <p style={{ color: '#6a5a8a', fontSize: '0.85rem', marginBottom: '1rem', lineHeight: 1.7, fontFamily: 'JetBrains Mono, monospace' }}>
-          APK decompilation, ADB shell, Frida instrumentation, SSL pinning bypass, and iOS data storage analysis.
-          Type real commands, earn XP, and capture flags. Complete all 5 steps to unlock Phase 2.
+          APK decompilation, ADB shell, Frida instrumentation, SSL pinning bypass, iOS data storage, Android intent exploitation, traffic interception, binary protections, deep link hijacking, and OWASP Mobile Top 10.
+          Type real commands, earn XP, and capture flags. Complete all 10 steps to unlock Phase 2.
         </p>
 
         <div style={{ background: 'rgba(124,77,255,0.03)', border: '1px solid rgba(124,77,255,0.12)', borderRadius: '6px', padding: '1rem 1.25rem', marginBottom: '1.25rem', fontFamily: 'JetBrains Mono, monospace' }}>
@@ -193,7 +265,7 @@ export default function MobileSecurityLab() {
             >
               {guidedDone ? '&#9658; LAUNCH FREE LAB ENVIRONMENT' : '&#128274; COMPLETE GUIDED PHASE FIRST'}
             </button>
-            {!guidedDone && <div style={{ marginTop: '1rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#1a0a3a' }}>Complete all 5 guided steps above to unlock the free lab environment</div>}
+            {!guidedDone && <div style={{ marginTop: '1rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#1a0a3a' }}>Complete all 10 guided steps above to unlock the free lab environment</div>}
           </div>
         ) : (
           <div style={{ border: '1px solid ' + accent + '30', borderRadius: '10px', overflow: 'hidden', background: '#040208' }}>

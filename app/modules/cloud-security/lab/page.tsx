@@ -8,7 +8,7 @@ const accent = '#ff9500'
 const moduleId = 'cloud-security'
 const moduleName = 'Cloud Security'
 const moduleNum = '09'
-const xpTotal = 145
+const xpTotal = 275
 
 const steps: LabStep[] = [
   {
@@ -65,6 +65,74 @@ const steps: LabStep[] = [
     flag: 'FLAG{cloudtrail_analysed}',
     xp: 35,
     explanation: 'CloudTrail records eventName: GetCallerIdentity — a common first step attackers take to identify the account. Filter CloudTrail with: aws cloudtrail lookup-events --lookup-attributes AttributeKey=EventName,AttributeValue=GetCallerIdentity. Unusual source IPs or user agents indicate compromise.'
+  },
+  {
+    id: 'cloud-06',
+    title: 'GCP Metadata Service',
+    objective: 'GCP has its own metadata service. What URL retrieves the GCP service account token from inside a VM? (hint: metadata.google.internal with a specific required header)',
+    hint: 'The GCP metadata endpoint requires the Metadata-Flavor: Google header. The path is /computeMetadata/v1/instance/service-accounts/default/token',
+    answers: [
+      'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',
+      'metadata.google.internal'
+    ],
+    xp: 25,
+    explanation: 'GCP VMs reach the metadata service at http://metadata.google.internal/computeMetadata/v1/ - but unlike AWS IMDS, every request must include the header Metadata-Flavor: Google or it will be rejected with a 403. This server-side check prevents simple SSRF attacks that just follow redirects. The token endpoint returns an OAuth2 access token and expiry for the attached service account. From there, attackers use the token to call Google Cloud APIs: gcloud auth list (identify active accounts), gcloud projects list (enumerate all projects the service account can access), gcloud iam service-accounts list (find other service accounts), and gcloud projects get-iam-policy PROJECT (map all IAM bindings). Service account impersonation is a major privilege escalation path: if your service account has iam.serviceAccountTokenCreator on another account, you can generate tokens for that account with higher privileges.'
+  },
+  {
+    id: 'cloud-07',
+    title: 'Azure Managed Identity',
+    objective: 'Azure VMs use Managed Identity for credential-free authentication. What URL retrieves Azure access tokens from inside a VM?',
+    hint: 'Azure IMDS also lives at 169.254.169.254 but under the /metadata/ path. It requires a Metadata:true header.',
+    answers: [
+      'http://169.254.169.254/metadata/identity/oauth2/token',
+      '169.254.169.254/metadata/identity'
+    ],
+    xp: 25,
+    explanation: 'Azure Instance Metadata Service (IMDS) at http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://management.azure.com/ returns a bearer token for the VM managed identity. The required header is Metadata: true - without it the request is rejected. The returned access token can then be used to call Azure Resource Manager APIs. Key commands for post-exploitation: az account list (enumerate subscriptions), az role assignment list --all (find what the identity can access), az keyvault list (find Key Vaults), az keyvault secret list --vault-name VAULT (enumerate secrets), az storage account list (find storage accounts). Managed identities have no password to rotate, so a compromised VM with an over-privileged identity is a high-severity finding.'
+  },
+  {
+    id: 'cloud-08',
+    title: 'Kubernetes RBAC Misconfiguration',
+    objective: 'A pod has a service account with cluster-admin permissions. What kubectl command lists all secrets across all namespaces?',
+    hint: 'Use kubectl get secrets with a flag for all namespaces. There is a short form flag too.',
+    answers: [
+      'kubectl get secrets --all-namespaces',
+      'kubectl get secrets -A'
+    ],
+    flag: 'FLAG{k8s_secrets_exposed}',
+    xp: 30,
+    explanation: 'Every pod in Kubernetes automatically receives a service account token mounted at /var/run/secrets/kubernetes.io/serviceaccount/token. If that service account has been granted cluster-admin (or wide RBAC permissions), the pod can call the Kubernetes API server with full privileges. Check your own permissions first: kubectl auth can-i --list shows every allowed verb and resource. From inside a pod, you can curl the API directly using the mounted token and CA cert. kubectl get secrets -A lists all Kubernetes Secrets across every namespace - these often contain database passwords, TLS certificates, image pull credentials, and other service tokens. Namespace breakout technique: if you can create pods, schedule one with hostPID:true or mount the host filesystem to escape the container. Direct etcd access (port 2379) bypasses all RBAC entirely and exposes the entire cluster state including all secrets in plaintext.'
+  },
+  {
+    id: 'cloud-09',
+    title: 'Serverless Function Exploitation',
+    objective: 'A misconfigured serverless function exposes its source code. AWS Lambda functions can be downloaded if you have lambda:GetFunction. What does the response Code.Location field contain?',
+    hint: 'The Code.Location field is a time-limited URL pointing to an S3 location where the deployment package is stored.',
+    answers: [
+      'presigned s3 url',
+      's3 url',
+      'download url',
+      'pre-signed url'
+    ],
+    xp: 25,
+    explanation: 'aws lambda get-function --function-name FUNC_NAME returns a JSON response where Code.Location is a pre-signed S3 URL valid for approximately 10 minutes. Download the deployment ZIP with curl, then unzip and inspect. Developers frequently hardcode secrets directly in Lambda source code, store credentials in .env files bundled into the ZIP, or rely on environment variables that are also returned by get-function-configuration. Lambda layers (shared code libraries) can also be downloaded with aws lambda get-layer-version-by-arn and often contain shared credentials or internal libraries. VPC configuration leaks in the Lambda response can reveal internal network topology. Additional attack surface: if you have lambda:UpdateFunctionCode, you can replace the function entirely and redirect its execution, intercepting any data it processes including database query results, API responses, and payment information.'
+  },
+  {
+    id: 'cloud-10',
+    title: 'Cloud Storage Enumeration',
+    objective: 'Enumerate cloud storage buckets via DNS permutation. What tool brute-forces S3 bucket names by trying common permutations of a company name across multiple cloud providers?',
+    hint: 'One tool accepts a keyword with -k and checks AWS S3, GCP Storage, and Azure Blobs in a single run.',
+    answers: [
+      's3scanner',
+      'bucket finder',
+      'cloud enum',
+      'cloudenum',
+      'lazys3',
+      'gcpbucketbrute'
+    ],
+    flag: 'FLAG{cloud_storage_enumerated}',
+    xp: 30,
+    explanation: 'cloud_enum -k companyname automatically generates hundreds of permutations (companyname-dev, companyname-backup, companyname-prod, etc.) and checks each across AWS S3, Google Cloud Storage, and Azure Blob Storage simultaneously. s3scanner takes a list of bucket names and checks each for public read, public write, and authenticated access. lazys3 -w wordlist.txt checks S3 specifically using a custom wordlist. Successful finds frequently contain database backup files (.sql, .dump), credential files (.env, config.yml), source code archives, internal documentation, and customer PII - all representing serious data breaches. Bucket takeover is a related attack: when a DNS CNAME record points to a deleted S3 bucket name, an attacker can register that same bucket name and serve arbitrary content from the victim domain, enabling phishing and asset injection attacks. Always check bucket ACLs with aws s3api get-bucket-acl after discovery.'
   }
 ]
 
@@ -131,8 +199,8 @@ export default function CloudSecurityLab() {
         </div>
 
         <p style={{ color: '#8a7a5a', fontSize: '0.85rem', marginBottom: '1rem', lineHeight: 1.7, fontFamily: 'JetBrains Mono, monospace' }}>
-          AWS credential theft, IAM enumeration, S3 misconfigurations, Lambda exploitation, and CloudTrail analysis.
-          Type real commands, earn XP, and capture flags. Complete all 5 steps to unlock Phase 2.
+          AWS credential theft, IAM enumeration, S3 misconfigurations, Lambda exploitation, CloudTrail analysis, GCP metadata, Azure Managed Identity, Kubernetes RBAC, and cloud storage enumeration.
+          Type real commands, earn XP, and capture flags. Complete all 10 steps to unlock Phase 2.
         </p>
 
         <div style={{ background: 'rgba(255,149,0,0.03)', border: '1px solid rgba(255,149,0,0.12)', borderRadius: '6px', padding: '1rem 1.25rem', marginBottom: '1.25rem', fontFamily: 'JetBrains Mono, monospace' }}>
@@ -201,7 +269,7 @@ export default function CloudSecurityLab() {
             >
               {guidedDone ? '&#9658; LAUNCH FREE LAB ENVIRONMENT' : '&#128274; COMPLETE GUIDED PHASE FIRST'}
             </button>
-            {!guidedDone && <div style={{ marginTop: '1rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#3a2000' }}>Complete all 5 guided steps above to unlock the free lab environment</div>}
+            {!guidedDone && <div style={{ marginTop: '1rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#3a2000' }}>Complete all 10 guided steps above to unlock the free lab environment</div>}
           </div>
         ) : (
           <div style={{ border: '1px solid ' + accent + '30', borderRadius: '10px', overflow: 'hidden', background: '#080500' }}>
