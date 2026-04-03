@@ -8,7 +8,7 @@ const accent = '#ff3333'
 const moduleId = 'red-team'
 const moduleName = 'Red Team Operations'
 const moduleNum = '11'
-const xpTotal = 135
+const xpTotal = 280
 
 const steps: LabStep[] = [
   {
@@ -60,7 +60,54 @@ const steps: LabStep[] = [
     ],
     flag: 'FLAG{persistence_established}',
     xp: 35,
-    explanation: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run entries execute at each user logon. Set with: reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v Updater /t REG_SZ /d "C:\\payload.exe". Detected by Autoruns (Sysinternals) and most EDR products — use with OPSEC considerations.'
+    explanation: 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run entries execute at each user logon. Set with: reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v Updater /t REG_SZ /d "C:\\payload.exe". Detected by Autoruns (Sysinternals) and most EDR products - use with OPSEC considerations.'
+  },
+  {
+    id: 'redteam-06',
+    title: 'Process Injection',
+    objective: 'Process injection hides malicious code inside a legitimate process. What Windows API call is commonly used to write shellcode into a remote process before executing it?',
+    hint: 'Three API calls are used in sequence: allocate memory, write shellcode, then create a thread to execute it.',
+    answers: ['WriteProcessMemory', 'VirtualAllocEx', 'CreateRemoteThread', 'NtWriteVirtualMemory'],
+    xp: 25,
+    explanation: 'Classic injection: VirtualAllocEx (allocate memory in target), WriteProcessMemory (write shellcode), CreateRemoteThread (execute). Process Hollowing: spawn suspended process, unmap PE, write malicious PE, resume. Reflective DLL injection: self-loading DLL, no disk artifact. Detection: unusual parent-child process relationships, cross-process memory operations flagged by EDR behavioral engines.'
+  },
+  {
+    id: 'redteam-07',
+    title: 'Token Impersonation',
+    objective: 'Windows token impersonation steals privileges from a running process. What tool lists available tokens and allows you to impersonate them to escalate privileges?',
+    hint: 'This is a Meterpreter module - type the module name used to list and steal tokens.',
+    answers: ['incognito', 'meterpreter incognito', 'token impersonation', 'impersonate_token'],
+    flag: 'FLAG{token_impersonated}',
+    xp: 20,
+    explanation: 'incognito (Meterpreter module) lists delegation and impersonation tokens. impersonate_token "DOMAIN\\\\Admin" steals a logged-on admin session. Requires SeImpersonatePrivilege, which is held by IIS and SQL Server service accounts - a common post-exploitation path. Modern alternative: Rubeus.exe tgtdeleg for Kerberos delegation abuse. Token theft works across sessions and does not require the target account password.'
+  },
+  {
+    id: 'redteam-08',
+    title: 'Kerberoasting',
+    objective: 'Kerberoasting extracts service ticket hashes for offline cracking. What tool performs Kerberoasting and outputs hashes in hashcat format?',
+    hint: 'Both a .NET Windows tool and an Impacket Linux tool are valid answers.',
+    answers: ['rubeus', 'rubeus.exe kerberoast', 'impacket-GetUserSPNs', 'GetUserSPNs.py', 'invoke-kerberoast'],
+    xp: 30,
+    explanation: 'Rubeus.exe kerberoast /outfile:hashes.txt requests service tickets for all accounts with SPNs and outputs NT hashes. impacket-GetUserSPNs domain/user:pass -outputfile hashes.txt works from Linux without a domain-joined machine. Crack with hashcat -m 13100. Prevention: use gMSA (Group Managed Service Accounts), ensure service accounts have strong random passwords (25+ chars), audit all accounts with registered SPNs using Get-ADUser.'
+  },
+  {
+    id: 'redteam-09',
+    title: 'Credential Dumping',
+    objective: 'You have SYSTEM-level access to a Windows machine. What tool dumps NTLM hashes from LSASS memory?',
+    hint: 'The most well-known credential dumping tool starts with "m" and has a module called sekurlsa.',
+    answers: ['mimikatz', 'mimikatz sekurlsa::logonpasswords', 'procdump', 'lsass dump'],
+    xp: 25,
+    explanation: 'mimikatz sekurlsa::logonpasswords dumps plaintext passwords and NT hashes from LSASS memory. Requires SeDebugPrivilege (SYSTEM or admin). Modern EDRs block direct LSASS access - alternatives include: procdump.exe -ma lsass.exe (legitimate Sysinternals binary, often allowed by AV), rundll32 comsvcs.dll MiniDump (LOLBin approach), and nanodump (kernel driver method). Transfer the dump offline and parse with pypykatz on Linux to extract credentials without touching the target again.'
+  },
+  {
+    id: 'redteam-10',
+    title: 'OPSEC - Domain Fronting',
+    objective: 'Domain fronting hides C2 traffic behind a CDN. The HTTP Host header points to the real C2 while the SNI and IP target a legitimate CDN host. What does the attacker control in a domain fronting setup to route traffic to their C2 server?',
+    hint: 'It is an HTTP header - the one that tells the server which virtual host to serve.',
+    answers: ['host header', 'http host header', 'the host header', 'cdn host header'],
+    flag: 'FLAG{opsec_advanced}',
+    xp: 30,
+    explanation: 'Domain fronting: TLS SNI = allowed-cdn.cloudfront.net (bypasses firewall inspection), HTTP Host header = attacker.cloudfront.net (CDN routes internally to attacker server). Most CDNs have blocked this technique. Alternative - Domain borrowing uses legitimate subdomains of trusted services. Redirectors: a VPS running socat or nginx proxies traffic to the backend C2, keeping the real C2 IP hidden. Traffic shaping with jitter, sleep intervals, and business-hours-only callbacks significantly reduces automated detection.'
   }
 ]
 
@@ -128,7 +175,7 @@ export default function RedTeamLab() {
 
         <p style={{ color: '#8a6a6a', fontSize: '0.85rem', marginBottom: '1rem', lineHeight: 1.7, fontFamily: 'JetBrains Mono, monospace' }}>
           C2 frameworks, living-off-the-land techniques, OPSEC, lateral movement, and persistence.
-          Type real commands, earn XP, and capture flags. Complete all 5 steps to unlock Phase 2.
+          Type real commands, earn XP, and capture flags. Complete all 10 steps to unlock Phase 2.
         </p>
 
         <div style={{ background: 'rgba(255,51,51,0.03)', border: '1px solid rgba(255,51,51,0.12)', borderRadius: '6px', padding: '1rem 1.25rem', marginBottom: '1.25rem', fontFamily: 'JetBrains Mono, monospace' }}>
@@ -197,7 +244,7 @@ export default function RedTeamLab() {
             >
               {guidedDone ? '&#9658; LAUNCH FREE LAB ENVIRONMENT' : '&#128274; COMPLETE GUIDED PHASE FIRST'}
             </button>
-            {!guidedDone && <div style={{ marginTop: '1rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#3a0505' }}>Complete all 5 guided steps above to unlock the free lab environment</div>}
+            {!guidedDone && <div style={{ marginTop: '1rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#3a0505' }}>Complete all 10 guided steps above to unlock the free lab environment</div>}
           </div>
         ) : (
           <div style={{ border: '1px solid ' + accent + '30', borderRadius: '10px', overflow: 'hidden', background: '#080202' }}>

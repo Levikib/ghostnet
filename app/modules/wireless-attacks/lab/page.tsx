@@ -8,7 +8,7 @@ const accent = '#aaff00'
 const moduleId = 'wireless-attacks'
 const moduleName = 'Wireless Attacks'
 const moduleNum = '12'
-const xpTotal = 135
+const xpTotal = 250
 
 const steps: LabStep[] = [
   {
@@ -57,6 +57,53 @@ const steps: LabStep[] = [
     flag: 'FLAG{wireless_recon_complete}',
     xp: 35,
     explanation: 'hcitool scan discovers discoverable Bluetooth Classic devices. For BLE: hcitool lescan. bluetoothctl is the modern interactive alternative. Ubertooth-one can capture BLE advertising packets from non-discoverable devices. Found MACs feed into bluejacking or MITM attacks.'
+  },
+  {
+    id: 'wireless-06',
+    title: 'WPS PIN Attack',
+    objective: 'WPS (Wi-Fi Protected Setup) has a design flaw that allows brute-forcing the 8-digit PIN in only around 11,000 attempts. What tool exploits this WPS vulnerability?',
+    hint: 'Two tools are valid: one starts with "r" and one starts with "b". A faster variant uses a Pixie Dust attack.',
+    answers: ['reaver', 'bully', 'reaver -i wlan0mon -b BSSID', 'pixie dust'],
+    xp: 25,
+    explanation: 'reaver -i wlan0mon -b BSSID -vv brute-forces the WPS PIN. The PIN is verified as two halves (4+4 digits), reducing combinations from 100 million to 11,000. Pixie Dust attack (reaver -K 1) is faster and exploits weak random number generation in some router chipsets to recover the PIN in seconds. wash -i wlan0mon identifies WPS-enabled APs in range. Many modern routers implement WPS lockout after repeated failures, slowing brute-force attempts significantly.'
+  },
+  {
+    id: 'wireless-07',
+    title: 'PMKID Attack',
+    objective: 'The PMKID attack captures WPA2 material without needing a 4-way handshake - just a single frame from the AP is enough. What tool captures PMKIDs directly from an access point?',
+    hint: 'The tool name starts with "hcx" - part of the hcxtools suite.',
+    answers: ['hcxdumptool', 'hcxtools', 'hcxdumptool -i wlan0mon -o pmkid.pcapng'],
+    flag: 'FLAG{pmkid_captured}',
+    xp: 25,
+    explanation: 'hcxdumptool -i wlan0mon -o pmkid.pcapng --enable_status=1 captures PMKIDs without needing connected clients. Convert with: hcxpcapngtool pmkid.pcapng -o hash.hcwpax. Crack with hashcat -m 22000. The PMKID is computed as HMAC-SHA1(PMK, "PMK Name" + AP_MAC + Client_MAC) - if you know the passphrase you can derive and verify the PMK independently. The key advantage over handshake capture: this works even when no clients are currently associated with the target AP.'
+  },
+  {
+    id: 'wireless-08',
+    title: 'Captive Portal Credential Harvesting',
+    objective: 'A captive portal attack presents a fake Wi-Fi login page to harvest credentials from victims. What component serves the fake HTML login page in a wifiphisher attack?',
+    hint: 'Think about what software actually delivers the web page content to the victim browser.',
+    answers: ['web server', 'apache', 'nginx', 'lighttpd', 'phishing page', 'captive portal page'],
+    xp: 20,
+    explanation: 'wifiphisher uses a built-in web server with phishing scenario templates. When a victim connects to the evil twin AP, DNS is hijacked so all domain queries return the attacker IP. HTTP requests then hit the fake portal page. Scenarios include a router firmware update page, OAuth login prompt, or ISP authentication portal. Submitted credentials are captured and logged to a file. Countermeasures include HTTPS-only portals and certificate pinning in apps, though browser-based portals are still vulnerable.'
+  },
+  {
+    id: 'wireless-09',
+    title: 'Deauthentication Attack',
+    objective: '802.11 management frames are unencrypted and unauthenticated, allowing an attacker to spoof deauth frames and disconnect clients. What aireplay-ng attack type number sends deauthentication frames?',
+    hint: 'It is a single digit. The flag used is -0 (zero), not the letter O.',
+    answers: ['0', '--deauth 0', 'aireplay-ng --deauth', '-0', 'attack 0'],
+    xp: 20,
+    explanation: 'aireplay-ng -0 10 -a BSSID -c CLIENT_MAC wlan0mon sends 10 deauth frames targeting a specific client. Omitting -c broadcasts to all clients on that AP. Unencrypted management frames in older 802.11 standards allow this spoofing because no authentication is required. 802.11w (Protected Management Frames), enabled by default in WPA3, mitigates deauth attacks by encrypting and authenticating management frames. Common uses: force a WPA2 handshake capture, disrupt a target user, or push clients onto an evil twin AP.'
+  },
+  {
+    id: 'wireless-10',
+    title: 'BLE Sniffing',
+    objective: 'BLE devices broadcast advertising packets that can be passively captured without pairing. What Ubertooth-based command captures BLE advertising packets on the primary advertising channel?',
+    hint: 'The command starts with "ubertooth-btle" followed by flags to enable following and specify the advertising channel.',
+    answers: ['ubertooth-btle', 'ubertooth', 'ubertooth-one', 'ubertooth-btle -f -A 37'],
+    flag: 'FLAG{wireless_complete}',
+    xp: 30,
+    explanation: 'ubertooth-btle -f -A 37 sniffs BLE advertising on channel 37. BLE uses 3 dedicated advertising channels (37, 38, 39). Pipe to Wireshark for live analysis: ubertooth-btle -f -c /tmp/pipe in the background, then wireshark -k -i /tmp/pipe. BLE vulnerabilities include unencrypted characteristics, predictable pairing PINs, and GATT attribute enumeration. gatttool -b DEVICE_MAC --primary lists GATT services on a target device. The nRF Sniffer dongle is a lower-cost alternative hardware option for BLE capture.'
   }
 ]
 
@@ -124,7 +171,7 @@ export default function WirelessAttacksLab() {
 
         <p style={{ color: '#6a7a4a', fontSize: '0.85rem', marginBottom: '1rem', lineHeight: 1.7, fontFamily: 'JetBrains Mono, monospace' }}>
           Monitor mode, WPA2 handshake capture, hashcat cracking, evil twin attacks, and Bluetooth recon.
-          Type real commands, earn XP, and capture flags. Complete all 5 steps to unlock Phase 2.
+          Type real commands, earn XP, and capture flags. Complete all 10 steps to unlock Phase 2.
         </p>
 
         <div style={{ background: 'rgba(170,255,0,0.03)', border: '1px solid rgba(170,255,0,0.12)', borderRadius: '6px', padding: '1rem 1.25rem', marginBottom: '1.25rem', fontFamily: 'JetBrains Mono, monospace' }}>
@@ -193,7 +240,7 @@ export default function WirelessAttacksLab() {
             >
               {guidedDone ? '&#9658; LAUNCH FREE LAB ENVIRONMENT' : '&#128274; COMPLETE GUIDED PHASE FIRST'}
             </button>
-            {!guidedDone && <div style={{ marginTop: '1rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#2a3a00' }}>Complete all 5 guided steps above to unlock the free lab environment</div>}
+            {!guidedDone && <div style={{ marginTop: '1rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#2a3a00' }}>Complete all 10 guided steps above to unlock the free lab environment</div>}
           </div>
         ) : (
           <div style={{ border: '1px solid ' + accent + '30', borderRadius: '10px', overflow: 'hidden', background: '#050600' }}>
