@@ -87,6 +87,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe()
   }, [isSupabaseConfigured])
 
+  // Listen for lab-completion events to refresh profile immediately
+  useEffect(() => {
+    const onRefresh = () => {
+      if (user) fetchProfile(user.id)
+    }
+    window.addEventListener('ghostnet_profile_refresh', onRefresh)
+    return () => window.removeEventListener('ghostnet_profile_refresh', onRefresh)
+  }, [user])
+
   async function signIn(email: string, password: string) {
     if (!isSupabaseConfigured) return { error: 'Supabase not configured' }
     try {

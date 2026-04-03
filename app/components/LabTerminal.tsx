@@ -90,12 +90,15 @@ export default function LabTerminal({ labId, moduleId, title, accent, steps, onC
   }, [])
 
   const saveProgress = useCallback(async (newCompleted: Set<number>, newXp: number, done: boolean) => {
-    // localStorage always
+    const nowIso = new Date().toISOString()
+
+    // localStorage always — include completedAt for profile activity feed
     localStorage.setItem('lab_' + labId, JSON.stringify({
       completed: Array.from(newCompleted),
       xp: newXp,
       step: currentStep,
       done,
+      completedAt: done ? nowIso : undefined,
     }))
 
     // Sync to ghostnet_progress so ProgressTracker + Profile stay in sync
@@ -111,7 +114,7 @@ export default function LabTerminal({ labId, moduleId, title, accent, steps, onC
           const ystStr = new Date(Date.now() - 86400000).toDateString()
           if (prevDay === ystStr) gp.streak = (gp.streak || 0) + 1
           else if (prevDay !== todayStr) gp.streak = 1
-          gp.lastActivity = new Date().toISOString()
+          gp.lastActivity = nowIso
           localStorage.setItem('ghostnet_progress', JSON.stringify(gp))
           window.dispatchEvent(new Event('ghostnet_progress_updated'))
         }
@@ -135,7 +138,11 @@ export default function LabTerminal({ labId, moduleId, title, accent, steps, onC
             xp_earned: newXp,
           }),
         })
-        if (resp.ok) setSaved(true)
+        if (resp.ok) {
+          setSaved(true)
+          // Trigger profile refresh so NavUserBadge + profile page update instantly
+          window.dispatchEvent(new Event('ghostnet_profile_refresh'))
+        }
         setSaving(false)
       }
     } catch {

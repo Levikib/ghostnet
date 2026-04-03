@@ -1,6 +1,7 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { RANK_LIST } from '../lib/supabase'
 
 const MODULES = [
   {
@@ -197,9 +198,37 @@ const DIFF_COLOR: Record<string, string> = {
   BEGINNER: '#00ff41', INTERMEDIATE: '#ffb347', ADVANCED: '#ff4136', EXPERT: '#ff3333'
 }
 
+const LAB_IDS = [
+  'tor-lab','osint-lab','crypto-lab','offensive-lab','active-directory-lab',
+  'web-attacks-lab','malware-lab','network-attacks-lab','cloud-security-lab',
+  'social-engineering-lab','red-team-lab','wireless-attacks-lab','mobile-security-lab',
+]
+
+function getDashboardProgress() {
+  if (typeof window === 'undefined') return { xp: 0, completedLabs: 0, rank: 'Ghost', rankColor: '#4a9a4a' }
+  try {
+    const raw = localStorage.getItem('ghostnet_progress')
+    const gp = raw ? JSON.parse(raw) : {}
+    const xp: number = gp.xp || 0
+    const completedLabs: number = (gp.completedLabs || []).filter((id: string) => LAB_IDS.includes(id)).length
+    const rank = [...RANK_LIST].reverse().find(r => xp >= r.minXp) || RANK_LIST[0]
+    return { xp, completedLabs, rank: rank.title, rankColor: rank.color }
+  } catch {
+    return { xp: 0, completedLabs: 0, rank: 'Ghost', rankColor: '#4a9a4a' }
+  }
+}
+
 export default function Dashboard() {
   const [selectedModule, setSelectedModule] = useState<string | null>(null)
   const [expandedTool, setExpandedTool] = useState<string | null>(null)
+  const [liveStats, setLiveStats] = useState({ xp: 0, completedLabs: 0, rank: 'Ghost', rankColor: '#4a9a4a' })
+
+  useEffect(() => {
+    setLiveStats(getDashboardProgress())
+    const onUpdate = () => setLiveStats(getDashboardProgress())
+    window.addEventListener('ghostnet_progress_updated', onUpdate)
+    return () => window.removeEventListener('ghostnet_progress_updated', onUpdate)
+  }, [])
 
   const picked = MODULES.find(m => m.href === selectedModule)
 
@@ -224,8 +253,8 @@ export default function Dashboard() {
         <div style={{ display: 'flex', gap: '2px', flexWrap: 'wrap' as const }}>
           {[
             { label: '13 MODULES', color: '#00ff41' },
-            { label: '65+ LABS', color: '#00d4ff' },
-            { label: '6 TOOLS', color: '#bf5fff' },
+            { label: '13 INTERACTIVE LABS', color: '#00d4ff' },
+            { label: '9 TOOLS', color: '#bf5fff' },
             { label: 'CONCEPT + LAB FORMAT', color: '#ffb347' },
             { label: 'AI GHOST AGENT', color: '#ff6ec7' },
             { label: 'CONTINUOUSLY UPDATED', color: '#00ff41' },
@@ -235,6 +264,28 @@ export default function Dashboard() {
             </span>
           ))}
         </div>
+
+        {/* Live operator stats bar */}
+        {liveStats.xp > 0 && (
+          <div style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(0,255,65,0.04)', border: '1px solid rgba(0,255,65,0.15)', borderRadius: '6px', padding: '8px 16px', flexWrap: 'wrap' as const }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: liveStats.rankColor, boxShadow: '0 0 6px ' + liveStats.rankColor }} />
+              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7.5px', color: '#1a4a1a', letterSpacing: '0.15em' }}>YOUR SESSION</span>
+            </div>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7.5px', color: liveStats.rankColor, letterSpacing: '0.1em', fontWeight: 700 }}>
+              {liveStats.rank.toUpperCase()}
+            </span>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7.5px', color: '#00ff41' }}>
+              {liveStats.xp.toLocaleString()} XP
+            </span>
+            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7.5px', color: '#3a6a3a' }}>
+              {liveStats.completedLabs}/13 labs complete
+            </span>
+            <Link href="/profile" style={{ marginLeft: 'auto', textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#00d4ff', letterSpacing: '0.1em' }}>
+              VIEW PROFILE &rsaquo;
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* ── QUICK ACCESS BAR ─────────────────────────────────── */}
