@@ -268,11 +268,64 @@ export default function LabTerminal({ labId, moduleId, title, accent, steps, onC
         </div>
       )}
 
-      {/* Step progress bar */}
-      <div style={{ display: 'flex', gap: '4px', marginBottom: '12px' }}>
-        {steps.map((s, i) => (
-          <div key={i} style={{ flex: 1, height: '4px', borderRadius: '2px', background: completed.has(i) ? accent : (i === currentStep ? accent + '55' : '#1a2e1e'), transition: 'background 0.3s' }} title={'Step ' + (i + 1) + ': ' + s.title} />
-        ))}
+      {/* Step navigator */}
+      <div style={{ marginBottom: '12px' }}>
+        {/* Progress bar */}
+        <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
+          {steps.map((s, i) => (
+            <div
+              key={i}
+              onClick={() => {
+                if (allDone) return
+                setCurrentStep(i)
+                setFailed(false)
+                setShowHint(false)
+                setAttempts(0)
+                addLine('', 'sys')
+                addLine('→ Jumped to step ' + (i + 1) + ': ' + s.title, 'sys')
+              }}
+              style={{ flex: 1, height: '4px', borderRadius: '2px', background: completed.has(i) ? accent : (i === currentStep ? accent + '55' : '#1a2e1e'), transition: 'background 0.3s', cursor: allDone ? 'default' : 'pointer' }}
+              title={'Step ' + (i + 1) + ': ' + s.title}
+            />
+          ))}
+        </div>
+        {/* Step index — scrollable row of numbered pills */}
+        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' as const }}>
+          {steps.map((s, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                if (allDone) return
+                setCurrentStep(i)
+                setFailed(false)
+                setShowHint(false)
+                setAttempts(0)
+                addLine('', 'sys')
+                addLine('→ Jumped to step ' + (i + 1) + ': ' + s.title, 'sys')
+              }}
+              title={s.title}
+              style={{
+                fontFamily: mono,
+                fontSize: '7px',
+                padding: '2px 7px',
+                borderRadius: '3px',
+                border: '1px solid ' + (i === currentStep ? accent : (completed.has(i) ? accent + '55' : '#1a2e1e')),
+                background: i === currentStep ? accent + '22' : (completed.has(i) ? accent + '11' : 'transparent'),
+                color: i === currentStep ? accent : (completed.has(i) ? accent + 'aa' : '#3a5a3a'),
+                cursor: allDone ? 'default' : 'pointer',
+                letterSpacing: '0.05em',
+                transition: 'all 0.15s',
+                minWidth: '24px',
+                textAlign: 'center' as const,
+              }}
+            >
+              {completed.has(i) ? '✓' : String(i + 1)}
+            </button>
+          ))}
+          <span style={{ fontFamily: mono, fontSize: '7px', color: '#3a5a3a', alignSelf: 'center', marginLeft: '4px' }}>
+            {Array.from(completed).length}/{steps.length} done
+          </span>
+        </div>
       </div>
 
       {/* Current step card */}
