@@ -658,7 +658,7 @@ malloc(size)   # Returns TARGET_ADDRESS (arbitrary!)
         <H3>Double Free</H3>
         <P>Freeing the same chunk twice corrupts the bin's linked list. In older glibc (pre-2.26 fastbin), this creates a loop in the fastbin list. In tcache (2.26+), a count check was added, but can be bypassed by freeing another chunk of the same size between the two frees.</P>
 
-        <H3>House of Force (glibc < 2.29)</H3>
+        <H3>House of Force (glibc pre-2.29)</H3>
         <P>Overwrite the top chunk size field with a very large value (0xffffffffffffffff). The next malloc() with a specially crafted size causes the top chunk pointer to wrap around to any address in memory, causing the following allocation to return an arbitrary address.</P>
 
         <H3>pwndbg Heap Commands</H3>
