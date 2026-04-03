@@ -182,7 +182,7 @@ What open-source software PBX is commonly used to implement CLI spoofing in vish
     explanation: `Asterisk CLI spoofing configuration (dialplan excerpt):
   [vishing-outbound]
   exten => _X.,1,Set(CALLERID(all)=John Smith <+15551234567>)
-  exten => _X.,n,Dial(SIP/voip-trunk/${EXTEN})
+  exten => _X.,n,Dial(SIP/voip-trunk/EXTEN_HERE)
   exten => _X.,n,Hangup()
 
 An Asterisk server with a permissive SIP trunk provider passes the manipulated caller ID to the PSTN. The receiving phone displays the spoofed number. Most caller ID displays are cosmetic only — they can show any string the originating carrier allows.
