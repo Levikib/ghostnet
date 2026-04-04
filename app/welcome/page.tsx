@@ -224,7 +224,7 @@ export default function WelcomePage() {
       }} />
 
       {/* Content */}
-      <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '700px', padding: '0 24px' }}>
+      <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '700px', padding: '0 24px', gap: '0' }}>
 
         {/* Boot terminal — shown during boot phase */}
         {phase === 'boot' && (
@@ -335,7 +335,7 @@ export default function WelcomePage() {
             <div style={{
               fontFamily: mono, fontSize: '0.65rem',
               color: '#3a6a3a', letterSpacing: '0.2em',
-              marginBottom: '3rem',
+              marginBottom: '2rem',
               opacity: phase === 'ready' ? 1 : 0,
               transition: 'opacity 0.8s ease 0.3s',
             }}>
@@ -360,6 +360,7 @@ export default function WelcomePage() {
                 animation: phase === 'ready' ? 'fadeSlideUp 0.6s ease both, borderPulse 2.5s ease-in-out 0.6s infinite' : 'none',
                 opacity: phase === 'ready' ? 1 : 0,
                 display: phase === 'ready' ? 'block' : 'none',
+                marginBottom: '2.5rem',
               }}
             >
               ACCESS THE NETWORK
@@ -367,8 +368,7 @@ export default function WelcomePage() {
 
             {/* Bottom status */}
             <div style={{
-              position: 'absolute', bottom: '40px',
-              display: 'flex', gap: '24px',
+              display: 'flex', gap: '16px', flexWrap: 'wrap' as const, justifyContent: 'center',
               fontFamily: mono, fontSize: '0.58rem',
               color: '#1a4a1a', letterSpacing: '0.15em',
               opacity: phase === 'ready' ? 1 : 0,
