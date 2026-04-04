@@ -10,21 +10,24 @@ interface Progress {
   notes: Record<string, string>
 }
 
+// XP values match actual step totals in each lab page (summed from all step xp values)
 const LABS = [
   { id: 'tor-lab',                module: 'MOD-01', label: 'Tor Network Lab',           xp: 345 },
   { id: 'osint-lab',              module: 'MOD-02', label: 'OSINT Investigation Lab',   xp: 305 },
-  { id: 'crypto-lab',             module: 'MOD-03', label: 'Crypto Forensics Lab',      xp: 300 },
-  { id: 'offensive-lab',          module: 'MOD-04', label: 'Offensive Security Lab',    xp: 280 },
-  { id: 'active-directory-lab',   module: 'MOD-05', label: 'Active Directory Lab',      xp: 235 },
-  { id: 'web-attacks-lab',        module: 'MOD-06', label: 'Web Attacks Lab',           xp: 225 },
-  { id: 'malware-lab',            module: 'MOD-07', label: 'Malware Analysis Lab',      xp: 210 },
-  { id: 'network-attacks-lab',    module: 'MOD-08', label: 'Network Attacks Lab',       xp: 175 },
-  { id: 'cloud-security-lab',     module: 'MOD-09', label: 'Cloud Security Lab',        xp: 145 },
-  { id: 'social-engineering-lab', module: 'MOD-10', label: 'Social Engineering Lab',    xp: 120 },
-  { id: 'red-team-lab',           module: 'MOD-11', label: 'Red Team Operations Lab',   xp: 135 },
-  { id: 'wireless-attacks-lab',   module: 'MOD-12', label: 'Wireless Attacks Lab',      xp: 135 },
-  { id: 'mobile-security-lab',    module: 'MOD-13', label: 'Mobile Security Lab',       xp: 130 },
+  { id: 'crypto-lab',             module: 'MOD-03', label: 'Crypto Forensics Lab',      xp: 405 },
+  { id: 'offensive-lab',          module: 'MOD-04', label: 'Offensive Security Lab',    xp: 400 },
+  { id: 'active-directory-lab',   module: 'MOD-05', label: 'Active Directory Lab',      xp: 495 },
+  { id: 'web-attacks-lab',        module: 'MOD-06', label: 'Web Attacks Lab',           xp: 445 },
+  { id: 'malware-lab',            module: 'MOD-07', label: 'Malware Analysis Lab',      xp: 465 },
+  { id: 'network-attacks-lab',    module: 'MOD-08', label: 'Network Attacks Lab',       xp: 445 },
+  { id: 'cloud-security-lab',     module: 'MOD-09', label: 'Cloud Security Lab',        xp: 490 },
+  { id: 'social-engineering-lab', module: 'MOD-10', label: 'Social Engineering Lab',    xp: 300 },
+  { id: 'red-team-lab',           module: 'MOD-11', label: 'Red Team Operations Lab',   xp: 465 },
+  { id: 'wireless-attacks-lab',   module: 'MOD-12', label: 'Wireless Attacks Lab',      xp: 455 },
+  { id: 'mobile-security-lab',    module: 'MOD-13', label: 'Mobile Security Lab',       xp: 435 },
 ]
+// Total earnable: 5,450 XP
+// Rank thresholds: Ghost 0 | Specter 750 | Phantom 1,800 | Wraith 3,200 | Legend 5,000
 
 const MOD_COLORS: Record<string, string> = {
   'MOD-01': '#00ff41', 'MOD-02': '#00d4ff', 'MOD-03': '#ffb347',

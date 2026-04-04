@@ -8,7 +8,6 @@ const accent = '#7c4dff'
 const moduleId = 'mobile-security'
 const moduleName = 'Mobile Security'
 const moduleNum = '13'
-const xpTotal = 435
 
 const steps: LabStep[] = [
   {
@@ -205,6 +204,8 @@ const steps: LabStep[] = [
     explanation: 'OWASP MASTG (Mobile Application Security Testing Guide) plus MASVS (Mobile Application Security Verification Standard) is the definitive reference for mobile security testing. MASVS levels: L1 (standard security), L2 (defence in depth), R (resiliency against reverse engineering). Full pentest workflow - STATIC ANALYSIS: 1) APK/IPA collection via gplaycli or ipatool. 2) Automated scan: MobSF upload, review findings. 3) Manual decompile: jadx (Android), Hopper/Ghidra (iOS). 4) Secrets search: grep for password, api_key, secret, token in decompiled output. 5) Manifest review: exported components, permissions, backup settings. DYNAMIC ANALYSIS: 1) Proxy setup: Burp plus device cert. 2) Launch app with Frida/Objection attached. 3) Walk all functionality, capture traffic. 4) Test authentication: session tokens, biometric bypass. 5) Test business logic: parameter tampering via Burp. REPORTING: Critical findings: hardcoded credentials, unencrypted sensitive data, authentication bypass. High: SSL pinning bypassable without jailbreak, exported components leaking data. Medium: weak crypto, insecure random. Low: missing certificate transparency, verbose errors. Tools summary: MobSF (static+dynamic), Frida (instrumentation), Objection (automation), Drozer (Android attack framework), Burp Suite (traffic), jadx (decompile), Ghidra (binary analysis), Corellium (cloud iOS/Android).'
   }
 ]
+
+const xpTotal = steps.reduce((sum, s) => sum + s.xp, 0)
 
 export default function MobileSecurityLab() {
   const [guidedDone, setGuidedDone] = useState(false)

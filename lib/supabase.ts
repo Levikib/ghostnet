@@ -69,21 +69,24 @@ export interface GhostMemory {
 }
 
 // XP thresholds per rank
+// Total earnable across all 13 labs: ~5,450 XP
+// Ghost 0→749 | Specter 750→1,799 | Phantom 1,800→3,199 | Wraith 3,200→4,999 | Legend 5,000+
+// ~2 labs to Specter, ~6 to Phantom, ~9-10 to Wraith, all 13 to Legend
 export const RANK_THRESHOLDS = {
-  Ghost: 0,
-  Specter: 1000,
-  Phantom: 3000,
-  Wraith: 7500,
-  Legend: 15000,
+  Ghost:   0,
+  Specter: 750,
+  Phantom: 1800,
+  Wraith:  3200,
+  Legend:  5000,
 } as const
 
 // Ordered rank list for UI rendering
 export const RANK_LIST = [
-  { title: 'Ghost',   minXp: 0,     color: '#4a9a4a' },
-  { title: 'Specter', minXp: 1000,  color: '#00d4ff' },
-  { title: 'Phantom', minXp: 3000,  color: '#bf5fff' },
-  { title: 'Wraith',  minXp: 7500,  color: '#ff4136' },
-  { title: 'Legend',  minXp: 15000, color: '#ffb347' },
+  { title: 'Ghost',   minXp: 0,    color: '#4a9a4a' },
+  { title: 'Specter', minXp: 750,  color: '#00d4ff' },
+  { title: 'Phantom', minXp: 1800, color: '#bf5fff' },
+  { title: 'Wraith',  minXp: 3200, color: '#ff4136' },
+  { title: 'Legend',  minXp: 5000, color: '#ffb347' },
 ] as const
 
 export function getNextRankInfo(xp: number): { title: string; minXp: number; color: string } | null {
@@ -93,10 +96,10 @@ export function getNextRankInfo(xp: number): { title: string; minXp: number; col
 export type GhostRank = keyof typeof RANK_THRESHOLDS
 
 export function getRank(xp: number): GhostRank {
-  if (xp >= 15000) return 'Legend'
-  if (xp >= 7500) return 'Wraith'
-  if (xp >= 3000) return 'Phantom'
-  if (xp >= 1000) return 'Specter'
+  if (xp >= 5000) return 'Legend'
+  if (xp >= 3200) return 'Wraith'
+  if (xp >= 1800) return 'Phantom'
+  if (xp >= 750)  return 'Specter'
   return 'Ghost'
 }
 
