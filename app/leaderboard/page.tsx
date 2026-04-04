@@ -371,7 +371,7 @@ export default function LeaderboardPage() {
                       <span style={{ fontSize: '0.78rem', color: '#b0c8c8', fontWeight: 500 }}>{op.username}</span>
                       <span style={{ fontSize: '0.6rem', color: op.rankColor, opacity: 0.8 }}>{op.rankTitle}</span>
                     </div>
-                    <div style={{ fontSize: '0.65rem', color: '#1a4a5a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{op.email}</div>
+                    <div className="leaderboard-col-hide" style={{ fontSize: '0.65rem', color: '#1a4a5a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{op.email}</div>
                     <div style={{ fontSize: '0.78rem', color: accent, textAlign: 'right', fontWeight: 600 }}>{op.xp.toLocaleString()}</div>
                     <div style={{ fontSize: '0.75rem', color: '#00ff41', textAlign: 'right' }}>{op.labs_completed}</div>
                     <div style={{ fontSize: '0.62rem', color: '#1a4a5a', textAlign: 'right' }}>

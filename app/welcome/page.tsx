@@ -56,7 +56,7 @@ function RainColumn({ x, delay }: { x: number; delay: number }) {
     const interval = setInterval(() => {
       setChars(prev => prev.map((c, i) => ({
         char: Math.random() > 0.85 ? randomGlyph() : c.char,
-        opacity: i === 0 ? 1 : prev[i - 1]?.opacity * 0.82 ?? 0,
+        opacity: i === 0 ? 1 : (prev[i - 1]?.opacity ?? 0) * 0.82,
       })))
     }, 80 + Math.random() * 60)
     return () => clearInterval(interval)
