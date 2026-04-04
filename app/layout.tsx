@@ -1,6 +1,6 @@
 'use client'
 import './globals.css'
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, createContext, useContext } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import GhostAgent from './components/GhostAgent'
@@ -10,6 +10,8 @@ import CVEFeed from './components/CVEFeed'
 import ErrorBoundary from './components/ErrorBoundary'
 import { AuthProvider } from './components/AuthProvider'
 import { createClient } from '../lib/supabase/client'
+
+const MobileMenuContext = createContext(false)
 
 function NavAuth() {
   const [email, setEmail] = useState<string | null>(null)
@@ -31,8 +33,7 @@ function NavAuth() {
     const supabase = createClient()
     await supabase.auth.signOut()
     setEmail(null)
-    router.push('/')
-    router.refresh()
+    router.push('/welcome')
   }
 
   if (email) {
@@ -76,7 +77,7 @@ const ALL_MODULES = [
   { href: '/modules/mobile-security',    label: 'Mobile Security',          color: '#7c4dff', code: '13' },
 ]
 
-const TOOLS = [
+const TOOLS_BASE = [
   { href: '/intel',         label: 'THREAT INTEL',     desc: 'Live CVE feed & advisories',      color: '#ff4136' },
   { href: '/tools',         label: 'TOOL REFERENCE',   desc: '200+ commands & cheatsheets',     color: '#00ff41' },
   { href: '/terminal',      label: 'RESEARCH TERMINAL',desc: 'Interactive command runner',       color: '#00d4ff' },
@@ -86,17 +87,37 @@ const TOOLS = [
   { href: '/report-generator', label: 'REPORT GENERATOR', desc: 'AI pentest report builder',       color: '#00ff41' },
   { href: '/attack-path',    label: 'ATTACK PATH',        desc: 'MITRE ATT&CK kill chain builder', color: '#ff4136' },
   { href: '/shodan',         label: 'SHODAN BUILDER',     desc: 'Shodan query constructor',        color: '#00d4ff' },
-  { href: '/auth',           label: 'ACCOUNT',            desc: 'Login or create your account',    color: '#00ff41' },
 ]
 
-function Nav() {
+function Nav({ onMobileMenuChange }: { onMobileMenuChange: (open: boolean) => void }) {
   const path = usePathname()
+  const router = useRouter()
   const [modulesOpen, setModulesOpen] = useState(false)
   const [toolsOpen, setToolsOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [authed, setAuthed] = useState(false)
   const modulesRef = useRef<HTMLDivElement>(null)
   const toolsRef = useRef<HTMLDivElement>(null)
   const mobileRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setAuthed(!!session))
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const TOOLS = [
+    ...TOOLS_BASE,
+    authed
+      ? { href: '/profile', label: 'PROFILE', desc: 'View your rank, XP and lab history', color: '#00ff41' }
+      : { href: '/auth',    label: 'ACCOUNT', desc: 'Login or create your account',       color: '#00ff41' },
+  ]
+
+  function setMobileOpenAndNotify(open: boolean) {
+    setMobileOpen(open)
+    onMobileMenuChange(open)
+  }
 
   const activeModule = ALL_MODULES.find(m => path.startsWith(m.href))
   const isLab = path.includes('/lab')
@@ -106,14 +127,14 @@ function Nav() {
     function handleClick(e: MouseEvent) {
       if (modulesRef.current && !modulesRef.current.contains(e.target as Node)) setModulesOpen(false)
       if (toolsRef.current && !toolsRef.current.contains(e.target as Node)) setToolsOpen(false)
-      if (mobileRef.current && !mobileRef.current.contains(e.target as Node)) setMobileOpen(false)
+      if (mobileRef.current && !mobileRef.current.contains(e.target as Node)) setMobileOpenAndNotify(false)
     }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
   // Close mobile menu on navigation
-  useEffect(() => { setMobileOpen(false); setModulesOpen(false); setToolsOpen(false) }, [path])
+  useEffect(() => { setMobileOpenAndNotify(false); setModulesOpen(false); setToolsOpen(false) }, [path])
 
   return (
     <nav style={{ background: '#030803', borderBottom: '1px solid #0d1f0d', position: 'sticky', top: 0, zIndex: 100 }}>
@@ -268,7 +289,7 @@ function Nav() {
             <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#1a5a1a' }}>ONLINE</span>
           </div>
           <button
-            onClick={() => setMobileOpen(o => !o)}
+            onClick={() => setMobileOpenAndNotify(!mobileOpen)}
             style={{ background: mobileOpen ? 'rgba(0,255,65,0.1)' : 'transparent', border: '1px solid rgba(0,255,65,0.25)', borderRadius: '5px', padding: '7px 10px', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center', justifyContent: 'center' }}
             aria-label="Toggle navigation"
           >
@@ -279,7 +300,25 @@ function Nav() {
 
           {/* MOBILE MENU PANEL */}
           {mobileOpen && (
-            <div style={{ position: 'fixed', top: '54px', left: 0, right: 0, bottom: 0, background: '#030803', zIndex: 9999, overflowY: 'auto', padding: '1rem', borderTop: '1px solid #0d1f0d' }}>
+            <div style={{ position: 'fixed', top: '54px', left: 0, right: 0, bottom: 0, background: '#030803', zIndex: 9999, overflowY: 'auto', padding: '1rem 1rem 5rem', borderTop: '1px solid #0d1f0d' }}>
+
+              {/* Auth row at top of mobile menu */}
+              {authed ? (
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                  <Link href="/profile" style={{ textDecoration: 'none', flex: 1, display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '5px', background: 'rgba(0,255,65,0.05)', border: '1px solid rgba(0,255,65,0.2)' }}>
+                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#00ff41', letterSpacing: '0.08em' }}>◈ MY PROFILE</span>
+                  </Link>
+                  <button onClick={async () => { const s = createClient(); await s.auth.signOut(); router.push('/welcome') }}
+                    style={{ padding: '10px 14px', borderRadius: '5px', background: 'rgba(255,65,54,0.06)', border: '1px solid rgba(255,65,54,0.3)', cursor: 'pointer', fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: '#ff4136', letterSpacing: '0.1em' }}>
+                    LOGOUT
+                  </button>
+                </div>
+              ) : (
+                <Link href="/auth" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '5px', marginBottom: '12px', background: 'rgba(0,255,65,0.05)', border: '1px solid rgba(0,255,65,0.2)' }}>
+                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#00ff41', letterSpacing: '0.08em' }}>→ LOGIN / CREATE ACCOUNT</span>
+                </Link>
+              )}
+
               <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', borderRadius: '6px', marginBottom: '6px', background: isDash ? 'rgba(0,255,65,0.07)' : 'transparent', border: isDash ? '1px solid rgba(0,255,65,0.2)' : '1px solid #0d1f0d' }}>
                 <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '10px', color: '#00ff41', letterSpacing: '0.1em' }}>⌂ DASHBOARD</span>
               </Link>
@@ -349,6 +388,33 @@ function OfflineBanner() {
   )
 }
 
+function AppShell({ children }: { children: React.ReactNode }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  return (
+    <MobileMenuContext.Provider value={mobileMenuOpen}>
+      <OfflineBanner />
+      <Nav onMobileMenuChange={setMobileMenuOpen} />
+      <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '2.5rem 1.5rem', minHeight: 'calc(100vh - 80px)' }}>
+        <ErrorBoundary label="Page">{children}</ErrorBoundary>
+      </main>
+      <footer style={{ borderTop: '1px solid #0a180a', padding: '1.25rem', textAlign: 'center' }}>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: '#3a6a3a', letterSpacing: '0.25em' }}>
+          GHOSTNET // SECURITY RESEARCH PLATFORM // FOR EDUCATIONAL AND AUTHORISED USE ONLY
+        </span>
+      </footer>
+      {!mobileMenuOpen && (
+        <>
+          <ErrorBoundary label="Ghost Agent"><GhostAgent /></ErrorBoundary>
+          <ErrorBoundary label="Progress Tracker"><ProgressTracker /></ErrorBoundary>
+          <ErrorBoundary label="Cheat Sheet"><CheatSheet /></ErrorBoundary>
+          <ErrorBoundary label="CVE Feed"><CVEFeed /></ErrorBoundary>
+        </>
+      )}
+    </MobileMenuContext.Provider>
+  )
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -357,20 +423,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <AuthProvider>
-          <OfflineBanner />
-          <Nav />
-          <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '2.5rem 1.5rem', minHeight: 'calc(100vh - 80px)' }}>
-            <ErrorBoundary label="Page">{children}</ErrorBoundary>
-          </main>
-          <footer style={{ borderTop: '1px solid #0a180a', padding: '1.25rem', textAlign: 'center' }}>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: '#3a6a3a', letterSpacing: '0.25em' }}>
-              GHOSTNET // SECURITY RESEARCH PLATFORM // FOR EDUCATIONAL AND AUTHORISED USE ONLY
-            </span>
-          </footer>
-          <ErrorBoundary label="Ghost Agent"><GhostAgent /></ErrorBoundary>
-          <ErrorBoundary label="Progress Tracker"><ProgressTracker /></ErrorBoundary>
-          <ErrorBoundary label="Cheat Sheet"><CheatSheet /></ErrorBoundary>
-          <ErrorBoundary label="CVE Feed"><CVEFeed /></ErrorBoundary>
+          <AppShell>{children}</AppShell>
         </AuthProvider>
       </body>
     </html>
