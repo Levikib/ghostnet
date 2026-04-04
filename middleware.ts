@@ -6,15 +6,17 @@ const PUBLIC_PATHS = [
   '/welcome',
   '/auth',
   '/auth/callback',
+  '/api/auth/callback', // Supabase email confirmation redirect
 ]
 
 // Static asset prefixes — always pass through
-const ASSET_PREFIXES = ['/_next', '/favicon', '/api/']
+// NOTE: /api/ is NOT here — API routes enforce their own auth checks
+const ASSET_PREFIXES = ['/_next', '/favicon']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Always allow static assets and API routes
+  // Always allow static assets
   if (ASSET_PREFIXES.some(p => pathname.startsWith(p))) {
     return NextResponse.next()
   }
