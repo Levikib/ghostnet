@@ -553,6 +553,220 @@ Other steganography techniques:
 In incident response: if you find exfiltration but cannot identify the channel, steganographic exfiltration is a real possibility in environments that allow image uploads or social media access.`
   },
 
+  // ── PHASE 6: TLS ATTACKS & CRYPTO FAILURES ───────────────────────────────
+
+  {
+    id: 'crypto-16',
+    title: 'Phase 6 — TLS Attack: BEAST, POODLE, and Downgrade Attacks',
+    objective: `TLS has had multiple catastrophic vulnerabilities caused by weak cipher modes and protocol downgrade flaws. POODLE (Padding Oracle On Downgraded Legacy Encryption) exploited SSL 3.0's CBC padding — a protocol from 1996 that could be forced by attackers who manipulate the TLS handshake. Modern TLS 1.3 eliminates entire vulnerability classes by removing CBC, RC4, RSA key exchange, and compression. What TLS version removed all known cryptographic vulnerabilities by mandating AEAD ciphers and forward secrecy?`,
+    hint: 'The latest TLS version, released in 2018, removed all legacy cipher suites and is the only version with no known practical attacks.',
+    answers: ['tls 1.3', 'TLS 1.3', '1.3', 'tls1.3'],
+    xp: 20,
+    explanation: `TLS version history and vulnerabilities — knowing these lets you audit servers and understand what still matters.
+
+TLS version attack history:
+  SSL 2.0 (1995): DROWN attack - shares key material with SSL 3.0; completely broken
+  SSL 3.0 (1996): POODLE - CBC padding oracle allows plaintext recovery of cookies
+  TLS 1.0 (1999): BEAST - CBC IV prediction allows chosen-plaintext attacks on cookies
+  TLS 1.1 (2006): Partially fixed BEAST, still allows RC4 (biased keystream)
+  TLS 1.2 (2008): Safe when configured correctly - but allows weak cipher suites
+  TLS 1.3 (2018): Eliminated all weak ciphers, mandatory AEAD, mandatory forward secrecy
+
+What TLS 1.3 removed:
+  No RSA key exchange (only ephemeral Diffie-Hellman - forward secrecy mandatory)
+  No CBC cipher suites (only AEAD: AES-GCM, ChaCha20-Poly1305)
+  No RC4, DES, 3DES, MD5, SHA-1
+  No TLS compression (defeats CRIME attack)
+  No renegotiation
+  Reduced handshake to 1 round-trip (TLS 1.2 took 2)
+
+Testing TLS configuration:
+  nmap --script ssl-enum-ciphers -p 443 target.com    Enumerate cipher suites
+  testssl.sh target.com                               Comprehensive TLS audit
+  sslyze --regular target.com                         Python TLS scanner
+  openssl s_client -connect target.com:443            Manual TLS inspection
+
+What to look for in a TLS audit:
+  Protocols enabled: reject SSL 2/3, TLS 1.0, TLS 1.1
+  Cipher suites: reject RC4, DES, 3DES, EXPORT ciphers, anonymous DH
+  Certificate: check expiry, chain, key size (RSA 2048+ or ECDSA P-256+)
+  Forward secrecy: ECDHE or DHE key exchange (not static RSA)
+  HSTS: HTTP Strict Transport Security header present with long max-age`,
+    flag: 'FLAG{tls_audit_complete}'
+  },
+
+  {
+    id: 'crypto-17',
+    title: 'Phase 6 — Padding Oracle Attack: PKCS7 CBC Decryption',
+    objective: `A padding oracle attack exploits the way CBC mode validates PKCS7 padding. When decrypting, if the server tells you (via an error, timing, or behaviour change) whether the padding is valid, you can decrypt any ciphertext without knowing the key — purely by sending modified ciphertexts and observing which ones produce valid padding. This is a chosen-ciphertext attack. The padbuster tool automates this. If a CBC block is 16 bytes and you want to decrypt the last byte, how many possible byte values must you try in the worst case?`,
+    hint: 'A single byte has 256 possible values (0x00 through 0xFF).',
+    answers: ['256', '255', '16', '128'],
+    xp: 25,
+    explanation: `Padding oracle attacks are devastatingly elegant — the cryptographic key is never needed. Only a yes/no oracle is required.
+
+How PKCS7 CBC padding works:
+  Plaintext must be padded to block size (16 bytes for AES)
+  Padding byte value = number of padding bytes added
+  1 byte padding:  [data][0x01]
+  4 bytes padding: [data][0x04][0x04][0x04][0x04]
+  Full block pad:  [0x10][0x10]...[0x10]  (16 bytes of 0x10)
+
+How the attack works (decrypting last byte):
+  CBC decryption: Plaintext[i] = Decrypt(Ciphertext[i]) XOR Ciphertext[i-1]
+
+  1. Modify last byte of Ciphertext[i-1] (call it C') trying all 256 values 0x00..0xFF
+  2. Send modified ciphertext to server
+  3. When server says "valid padding": last plaintext byte XOR C' = 0x01
+  4. Therefore: last plaintext byte = 0x01 XOR C'
+  5. Repeat for each byte working backwards
+
+padbuster tool (automates the entire attack):
+  padbuster http://target.com/decrypt ENCRYPTED_COOKIE 16 -encoding 0
+  -encoding 0 = base64 (other options: hex, base64url)
+  Recovers plaintext byte by byte, then re-encrypts arbitrary plaintext
+
+Real-world impact:
+  ASP.NET ViewState oracle (2010) - remote code execution via padding oracle
+  JavaServer Faces ViewState encryption - decryptable
+  Any application that returns different errors for bad padding vs wrong MAC
+
+Prevention:
+  Use authenticated encryption (AES-GCM, ChaCha20-Poly1305) - no separate padding
+  MAC-then-encrypt or Encrypt-then-MAC with constant-time comparison
+  NEVER reveal padding validity through errors, timing, or behaviour differences`
+  },
+
+  {
+    id: 'crypto-18',
+    title: 'Phase 6 — Side-Channel Attacks: Timing and Power Analysis',
+    objective: `Side-channel attacks extract secret information from physical implementation characteristics — not from mathematical weaknesses. Timing attacks measure how long cryptographic operations take, which can leak key bits. RSA private key operations (modular exponentiation) take different amounts of time depending on the key bits being processed. Power analysis (SPA/DPA) measures electricity consumption of hardware during crypto operations. What type of side-channel attack collects thousands of power traces and uses statistical analysis to extract key bits?`,
+    hint: 'Simple Power Analysis (SPA) uses one trace. The statistical multi-trace attack is Differential Power Analysis.',
+    answers: ['differential power analysis', 'DPA', 'dpa', 'statistical power analysis'],
+    xp: 20,
+    explanation: `Side-channel attacks bypass mathematically secure algorithms by attacking their physical implementation. They are responsible for breaking countless real-world devices.
+
+Timing attacks:
+  RSA square-and-multiply: key bit = 0 -> square only; key bit = 1 -> square + multiply
+  Measuring execution time for many operations reveals the key bit pattern
+  Defense: constant-time implementations (same operations regardless of key value)
+
+Meltdown and Spectre (CPU timing attacks, 2018):
+  Exploit CPU speculative execution + cache timing
+  Attacker measures cache access time to determine if data was loaded into cache
+  Extracts kernel memory from unprivileged process - breaks OS isolation
+  Affected: every Intel CPU from 1995-2018, many AMD and ARM CPUs
+
+Power analysis attacks on smartcards/HSMs:
+  Simple Power Analysis (SPA): one power trace, visually identify operations
+  Differential Power Analysis (DPA): thousands of traces, statistical correlation
+  Correlation Power Analysis (CPA): more efficient version of DPA
+  Equipment: oscilloscope, current probe, ChipWhisperer (open source, ~$500)
+
+ChipWhisperer - open hardware for side-channel research:
+  Captures power traces via SPI/UART target interface
+  Jupyter notebook tutorials from newae.com
+  Can break AES on ATmega target in ~100 traces
+
+Real-world targets:
+  EMV payment cards (Chip and PIN): power analysis can extract private key
+  Passport chips (e-passport): timing attacks on ECDSA nonce reuse
+  TPM chips: timing attacks on RSA operations
+  Smart meters: differential power analysis to extract billing keys
+
+Countermeasures:
+  Constant-time code: eliminate data-dependent branches and memory accesses
+  Masking: XOR all intermediate values with a random mask value
+  Noise injection: add random delays and dummy operations
+  Physical shielding: Faraday cage, power line filtering, decoupling capacitors`
+  },
+
+  {
+    id: 'crypto-19',
+    title: 'Phase 6 — Post-Quantum Cryptography: The Coming Transition',
+    objective: `Quantum computers running Shor's algorithm can factor large integers and solve discrete logarithm problems in polynomial time — breaking RSA, ECC, and Diffie-Hellman. A sufficiently powerful quantum computer would render all current public-key cryptography obsolete. NIST finalised its first post-quantum cryptography standards in 2024. What is the name of the NIST-standardised post-quantum key encapsulation mechanism based on lattice cryptography?`,
+    hint: 'NIST standardised ML-KEM in FIPS 203 (2024), formerly known as KYBER during the selection process.',
+    answers: ['ML-KEM', 'ml-kem', 'kyber', 'KYBER', 'ML-KEM (Kyber)', 'FIPS 203'],
+    xp: 20,
+    explanation: `The post-quantum cryptography transition is the largest infrastructure change in the history of internet security.
+
+Why quantum computers break current crypto:
+  Shor's algorithm (1994): factors N-bit integers in O(N^3) quantum operations
+  RSA-2048 security: 2^112 classical operations -> trivial quantum operations
+  ECDSA/ECDH: discrete log problem solved by Shor's in polynomial time
+  Symmetric crypto (AES, SHA): Grover's algorithm gives quadratic speedup only
+    -> AES-256 remains safe against quantum (equivalent to 128-bit classical)
+    -> AES-128 weakened to 64-bit effective security -> upgrade to AES-256
+
+NIST Post-Quantum Standards (2024):
+  ML-KEM (FIPS 203):  Key Encapsulation Mechanism - replaces RSA/ECDH key exchange
+    Based on Module Learning With Errors (M-LWE) lattice problem
+    Key sizes: 768 bytes (level 1), 1184 bytes (level 3), 1568 bytes (level 5)
+
+  ML-DSA (FIPS 204):  Digital Signature Algorithm - replaces RSA/ECDSA signatures
+    Based on Module Learning With Errors lattice problem
+
+  SLH-DSA (FIPS 205): Hash-based signatures - stateless, conservative choice
+    Based on hash function security only - provably secure if SHA-256 is secure
+
+Harvest Now, Decrypt Later (HNDL):
+  Adversaries are collecting encrypted traffic today to decrypt once quantum computers exist
+  State-level actors are almost certainly doing this for long-lived secrets
+  Any data that must remain secret for 10+ years needs post-quantum protection NOW
+
+Migration strategy:
+  1. Inventory: what data and systems use public-key crypto?
+  2. Prioritise: which are most sensitive and longest-lived?
+  3. Hybrid mode: use both classical + PQ in parallel during transition
+  4. Update: TLS, SSH, VPN, certificate authorities, code signing
+
+Timeline: Cryptographically relevant quantum computers are estimated 5-15 years away.
+NIST recommendation: begin migration planning now, complete transition by 2030.`,
+    flag: 'FLAG{post_quantum_ready}'
+  },
+
+  {
+    id: 'crypto-20',
+    title: 'Phase 6 — Real-World Crypto Failures: Case Studies',
+    objective: `The most damaging cryptographic failures in history were not caused by mathematical breaks — they were caused by implementation errors, misuse of primitives, or protocol design flaws. Heartbleed (CVE-2014-0160) was a buffer over-read in OpenSSL's heartbeat extension that exposed up to 64KB of server memory per request — leaking private keys, session tokens, and passwords from servers worldwide. What type of vulnerability caused Heartbleed — the server returning more data than it should?`,
+    hint: 'Heartbleed read beyond the bounds of a buffer — a specific memory safety error class.',
+    answers: ['buffer over-read', 'buffer overread', 'out of bounds read', 'bounds check failure', 'memory disclosure'],
+    xp: 20,
+    explanation: `Real-world crypto failures teach more than theory. These incidents shaped modern security practices.
+
+Heartbleed (CVE-2014-0160, 2014):
+  Vulnerability: OpenSSL heartbeat extension did not validate the payload length claim
+  The client says "send back 64KB" but only sends 1 byte - server reads 64KB of heap memory
+  Impact: Private keys, session cookies, passwords leaked from ~17% of all HTTPS servers
+  Lesson: Never trust client-provided lengths. Validate ALL input including length fields.
+
+DROWN (2016):
+  Old SSLv2 handshakes shared the same RSA private key as modern TLS servers
+  SSLv2 EXPORT_RSA uses 40-bit keys (deliberately weakened for export laws)
+  Attacker: decrypt modern TLS session using SSLv2 as oracle with 40-bit brute force
+  Impact: ~33% of HTTPS servers affected
+  Lesson: Disable legacy protocol versions even if they appear unused.
+
+Dual EC DRBG NSA Backdoor (revealed 2013):
+  NIST standardised a random number generator based on elliptic curves
+  Snowden documents confirmed: NSA inserted a backdoor via specific curve constants
+  Anyone who knew the discrete log relationship could predict all "random" output
+  RSA Security (the company) used it as default in their products
+  Lesson: Trapdoor parameters are real. Use audited, well-understood curves (P-256, Curve25519).
+
+Sony PS3 ECDSA Failure (2010):
+  ECDSA requires a unique random nonce k for every signature
+  Sony used k = constant (same value every time)
+  Attackers solved for the private key using two signatures with the same k
+  All PS3 firmware signatures cracked, enabling custom firmware
+  Lesson: RNG failure is crypto failure. k must be truly random or deterministically derived (RFC 6979).
+
+Nonce Reuse in AES-GCM (practical threat):
+  AES-GCM is AEAD - authentication + encryption. But reusing the same (key, nonce) pair:
+  Allows recovery of the authentication key
+  Allows XOR of two plaintexts if same nonce used with same key
+  Used in TLS 1.2 - mitigated by using random nonces or sequence number nonces
+  TLS 1.3 mandates sequence-number-based nonces to prevent reuse`
+  },
 ]
 
 export default function CryptoLab() {

