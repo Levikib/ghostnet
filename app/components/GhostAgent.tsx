@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useRef, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
+import { useAuth } from './AuthProvider'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -333,36 +334,49 @@ function getPageContext(pathname: string): string {
   return match ? PAGE_CONTEXT[match] : PAGE_CONTEXT['/']
 }
 
-const SYSTEM_PROMPT = `You are GHOST — the embedded AI research agent inside GHOSTNET, a private cybersecurity research and training platform owned by ShanGhost Admin.
+const SYSTEM_PROMPT = `You are GHOST — the embedded AI research intelligence inside GHOSTNET, a private cybersecurity research and training platform built by ShanGhost Admin.
 
-## YOUR ROLE
-You are the single most knowledgeable guide to everything in GHOSTNET. You know every module, every tool, every lab exercise, every concept, and every technique covered across the entire platform. You are the user's personal security research mentor, navigator, and technical expert rolled into one.
+## WHO YOU ARE
+You are not a generic assistant. You are a senior adversarial security researcher, red team operator, and threat intelligence analyst with encyclopaedic knowledge of every attack technique, defensive strategy, tool, CVE, and concept that exists in the security world. You have deep expertise across the entire offensive and defensive security spectrum — from beginner concepts to zero-day research.
 
-When a user asks about the platform, a tool, a page, or a concept — you explain it fully, specifically, and accurately based on what is actually in GHOSTNET. Never give generic security answers when you can give specific answers tied to the exact content, tools, and exercises on the current page.
+You are also the most knowledgeable guide to GHOSTNET specifically. You know every module, every lab exercise, every command, every technique covered on this platform — and you tie your answers directly to what the learner is working on.
+
+You know who you are talking to. You have their username, their rank, their XP, and the list of labs they have already completed. You use this to make every response feel like it was written specifically for them — not a generic answer for the internet, but a response crafted for this exact person at their exact skill level, on this exact page, at this exact moment.
 
 ## GHOSTNET PLATFORM KNOWLEDGE
-GHOSTNET has 13 security modules (Tor → OSINT → Crypto/Blockchain → Offensive Security → Active Directory → Web Attacks → Malware Analysis → Network Attacks → Cloud Security → Social Engineering → Red Team → Wireless → Mobile Security) and 9 interactive tools (Threat Intel, Tool Reference, Terminal, Payload Generator, Blockchain Tracer, CTF Toolkit, Report Generator, Attack Path Visualizer, Shodan Builder).
+13 security modules in learning order:
+MOD-01 Tor & Dark Web | MOD-02 OSINT & Surveillance | MOD-03 Crypto & Blockchain | MOD-04 Offensive Security | MOD-05 Active Directory | MOD-06 Web Attacks Advanced | MOD-07 Malware Analysis | MOD-08 Network Attacks | MOD-09 Cloud Security | MOD-10 Social Engineering | MOD-11 Red Team Operations | MOD-12 Wireless Attacks | MOD-13 Mobile Security
 
-Every module has two pages: a CONCEPT page (theory, techniques, tools explained) and a LAB page (6 hands-on exercises with step-by-step commands, check your understanding questions, and recommended practice rooms on TryHackMe/HackTheBox).
+9 interactive tools: /intel (live CVE feed) | /tools (200+ commands) | /terminal | /payload (40+ payloads) | /crypto-tracer | /ctf | /report-generator | /attack-path | /shodan
 
-## HOW TO ANSWER QUESTIONS ABOUT THE PLATFORM
-If someone asks "what is this page / tool / module and how do I use it" — explain it in full detail: what it does, every feature, how to navigate it, what you learn from it, how it connects to other parts of GHOSTNET. Be the best possible guide. Do not give a one-liner.
+Every module has a CONCEPT page (theory, deep explanations) and a LAB page (hands-on exercises with step-by-step commands). Labs range from 15-22 steps each, covering real techniques in real tool environments.
 
-If someone asks a technical security question — answer it fully and precisely. Give working commands. Reference real CVEs, real tools, real techniques.
+## HOW YOU RESPOND
 
-If someone is stuck in a lab — walk them through it step by step. You know exactly what each lab exercise contains.
+**Adapt completely to the learner's rank:**
+- Script Kiddie / Recon Agent: Explain every term. Use analogies. Build the mental model from scratch. They need concepts before commands.
+- Threat Hunter / Exploit Dev: Assume solid fundamentals. Go deep on technique mechanics, edge cases, flags, and tool internals.
+- Red Operator / Ghost Tier and above: Peer-level exchange. Talk tradecraft, evasion, OpSec, novel techniques. Skip the basics — go straight to what matters.
 
-## PERSONALITY & FORMAT
-- Direct and technical, but clear enough for beginners to follow
-- Lead with the answer, then the explanation
-- Use code blocks for ALL commands and code samples
-- Reference GHOSTNET modules/labs when relevant ("this is covered in depth in MOD-04 Lab exercise 3")
-- Mention opsec implications when relevant
-- You are a research tool for security education — explain attacks fully, because understanding how things break is how you learn to defend them
-- When suggesting next steps, point to the relevant GHOSTNET module, lab, or tool
+**Address them by their callsign.** If you know their username, use it naturally — not every message, but when it feels right. "Good question, [username]" or "you're at [rank] now — here's what that means for your next move."
+
+**Reference their progress.** If they've completed labs in a relevant module, acknowledge it. "You've done the AD lab already — so you know how Kerberoasting works. Let's take it further." If they haven't touched a module yet, orient them.
+
+**Answer questions about this platform with total precision.** When someone asks what a page does, what an exercise covers, what a tool is for — give the full, specific answer tied to what is actually here. No vague generalities.
+
+**Answer technical security questions at expert depth.** Working commands. Real CVEs with context. Actual exploit mechanics, not overviews. Opsec implications. Detection and defence counterpart. Relevant GHOSTNET lab reference.
+
+**When someone is stuck in a lab** — walk them through it exactly. You know every step, every command, every expected output.
+
+**Format:**
+- Lead with the answer, then supporting detail
+- Code blocks for ALL commands, payloads, scripts
+- Reference GHOSTNET content: "MOD-05 Lab Step 8 covers this exact scenario"
+- Bold key terms on first use
+- Keep it tight — no filler, no hedging, no disclaimers that add no value
 
 ## CURRENT PAGE CONTEXT
-You are told which page the user is currently on. Use this to give hyper-relevant, specific answers. If they ask a vague question, interpret it in the context of what they are currently looking at.`
+You are told which page the user is on. Interpret every vague question through the lens of what they're currently looking at. If they say "explain this" — explain exactly this page, this tool, this exercise.`
 
 function TypingIndicator() {
   return (
@@ -444,11 +458,26 @@ function MessageBubble({ msg }: { msg: Message }) {
   )
 }
 
-const WELCOME_MESSAGE: Message = {
-  role: 'assistant',
-  content: `GHOST online.\n\nI'm your embedded security research agent. Ask me anything — concepts, commands, tool syntax, attack vectors, defensive strategies, or anything you're stuck on in your labs.\n\nWhat are you working on?`,
-  timestamp: new Date(),
+function buildWelcomeMessage(username?: string, rank?: string, labsCompleted?: number): Message {
+  const handle = username ? username : null
+  const greeting = handle ? `GHOST online, ${handle}.` : 'GHOST online.'
+  const rankLine = rank && rank !== 'Script Kiddie'
+    ? `\nRank detected: **${rank}**. I'll calibrate to your level.`
+    : rank === 'Script Kiddie'
+    ? `\nFresh operator. I'll build you up from first principles.`
+    : ''
+  const labsLine = labsCompleted && labsCompleted > 0
+    ? `\n${labsCompleted} lab${labsCompleted > 1 ? 's' : ''} completed. I know where you've been — I'll point you to what's next.`
+    : ''
+  return {
+    role: 'assistant',
+    content: greeting + rankLine + labsLine + `\n\nAsk me anything — concepts, commands, attack mechanics, lab walkthroughs, tool syntax, or where to go next.\n\nWhat are you working on?`,
+    timestamp: new Date(),
+  }
 }
+
+const WELCOME_MESSAGE: Message = buildWelcomeMessage()
+
 
 const RANKS = [
   { title: 'Script Kiddie', xp: 0 },
@@ -516,34 +545,76 @@ function loadHistory(): Message[] | null {
 }
 
 export default function GhostAgent() {
+  const { profile } = useAuth()
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE])
+  const [initialized, setInitialized] = useState(false)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [userRank, setUserRank] = useState<{ rank: string; xp: number; labsCompleted: number }>({ rank: 'Script Kiddie', xp: 0, labsCompleted: 0 })
+  const [userRank, setUserRank] = useState<{ rank: string; xp: number; labsCompleted: number; completedLabs: string[] }>({ rank: 'Script Kiddie', xp: 0, labsCompleted: 0, completedLabs: [] })
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const pathname = usePathname()
 
   const moduleCtx = getPageContext(pathname)
 
-  // Load history and user progress on mount
-  useEffect(() => {
-    const saved = loadHistory()
-    if (saved && saved.length > 0) {
-      setMessages(saved)
-    }
+  // Derive username: prefer Supabase profile, fall back to auth user metadata
+  const username = profile?.username || undefined
 
+  function readProgress() {
     try {
       const raw = localStorage.getItem('ghostnet_progress')
       if (raw) {
         const data = JSON.parse(raw)
         const xp = typeof data.xp === 'number' ? data.xp : 0
-        const labsCompleted = typeof data.labsCompleted === 'number' ? data.labsCompleted : (Array.isArray(data.completedLabs) ? data.completedLabs.length : 0)
-        setUserRank({ rank: getRankFromXP(xp), xp, labsCompleted })
+        const completedLabs: string[] = Array.isArray(data.completedLabs) ? data.completedLabs : []
+        const labsCompleted = typeof data.labsCompleted === 'number' ? data.labsCompleted : completedLabs.length
+        return { rank: getRankFromXP(xp), xp, labsCompleted, completedLabs }
       }
     } catch (_) {}
+    return null
+  }
+
+  // Load history and user progress on mount
+  useEffect(() => {
+    const saved = loadHistory()
+    const progress = readProgress()
+    const xpRank = progress ? progress.rank : 'Script Kiddie'
+    const xp = progress ? progress.xp : 0
+    const labsCompleted = progress ? progress.labsCompleted : 0
+    const completedLabs = progress ? progress.completedLabs : []
+
+    if (progress) setUserRank({ rank: xpRank, xp, labsCompleted, completedLabs })
+
+    if (saved && saved.length > 0) {
+      setMessages(saved)
+    } else {
+      // Personalise welcome message once we have user info
+      setMessages([buildWelcomeMessage(username, xpRank, labsCompleted)])
+    }
+    setInitialized(true)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // When profile loads (async), update welcome message if it's still the first message
+  useEffect(() => {
+    if (!initialized || !username) return
+    setMessages(prev => {
+      if (prev.length === 1 && prev[0].role === 'assistant') {
+        return [buildWelcomeMessage(username, userRank.rank, userRank.labsCompleted)]
+      }
+      return prev
+    })
+  }, [username, initialized]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Listen for progress updates to keep rank in sync
+  useEffect(() => {
+    function onProgressUpdate() {
+      const progress = readProgress()
+      if (progress) setUserRank(progress)
+    }
+    window.addEventListener('ghostnet_progress_updated', onProgressUpdate)
+    return () => window.removeEventListener('ghostnet_progress_updated', onProgressUpdate)
   }, [])
 
   useEffect(() => {
@@ -556,7 +627,7 @@ export default function GhostAgent() {
 
   const clearHistory = () => {
     try { localStorage.removeItem(HISTORY_KEY) } catch (_) {}
-    setMessages([WELCOME_MESSAGE])
+    setMessages([buildWelcomeMessage(username, userRank.rank, userRank.labsCompleted)])
   }
 
   const send = async () => {
@@ -573,13 +644,27 @@ export default function GhostAgent() {
     try {
       const history = nextMessages.map(m => ({ role: m.role, content: m.content }))
 
-      const userProfileSection = '## USER PROFILE\nRank: ' + userRank.rank + '\nXP: ' + userRank.xp + '\nLabs completed: ' + userRank.labsCompleted + '\nSkill level guidance: ' + getSkillGuidance(userRank.rank)
+      const labsList = userRank.completedLabs.length > 0
+        ? userRank.completedLabs.join(', ')
+        : 'none yet'
+
+      const userProfileSection = [
+        '## OPERATOR IDENTITY',
+        'Callsign: ' + (username || 'Unknown Operator'),
+        'Rank: ' + userRank.rank,
+        'XP: ' + userRank.xp,
+        'Labs completed: ' + userRank.labsCompleted,
+        'Completed lab IDs: ' + labsList,
+        'Skill guidance: ' + getSkillGuidance(userRank.rank),
+        '',
+        'IMPORTANT: Address this operator as "' + (username || 'operator') + '" when it feels natural. Reference their rank and completed labs when relevant to your answer. Calibrate all explanations to their skill level.',
+      ].join('\n')
 
       const res = await fetch('/api/ghost', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          systemPrompt: userProfileSection + '\n\n' + SYSTEM_PROMPT + '\n\nCURRENT MODULE CONTEXT: ' + moduleCtx,
+          systemPrompt: userProfileSection + '\n\n' + SYSTEM_PROMPT + '\n\nCURRENT MODULE CONTEXT:\n' + moduleCtx,
           messages: history,
         }),
       })
@@ -711,7 +796,7 @@ export default function GhostAgent() {
                 }}>{userRank.rank.toUpperCase()}</div>
               </div>
               <div style={{ fontSize: '8px', color: '#2a5a6a', letterSpacing: '0.1em', marginTop: '1px' }}>
-                {moduleCtx.split('\n')[0].replace('LOCATION:', '').trim().toUpperCase().slice(0, 50)}
+                {username ? username.toUpperCase() + ' · ' : ''}{moduleCtx.split('\n')[0].replace('LOCATION:', '').trim().toUpperCase().slice(0, username ? 36 : 50)}
               </div>
             </div>
             <button

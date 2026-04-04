@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
-        max_tokens: 2048,
+        max_tokens: 4096,
         messages: [
           { role: 'system', content: systemPrompt },
           ...messages,
