@@ -1,12 +1,14 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, Suspense } from 'react'
 import { createClient } from '../../lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 const mono = 'JetBrains Mono, monospace'
 
-export default function AuthPage() {
+function AuthForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('from') || '/'
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -26,7 +28,7 @@ export default function AuthPage() {
       if (mode === 'login') {
         const { error: err } = await supabase.auth.signInWithPassword({ email, password })
         if (err) { setError(err.message); return }
-        router.push('/')
+        router.push(redirectTo)
         router.refresh()
       } else {
         if (!username.trim()) { setError('Username is required'); return }
@@ -193,5 +195,13 @@ export default function AuthPage() {
         GHOSTNET // FOR EDUCATIONAL AND AUTHORISED USE ONLY
       </div>
     </div>
+  )
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense>
+      <AuthForm />
+    </Suspense>
   )
 }

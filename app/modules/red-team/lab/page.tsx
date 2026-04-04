@@ -8,8 +8,6 @@ const accent = '#ff3333'
 const moduleId = 'red-team'
 const moduleName = 'Red Team Operations'
 const moduleNum = '11'
-const xpTotal = steps.reduce((sum, s) => sum + s.xp, 0)
-
 const steps: LabStep[] = [
 
   // ── PHASE 1: C2 INFRASTRUCTURE ────────────────────────────────────────────
@@ -784,6 +782,8 @@ Full red team operation lifecycle (any framework):
     Findings → technical debrief → MITRE ATT&CK mapping → detection building`
   },
 ]
+
+const xpTotal = steps.reduce((sum, s) => sum + s.xp, 0)
 
 export default function RedTeamLab() {
   const [guidedDone, setGuidedDone] = useState(false)
