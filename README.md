@@ -9,15 +9,17 @@
  ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝   ╚═╝   ╚═╝  ╚═══╝╚══════╝   ╚═╝
 ```
 
-**A private cybersecurity research and training platform.**
-13 modules · 65 interactive lab steps · 9 live tools · AI Ghost Agent · Full gamification
+**A full-stack cybersecurity research and training platform.**
+
+13 modules · 243 lab steps · 5,450 XP · 9 live tools · AI Ghost Agent · Full gamification · Mandatory auth gate · Live leaderboard
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=nextdotjs)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)](https://typescriptlang.org)
-[![Supabase](https://img.shields.io/badge/Supabase-Auth%20%2B%20DB-green?style=flat-square&logo=supabase)](https://supabase.com)
-[![Groq](https://img.shields.io/badge/Groq-llama--3.3--70b-orange?style=flat-square)](https://groq.com)
+[![Supabase](https://img.shields.io/badge/Supabase-Auth%20%2B%20DB%20%2B%20Realtime-green?style=flat-square&logo=supabase)](https://supabase.com)
+[![Groq](https://img.shields.io/badge/Groq-llama--3.3--70b--versatile-orange?style=flat-square)](https://groq.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
-[![Build](https://img.shields.io/badge/Build-45%20pages%2C%200%20errors-brightgreen?style=flat-square)]()
+[![Build](https://img.shields.io/badge/Build-46%20pages%2C%200%20errors-brightgreen?style=flat-square)]()
+[![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=flat-square)]()
 
 </div>
 
@@ -25,16 +27,19 @@
 
 ## What is GHOSTNET?
 
-GHOSTNET is a full-stack cybersecurity research and training platform built for security researchers, penetration testers, CTF players, and anyone serious about understanding offensive and defensive security from first principles.
+GHOSTNET is a full-stack cybersecurity research and training platform built for security researchers, penetration testers, CTF players, and anyone serious about learning offensive and defensive security from first principles.
 
-It is not a course. It is not a quiz app. It is an **operational platform** — a living system that combines:
+It is not a course. It is not a quiz app. It is an **operational platform** — a living system built like a tool, not a tutorial site:
 
-- **Deep educational content** written at practitioner depth across 13 security domains
-- **Interactive terminal labs** that simulate real command-line workflows with step verification, flags, XP awards, and persistent progress
-- **9 live tools** — payload generator, blockchain tracer, CVE feed, Shodan query builder, attack path visualizer, AI pentest report generator, CTF toolkit, command reference, and research terminal
-- **AI research agent (GHOST)** powered by Groq's llama-3.3-70b, with full page context awareness, skill-level adaptation, and persistent conversation memory
-- **Complete gamification** — XP system, 10 rank tiers from Script Kiddie to Shadow God, streak tracking, daily goals, leaderboard, and 81-lab progress tracking
-- **Supabase auth and cloud sync** — sign in to persist progress across devices; works fully offline via localStorage fallback
+- **13 security modules** — each with a deep concept page and a multi-step interactive lab, covering the full spectrum from beginner Tor/OSINT through to expert-level Red Team operations, Active Directory attacks, and Binary Exploitation
+- **243 verified lab steps** across all 13 modules — step-by-step command workflows with answer verification, contextual hints, XP awards, and persistent progress tracking
+- **5,450 XP earnable** — calibrated precisely to a 5-rank progression system where completing all 13 labs takes you from Ghost → Legend
+- **9 live interactive tools** — payload generator, blockchain tracer, live CVE feed, Shodan query builder, MITRE ATT&CK kill chain visualizer, AI pentest report generator, CTF toolkit, 200+ command reference, and research terminal
+- **GHOST AI agent** — powered by Groq's llama-3.3-70b, context-aware per page, operator-identity driven (knows your callsign, rank, completed labs), adapts depth to your skill level, 4096-token responses
+- **Cinematic welcome experience** — matrix rain splash screen with scramble-text reveal, boot sequence animation, and phase state machine before authentication
+- **Mandatory authentication** — middleware-gated routes, 20-minute sliding inactivity timeout, session cookies with httpOnly/sameSite/secure settings
+- **Live leaderboard** — real Supabase data, realtime channel subscriptions, 30-second polling fallback, admin panel with full user monitoring
+- **Full gamification** — XP, 5 rank tiers, streak tracking, daily goals, 13+ badges, progress notes per module
 
 ---
 
@@ -44,74 +49,80 @@ It is not a course. It is not a quiz app. It is an **operational platform** — 
 2. [Tech Stack](#tech-stack)
 3. [Project Structure](#project-structure)
 4. [The 13 Security Modules](#the-13-security-modules)
-5. [Interactive Lab Terminal Engine](#interactive-lab-terminal-engine)
+5. [Lab Terminal Engine](#lab-terminal-engine)
 6. [The 9 Interactive Tools](#the-9-interactive-tools)
-7. [AI Ghost Agent](#ai-ghost-agent)
-8. [Gamification System](#gamification-system)
-9. [Authentication and Data Layer](#authentication-and-data-layer)
-10. [Component Architecture](#component-architecture)
-11. [API Routes](#api-routes)
-12. [Getting Started](#getting-started)
-13. [Environment Variables](#environment-variables)
-14. [Database Setup](#database-setup)
-15. [Deployment](#deployment)
-16. [Changelog](#changelog)
+7. [GHOST AI Agent](#ghost-ai-agent)
+8. [Gamification and Rank System](#gamification-and-rank-system)
+9. [Authentication and Session Management](#authentication-and-session-management)
+10. [Leaderboard and Admin Panel](#leaderboard-and-admin-panel)
+11. [Database Schema](#database-schema)
+12. [Component Architecture](#component-architecture)
+13. [API Routes](#api-routes)
+14. [Getting Started](#getting-started)
+15. [Environment Variables](#environment-variables)
+16. [Deployment](#deployment)
+17. [Roadmap — Version 2](#roadmap--version-2)
 
 ---
 
 ## Platform Architecture
 
 ```
-+-------------------------------------------------------------+
-|                         GHOSTNET                            |
-|                                                             |
-|  +---------------+  +--------------+  +----------------+   |
-|  |  13 MODULES   |  |   9 TOOLS    |  |  GAMIFICATION  |   |
-|  |  Concept +    |  | Payload Gen  |  |  XP + Ranks    |   |
-|  |  Lab pages    |  | CVE Feed     |  |  Streaks/Goals |   |
-|  |  per module   |  | Blockchain   |  |  Leaderboard   |   |
-|  +-------+-------+  +------+-------+  +-------+--------+   |
-|          |                 |                  |             |
-|          +--------+--------+------------------+            |
-|                   |                                        |
-|  +----------------v------------------------------------+   |
-|  |              LAB TERMINAL ENGINE                    |   |
-|  |  Step-by-step answers · Verification · Flags · XP   |   |
-|  +---------------------+-------------------------------+   |
-|                        |                                   |
-|  +----------+  +-------v------+  +--------------------+   |
-|  |  GHOST   |  |   SUPABASE   |  |  PROGRESS TRACKER  |   |
-|  |  AGENT   |  |  Auth + DB   |  |  Offline-first     |   |
-|  |  Groq AI |  | lab_progress |  |  localStorage      |   |
-|  | Skill-   |  | user_profile |  |  81 labs tracked   |   |
-|  | aware    |  |              |  |                    |   |
-|  +----------+  +--------------+  +--------------------+   |
-+-------------------------------------------------------------+
++------------------------------------------------------------------+
+|                           GHOSTNET v1.0                          |
+|                                                                  |
+|  ENTRY FLOW:  /welcome (splash) → /auth (login) → / (dashboard) |
+|               20-min inactivity timeout → back to /welcome       |
+|                                                                  |
+|  +------------------+  +----------------+  +----------------+   |
+|  |   13 MODULES     |  |    9 TOOLS     |  | GAMIFICATION   |   |
+|  |  Concept + Lab   |  | Payload · CVE  |  | XP · Ranks     |   |
+|  |  243 steps total |  | Blockchain ·  |  | Streaks · Goals|   |
+|  |  5,450 XP total  |  | Shodan · ATT&CK|  | Leaderboard    |   |
+|  +--------+---------+  +-------+--------+  +-------+--------+   |
+|           |                    |                   |             |
+|           +----------+---------+-------------------+            |
+|                      |                                          |
+|  +-------------------v------------------------------------+     |
+|  |              LAB TERMINAL ENGINE                       |     |
+|  |  Guided steps → answer verification → XP awards       |     |
+|  |  Hint system → flag capture → free-form Phase 2       |     |
+|  +------------------------+-------------------------------+     |
+|                           |                                     |
+|  +-----------+  +---------v------+  +---------------------+    |
+|  |  GHOST    |  |   SUPABASE     |  |  PROGRESS TRACKER   |    |
+|  |  AGENT    |  | Auth + Postgres|  |  localStorage-first |    |
+|  | Groq AI   |  | Realtime subs  |  |  Cloud sync via API |    |
+|  | Per-user  |  | lab_progress   |  |  Streak + goals     |    |
+|  | identity  |  | user_profiles  |  |  Notes per module   |    |
+|  +-----------+  +----------------+  +---------------------+    |
++------------------------------------------------------------------+
 ```
 
 ### Design Principles
 
-- **Offline-first**: All progress persists to `localStorage` immediately. Supabase is an enhancement, not a dependency.
-- **Content-first**: Every module is written at practitioner depth — not "here's what SQL injection is" but "here's the exact sqlmap flag, why it works, and what the output means."
-- **Terminal aesthetic**: JetBrains Mono throughout, green-on-black terminal color scheme. It feels like a tool, not a tutorial site.
-- **Progressive difficulty**: BEGINNER through EXPERT ratings with recommended learning paths for different backgrounds.
-- **No vendor lock-in**: Groq API key is optional (GHOST Agent degrades gracefully). Supabase is optional (localStorage fallback handles everything).
+- **Offline-first**: All progress persists to `localStorage` immediately. Supabase is an enhancement — the platform works completely without it.
+- **Content at practitioner depth**: Not "here's what SQL injection is" but "here's the exact sqlmap flag, why the 1000 hash type is NTLM, and what the output of a UNION-based extraction looks like."
+- **Terminal aesthetic**: JetBrains Mono throughout, green-on-black. It feels like a tool, not a tutorial site.
+- **Single source of truth**: Rank thresholds, XP values, and user data all flow through `lib/supabase.ts` — no duplicated constants across components.
+- **Graceful degradation**: Groq key missing → Ghost Agent shows error. Supabase missing → auth bypassed in dev mode, localStorage handles all progress.
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 14 (App Router) |
-| Language | TypeScript 5 |
-| Compiler | Babel (SWC disabled — custom .babelrc) |
-| Styling | Tailwind CSS + inline styles (JetBrains Mono font) |
-| Auth | Supabase Auth (@supabase/ssr) |
-| Database | Supabase Postgres |
-| AI | Groq API — llama-3.3-70b-versatile, 2048 max tokens |
-| State | React useState/useEffect + localStorage |
-| Deployment | Vercel / any Node.js host |
+| Layer | Technology | Notes |
+|-------|-----------|-------|
+| Framework | Next.js 14 App Router | `'use client'` on all pages |
+| Language | TypeScript 5 | `ignoreBuildErrors: true` for speed |
+| Compiler | Babel (`.babelrc`) | SWC disabled — custom Babel config |
+| Styling | Tailwind CSS + inline styles | JetBrains Mono font, terminal aesthetic |
+| Auth | Supabase Auth + `@supabase/ssr` | Middleware-gated, httpOnly session cookies |
+| Database | Supabase Postgres | `user_profiles`, `lab_progress`, `badges` |
+| Realtime | Supabase Realtime | `postgres_changes` on leaderboard |
+| AI | Groq API | `llama-3.3-70b-versatile`, 4096 max tokens |
+| State | React hooks + localStorage | No Redux/Zustand — intentionally simple |
+| Deployment | Vercel / any Node.js host | 46 pages, 0 build errors |
 
 ---
 
@@ -119,530 +130,408 @@ It is not a course. It is not a quiz app. It is an **operational platform** — 
 
 ```
 ghostnet/
-+-- app/
-|   +-- layout.tsx                  # Root layout: Nav, floating widgets, ErrorBoundary, OfflineBanner
-|   +-- page.tsx                    # Dashboard: Quick Access Bar, module grid, tools, learning paths
-|   |
-|   +-- modules/
-|   |   +-- tor/
-|   |   |   +-- page.tsx            # MOD-01 concept: 14 sections, Tor architecture to red team C2
-|   |   |   +-- lab/page.tsx        # MOD-01 lab: 5 LabTerminal steps, 130 XP
-|   |   +-- osint/
-|   |   |   +-- page.tsx            # MOD-02 concept: passive recon, Shodan, SOCMINT, metadata
-|   |   |   +-- lab/page.tsx        # MOD-02 lab: DNS enum, Shodan, email harvest, metadata, 130 XP
-|   |   +-- crypto/
-|   |   |   +-- page.tsx            # MOD-03 concept: blockchain forensics, smart contract auditing
-|   |   |   +-- lab/page.tsx        # MOD-03 lab: hash cracking, base64, AES, RSA, 120 XP
-|   |   +-- offensive/
-|   |   |   +-- page.tsx            # MOD-04 concept: pentest methodology, Metasploit, privesc
-|   |   |   +-- lab/page.tsx        # MOD-04 lab: Nmap, Metasploit, payload gen, LinPEAS, 130 XP
-|   |   +-- active-directory/
-|   |   |   +-- page.tsx            # MOD-05 concept: Kerberoasting, BloodHound, DCSync, Golden Ticket
-|   |   |   +-- lab/page.tsx        # MOD-05 lab: enum4linux, Kerberoasting, PtH, DCSync, 145 XP
-|   |   +-- web-attacks/
-|   |   |   +-- page.tsx            # MOD-06 concept: advanced SQLi, XSS chains, SSRF, deserial
-|   |   |   +-- lab/page.tsx        # MOD-06 lab: SQLi, sqlmap, XSS, gobuster, Burp Suite, 120 XP
-|   |   +-- malware/
-|   |   |   +-- page.tsx            # MOD-07 concept: static/dynamic analysis, YARA, ransomware
-|   |   |   +-- lab/page.tsx        # MOD-07 lab: file, strings, strace, tcpdump, 130 XP
-|   |   +-- network-attacks/
-|   |   |   +-- page.tsx            # MOD-08 concept: ARP spoofing, DNS poisoning, SSL stripping
-|   |   |   +-- lab/page.tsx        # MOD-08 lab: arpspoof, tcpdump, etter.dns, bettercap, 125 XP
-|   |   +-- cloud-security/
-|   |   |   +-- page.tsx            # MOD-09 concept: AWS IAM, S3, IMDS, Lambda, EKS, CI/CD
-|   |   |   +-- lab/page.tsx        # MOD-09 lab: IMDS, IAM enum, S3, Lambda, CloudTrail, 145 XP
-|   |   +-- social-engineering/
-|   |   |   +-- page.tsx            # MOD-10 concept: phishing, deepfakes, BEC, GoPhish
-|   |   |   +-- lab/page.tsx        # MOD-10 lab: email headers, SPF, GoPhish port, vishing, 120 XP
-|   |   +-- red-team/
-|   |   |   +-- page.tsx            # MOD-11 concept: C2, AV evasion, LOLBins, persistence
-|   |   |   +-- lab/page.tsx        # MOD-11 lab: C2 select, LOLBins, malleable C2, WMI, reg, 135 XP
-|   |   +-- wireless-attacks/
-|   |   |   +-- page.tsx            # MOD-12 concept: WPA2, PMKID, evil twin, BLE, Zigbee, RFID
-|   |   |   +-- lab/page.tsx        # MOD-12 lab: airmon-ng, airodump, hashcat, wifiphisher, BT, 135 XP
-|   |   +-- mobile-security/
-|   |       +-- page.tsx            # MOD-13 concept: APK analysis, Frida, iOS, OWASP Mobile
-|   |       +-- lab/page.tsx        # MOD-13 lab: jadx, ADB, Frida, SSL bypass, iOS, 130 XP
-|   |
-|   +-- components/
-|   |   +-- GhostAgent.tsx          # AI chat: Groq, skill-aware, persistent history, rank pill
-|   |   +-- LabTerminal.tsx         # Interactive lab engine: steps, verification, XP, flags
-|   |   +-- ProgressTracker.tsx     # XP tracker: 81 labs, streaks, goals, notes
-|   |   +-- CVEFeed.tsx             # Live CVE feed from NVD/NIST
-|   |   +-- CheatSheet.tsx          # Quick reference widget
-|   |   +-- AuthProvider.tsx        # Supabase auth context + NavUserBadge
-|   |   +-- ErrorBoundary.tsx       # React error boundary with RETRY
-|   |
-|   +-- leaderboard/page.tsx        # Global rankings, module progress grid
-|   +-- profile/page.tsx            # User profile, badges, rank history
-|   +-- auth/page.tsx               # Login/register (works offline)
-|   +-- attack-path/page.tsx        # MITRE ATT&CK kill chain builder
-|   +-- crypto-tracer/page.tsx      # Blockchain transaction tracer
-|   +-- ctf/page.tsx                # CTF toolkit (decoders, cipher crackers)
-|   +-- intel/page.tsx              # Live CVE feed page
-|   +-- payload/page.tsx            # 40+ attack payload library
-|   +-- report-generator/page.tsx   # AI pentest report builder
-|   +-- shodan/page.tsx             # Shodan query constructor
-|   +-- terminal/page.tsx           # Interactive research terminal
-|   +-- tools/page.tsx              # 200+ command reference
-|
-+-- api/
-|   +-- ghost/route.ts              # POST: Groq llama-3.3-70b proxy
-|   +-- progress/route.ts           # POST/GET: lab completion + XP upsert
-|   +-- auth/callback/route.ts      # Supabase email confirmation redirect
-|
-+-- lib/
-|   +-- supabase.ts                 # Browser client, type defs, rank utils
-|   +-- supabase/client.ts          # @supabase/ssr browser client factory
-|   +-- supabase/server.ts          # @supabase/ssr server client factory
-|
-+-- supabase-schema.sql             # Full DB schema + seed data
-+-- CLAUDE.md                       # AI coding assistant instructions
-+-- .babelrc                        # Babel config (SWC disabled intentionally)
-+-- .env.example                    # Environment variable template
+├── app/
+│   ├── layout.tsx                  # Root layout: Nav (desktop + mobile hamburger),
+│   │                               #   AuthProvider, floating widgets, ErrorBoundary
+│   ├── page.tsx                    # Dashboard: stats, module grid, tools, learning paths
+│   ├── welcome/page.tsx            # Cinematic splash: matrix rain, scramble text,
+│   │                               #   boot sequence, phase state machine
+│   ├── auth/page.tsx               # Login/register with ?from= redirect preservation
+│   ├── leaderboard/page.tsx        # Live leaderboard + admin panel (realtime + polling)
+│   ├── profile/page.tsx            # User profile, badges, lab history, rank display
+│   │
+│   ├── modules/
+│   │   ├── tor/                    # MOD-01 · #00ff41 · BEGINNER
+│   │   │   ├── page.tsx            # Concept: onion routing, hidden services, opsec
+│   │   │   └── lab/page.tsx        # 17 steps · 345 XP
+│   │   ├── osint/                  # MOD-02 · #00d4ff · BEGINNER
+│   │   │   ├── page.tsx            # Concept: passive recon, Shodan, SOCMINT, metadata
+│   │   │   └── lab/page.tsx        # 16 steps · 305 XP
+│   │   ├── crypto/                 # MOD-03 · #ffb347 · INTERMEDIATE
+│   │   │   ├── page.tsx            # Concept: blockchain forensics, smart contracts, DeFi
+│   │   │   └── lab/page.tsx        # 20 steps · 405 XP
+│   │   ├── offensive/              # MOD-04 · #bf5fff · INTERMEDIATE
+│   │   │   ├── page.tsx            # Concept: pentest methodology, Metasploit, privesc
+│   │   │   └── lab/page.tsx        # 20 steps · 400 XP
+│   │   ├── active-directory/       # MOD-05 · #ff4136 · ADVANCED
+│   │   │   ├── page.tsx            # Concept: Kerberos, BloodHound, DCSync, Golden Ticket
+│   │   │   └── lab/page.tsx        # 22 steps · 495 XP
+│   │   ├── web-attacks/            # MOD-06 · #00d4ff · ADVANCED
+│   │   │   ├── page.tsx            # Concept: blind SQLi, XSS chains, SSRF, deserialization
+│   │   │   └── lab/page.tsx        # 21 steps · 445 XP
+│   │   ├── malware/                # MOD-07 · #00ff41 · ADVANCED
+│   │   │   ├── page.tsx            # Concept: static/dynamic analysis, YARA, Volatility
+│   │   │   └── lab/page.tsx        # 22 steps · 465 XP
+│   │   ├── network-attacks/        # MOD-08 · #00ffff · INTERMEDIATE
+│   │   │   ├── page.tsx            # Concept: ARP spoofing, DNS poisoning, VLAN hopping
+│   │   │   └── lab/page.tsx        # 21 steps · 445 XP
+│   │   ├── cloud-security/         # MOD-09 · #ff9500 · ADVANCED
+│   │   │   ├── page.tsx            # Concept: AWS IAM privesc, IMDS, container escape
+│   │   │   └── lab/page.tsx        # 18 steps · 490 XP
+│   │   ├── social-engineering/     # MOD-10 · #ff6ec7 · INTERMEDIATE
+│   │   │   ├── page.tsx            # Concept: phishing infra, vishing, RFID, deepfakes
+│   │   │   └── lab/page.tsx        # 16 steps · 300 XP
+│   │   ├── red-team/               # MOD-11 · #ff3333 · EXPERT
+│   │   │   ├── page.tsx            # Concept: C2 frameworks, EDR evasion, TIBER-EU
+│   │   │   └── lab/page.tsx        # 18 steps · 465 XP
+│   │   ├── wireless-attacks/       # MOD-12 · #aaff00 · INTERMEDIATE
+│   │   │   ├── page.tsx            # Concept: WPA2, PMKID, evil twin, BLE, Zigbee
+│   │   │   └── lab/page.tsx        # 18 steps · 455 XP
+│   │   └── mobile-security/        # MOD-13 · #7c4dff · ADVANCED
+│   │       ├── page.tsx            # Concept: APK analysis, Frida, iOS, OWASP Mobile
+│   │       └── lab/page.tsx        # 18 steps · 435 XP
+│   │
+│   ├── components/
+│   │   ├── GhostAgent.tsx          # AI chat: Groq, operator identity, skill-adaptive,
+│   │   │                           #   persistent history, rank pill, real-time rank sync
+│   │   ├── LabTerminal.tsx         # Guided lab engine: steps, verification, XP, hints,
+│   │   │                           #   flag capture, Supabase sync, localStorage fallback
+│   │   ├── FreeLabTerminal.tsx     # Phase 2 open sandbox terminal
+│   │   ├── ProgressTracker.tsx     # XP tracker: 13 labs, streaks, daily goals, notes
+│   │   ├── CVEFeed.tsx             # Live CVE feed widget (NVD/NIST)
+│   │   ├── CheatSheet.tsx          # Quick reference widget
+│   │   ├── AuthProvider.tsx        # Supabase auth context + NavUserBadge rank pill
+│   │   ├── ModuleCodex.tsx         # Chapter-format deep content renderer
+│   │   └── ErrorBoundary.tsx       # React error boundary with terminal-style error UI
+│   │
+│   └── api/
+│       ├── ghost/route.ts          # POST: Groq llama-3.3-70b proxy, 4096 tokens
+│       ├── progress/route.ts       # POST/GET: lab completion + XP upsert to Supabase
+│       └── auth/callback/route.ts  # Supabase email confirmation redirect handler
+│
+├── lib/
+│   ├── supabase.ts                 # Browser client, TypeScript types, RANK_LIST,
+│   │                               #   getRank(), RANK_COLORS, RANK_GLOWS — single
+│   │                               #   source of truth for all rank/XP logic
+│   ├── supabase/client.ts          # @supabase/ssr browser client factory
+│   └── supabase/server.ts          # @supabase/ssr server client factory
+│
+├── middleware.ts                   # Auth gate: all routes protected, unauthenticated
+│                                   #   → /welcome, 20-min sliding session timeout
+├── supabase-schema.sql             # Full DB schema + triggers + badge seed data
+├── CLAUDE.md                       # AI coding assistant project instructions
+├── .babelrc                        # Babel config (SWC intentionally disabled)
+└── .env.example                    # Environment variable template with instructions
 ```
 
-**Stats**: 47 TypeScript files, 17,463 total lines of code, 45 built pages, 0 errors.
+**Stats:** 50 TypeScript files · 243 lab steps · 5,450 XP earnable · 46 built pages · 0 build errors
 
 ---
 
 ## The 13 Security Modules
 
-Each module has two pages: a **concept page** (deep theory, tools, real-world examples) and a **lab page** (5 interactive steps via LabTerminal with verified answers, hints, flags, and XP).
+Each module has a **concept page** (deep theory, real tools, case studies, working commands) and a **lab page** (multi-step interactive terminal with verified answers, hints, XP awards, and a free-form Phase 2 sandbox).
 
-### MOD-01 — Tor & Dark Web `#00ff41` | BEGINNER
+| # | Module | Accent | Difficulty | Steps | XP |
+|---|--------|--------|------------|-------|----|
+| 01 | Tor & Dark Web | `#00ff41` | Beginner | 17 | 345 |
+| 02 | OSINT & Surveillance | `#00d4ff` | Beginner | 16 | 305 |
+| 03 | Crypto & Blockchain | `#ffb347` | Intermediate | 20 | 405 |
+| 04 | Offensive Security | `#bf5fff` | Intermediate | 20 | 400 |
+| 05 | Active Directory | `#ff4136` | Advanced | 22 | 495 |
+| 06 | Web Attacks Advanced | `#00d4ff` | Advanced | 21 | 445 |
+| 07 | Malware Analysis | `#00ff41` | Advanced | 22 | 465 |
+| 08 | Network Attacks | `#00ffff` | Intermediate | 21 | 445 |
+| 09 | Cloud Security | `#ff9500` | Advanced | 18 | 490 |
+| 10 | Social Engineering | `#ff6ec7` | Intermediate | 16 | 300 |
+| 11 | Red Team Operations | `#ff3333` | Expert | 18 | 465 |
+| 12 | Wireless Attacks | `#aaff00` | Intermediate | 18 | 455 |
+| 13 | Mobile Security | `#7c4dff` | Advanced | 18 | 435 |
+| | **TOTAL** | | | **243** | **5,450** |
 
-Tor architecture, onion routing (Guard/Middle/Exit), circuit building and path selection algorithm, v3 hidden services (Ed25519 key derivation, introduction/rendezvous protocol), traffic analysis attacks (guard correlation, timing, website fingerprinting, Sybil), opsec failures and case studies (Silk Road, Carnegie Mellon, Harvard bomb threat), bridge types (obfs4/meek-azure/Snowflake/WebTunnel), C2 infrastructure over Tor, vanity .onion generation (mkp224o), hidden service hardening (HiddenServiceAuthorizeClient), OnionScan enumeration.
+### Content Depth Examples
 
-**Lab**: service status check → /etc/tor/torrc path → curl SOCKS5 proxy test → HiddenServiceDir directive → hostname file read. **130 XP.**
+**MOD-05 Active Directory (22 steps, 495 XP):** Kerberos 4-step authentication protocol, AS-REQ/AS-REP/TGS mechanics, unauthenticated enumeration, AS-REP roasting (GetNPUsers.py), Kerberoasting (etype targeting), BloodHound shortest attack paths, Pass-the-Hash/Ticket with CrackMapExec, DCSync (DRSReplicaSync), credential dumping (comsvcs.dll LSASS), Golden/Silver ticket forging, constrained delegation (S4U2Self/S4U2Proxy), ACL abuse (GenericAll/WriteDACL), shadow credentials (msDS-KeyCredentialLink), DPAPI decryption, AdminSDHolder persistence, cross-forest trust attacks.
 
----
-
-### MOD-02 — OSINT & Surveillance `#00d4ff` | BEGINNER
-
-Passive vs active recon distinction, DNS reconnaissance (dig, AXFR zone transfers, PTR lookups), Shodan (filters: port/product/country/org/ssl.cert.subject.cn/http.title/tag:ics, CLI usage), Google Dorking (GHDB operators: site/filetype/intitle/inurl/intext), certificate transparency (crt.sh, CT log mechanics), SOCMINT (Sherlock 300+ platforms, Holehe email-to-profile, LinkedIn org charts), metadata forensics (ExifTool GPS/author/company extraction), theHarvester, Maltego relationship graphs.
-
-**Lab**: dnsenum/dig → sublist3r/subfinder → Shodan product:apache country:de dork → theHarvester → ExifTool. **130 XP.**
-
----
-
-### MOD-03 — Cryptography & Blockchain `#ffb347` | INTERMEDIATE
-
-Hash identification by length (MD5=32, SHA-1=40, SHA-256=64), hashcat modes (0=MD5, 100=SHA-1, 1000=NTLM, 1800=sha512crypt, 3200=bcrypt), Base64 encoding/decoding, AES-256-CBC with OpenSSL (pbkdf2 flag importance), RSA key generation and public key extraction, blockchain forensics (UTXO model, Ethereum account model, Etherscan, Chainalysis techniques), smart contract vulnerabilities (reentrancy, flash loans, oracle manipulation), Slither/Mythril/Echidna, and audit report structure.
-
-**Lab**: MD5 identification → hashcat -m 0 → base64 decode "hello world" → openssl enc -out → genrsa 4096. **120 XP.**
-
----
-
-### MOD-04 — Offensive Security `#bf5fff` | INTERMEDIATE
-
-PTES methodology (6 phases), Nmap mastery (SYN scan -sS, version -sV, OS -O, scripts -sC, timing -T1-T5, output -oN/-oX/-oG, evasion decoys/fragmentation), service enumeration (SMB/FTP/SSH/HTTP), Gobuster/Nikto, OWASP Top 10 2021, SQL injection (manual to sqlmap), password attacks (hashcat rules/masks, hydra HTTP-form-POST), Metasploit framework (search/use/set/run, meterpreter commands, msfvenom), Linux privesc (SUID/GTFOBins, sudo -l, writable /etc/passwd, cron hijacking), Windows privesc (whoami /priv, AlwaysInstallElevated, token impersonation), pentest report structure.
-
-**Lab**: -sS flag → -sV flag → search eternalblue → windows/x64/meterpreter/reverse_tcp → linpeas. **130 XP.**
+**MOD-11 Red Team Operations (18 steps, 465 XP):** C2 framework architecture (Sliver mTLS/WireGuard/DNS/HTTP), malleable C2 profiles, redirectors with nginx mod_rewrite, LOLBins execution (certutil/regsvr32/mshta), lateral movement (wmiexec/smbexec), process injection API chain (VirtualAllocEx/WriteProcessMemory/CreateRemoteThread), process hollowing, APC injection, token impersonation (Potato family), AMSI/ETW bypass techniques, EDR unhooking (SysWhispers/direct syscalls), phishing infrastructure (GoPhish + Evilginx2), supply chain attacks (dependency confusion/SolarWinds/XZ Utils), purple team MITRE ATT&CK mapping, TIBER-EU methodology, pentest reporting structure.
 
 ---
 
-### MOD-05 — Active Directory `#ff4136` | ADVANCED
+## Lab Terminal Engine
 
-AD structure and Kerberos flow (AS-REQ/AS-REP/TGS-REQ/TGS-REP), Kerberoasting (GetUserSPNs.py → hashcat -m 13100), AS-REP Roasting, BloodHound attack path analysis (bloodhound-python collector, neo4j, "Shortest path to Domain Admins" query), Pass-the-Hash (CrackMapExec smb -H flag), Pass-the-Ticket, DCSync (impacket-secretsdump -just-dc-ntlm, DS-Replication rights), Golden Ticket (krbtgt hash + Mimikatz kerberos::golden, 10-year validity), Silver Ticket, ACL abuse (WriteDACL/GenericWrite/ForceChangePassword), constrained/unconstrained delegation, forest trust attacks.
+The `LabTerminal` component is the core interactive learning mechanism. Each lab runs through two phases:
 
-**Lab**: enum4linux → GetUserSPNs.py → CrackMapExec PtH → bloodhound-python → impacket-secretsdump. **145 XP.**
+### Phase 1 — Guided Steps
+- Each step presents an **objective** (what to do and why), a **hint** (available on demand, no XP penalty), and expects a specific **answer**
+- Answers are verified against `correctAnswers[]` — an array supporting multiple valid forms (e.g. `nmap`, `nmap -sS`, full command flags)
+- On correct answer: XP awarded, step advances, output printed to terminal
+- On incorrect answer: attempt logged, contextual feedback shown, hint offered
+- On completion: total XP saved to `localStorage` instantly, then synced to Supabase `lab_progress` table via `/api/progress`
+- Custom `ghostnet_progress_updated` event fired — all widgets (ProgressTracker, GhostAgent, NavUserBadge) react in real time
 
----
+### Phase 2 — Free Lab
+- `FreeLabTerminal` component: open-ended sandbox with a simulated terminal
+- No step constraints — operators practice freely in the module context
+- XP already awarded; this is pure practice time
 
-### MOD-06 — Web Attacks Advanced `#00d4ff` | ADVANCED
-
-Blind SQLi (boolean: AND 1=1/1=2, time-based: SLEEP(5), second-order, INTO OUTFILE to RCE), stored XSS chains (cookie theft → CSRF → account takeover), DOM-based XSS, CSP bypass, SSRF to AWS IMDS (169.254.169.254/latest/meta-data/iam/security-credentials/), SSRF filter bypass (DNS rebinding/IPv6/decimal IP), Java deserialization (ysoserial gadget chains), PHP deserialization (POP chains), GraphQL introspection/batch attacks/NoSQL injection, IDOR, HTTP request smuggling (CL.TE/TE.CL), JWT attacks (alg:none/key confusion), OAuth 2.0 misconfigs.
-
-**Lab**: single quote SQLi → sqlmap --dbs → alert(1) XSS → gobuster dir → Burp Suite Ctrl+F forward. **120 XP.**
-
----
-
-### MOD-07 — Malware Analysis `#00ff41` | ADVANCED
-
-Safe environment setup (FlareVM, REMnux, INetSim network simulation), analysis phases (triage/static/dynamic/reporting), PE structure (magic bytes, sections .text/.data/.rsrc, imports table, entropy — high=packed/encrypted), FLOSS for obfuscated strings, x64dbg debugging workflow (ScyllaHide anti-anti-debug, breakpoints, memory inspection), ransomware anatomy (5 stages: initial access → pre-encryption → encryption → post-encryption → monetisation), ransomware family table (LockBit 3.0/Conti/ALPHV/CL0P/REvil with key characteristics), YARA rule writing, Volatility memory forensics (malfind/pslist/netscan/cmdline), IR checklist.
-
-**Lab**: file type identification → strings extraction → PE imports tool → strace system calls → tcpdump -i -w capture. **130 XP.**
-
----
-
-### MOD-08 — Network Attacks `#00ffff` | INTERMEDIATE
-
-ARP spoofing theory (stateless protocol, gratuitous ARP abuse), arpspoof/ettercap for MITM positioning, IP forwarding requirement, tcpdump (interface -i, write -w, filters), DNS poisoning (etter.dns configuration, dnschef, Kaminsky attack mechanics), SSL stripping (bettercap https.proxy, sslstrip, HSTS bypass), VLAN hopping (double-tagging, DTP switch spoofing), Scapy packet crafting (IP/TCP/UDP/ICMP, send/sendp/sniff), 802.1X and NAC evasion.
-
-**Lab**: arpspoof tool → tcpdump -i → /etc/ettercap/etter.dns → bettercap SSL stripping → knock client. **125 XP.**
-
----
-
-### MOD-09 — Cloud Security `#ff9500` | ADVANCED
-
-AWS service attack surface table (10 services), automated enumeration (enumerate-iam, ScoutSuite, Prowler, Pacu), Terraform state file credential theft, 15 IAM privilege escalation paths (iam:PassRole + lambda:CreateFunction = admin path), EC2 IMDS credential theft (169.254.169.254, IMDSv1 no-auth vs IMDSv2 token), Lambda exploitation (environment variable theft, event injection, layer poisoning, update function code for RCE), EKS attack (aws-auth ConfigMap bypass, kubectl secret dump), CI/CD pipeline attacks (6 attack types: source poisoning/build injection/artifact tampering/registry compromise/deployment abuse/secret theft), CloudTrail analysis.
-
-**Lab**: IMDS URL → enumerate-iam tool → aws s3 ls --no-sign-request → aws lambda get-function-configuration → GetCallerIdentity CloudTrail event. **145 XP.**
-
----
-
-### MOD-10 — Social Engineering `#ff6ec7` | INTERMEDIATE
-
-Cialdini's 6 principles weaponised (reciprocity/commitment/social proof/authority/liking/scarcity), attack surface table by role (6 roles: admin/finance/HR/IT helpdesk/executive/customer service), email header analysis (Received header path tracing), SPF/DKIM/DMARC mechanics and checking, BEC taxonomy with documented losses (CEO fraud/W-2 theft/vendor impersonation/attorney impersonation/account compromise — $26B+ annually), smishing and quishing (QR code phishing mechanics), deepfakes and AI-assisted SE (ElevenLabs voice cloning, HeyGen video synthesis, $25M Hong Kong incident), red team campaign 6-phase planning with timelines, GoPhish framework architecture, MFA type vs SE resistance table.
-
-**Lab**: Received email header → SPF TXT record type → pretexting definition → GoPhish port 3333 → CLI spoofing. **120 XP.**
-
----
-
-### MOD-11 — Red Team Operations `#ff3333` | EXPERT
-
-Red team vs pentest distinction (adversary simulation vs VA, timeline/stealth/purple team), 7-phase campaign methodology, C2 framework comparison (Cobalt Strike/Sliver/Havoc/Brute Ratel C4), C2 infrastructure (nginx redirectors with mod_rewrite, domain fronting, CDN-based C2), Malleable C2 Profiles (traffic blending to Teams/S3/etc.), AV/EDR evasion (AMSI bypass via AmsiScanBuffer patch, ETW patching, reflective DLL injection, process hollowing, Donut shellcode loader, obfuscation techniques), LOLBins (certutil/regsvr32/rundll32/mshta/wscript/MSBuild), persistence mechanisms (HKCU Run keys, schtasks, WMI subscriptions, DLL hijacking, COM hijacking), data staging and exfil (7z, dnscat2, iodine, HTTPS to cloud storage, timing transfers).
-
-**Lab**: C2 framework identification → PowerShell LOLBin → Malleable C2 Profiles concept → wmiexec lateral movement → HKCU registry Run key path. **135 XP.**
-
----
-
-### MOD-12 — Wireless Attacks `#aaff00` | INTERMEDIATE
-
-Hardware comparison table (5 adapters: Alfa AWUS036ACH/Panda PAU09/TP-Link TL-WN722N/HackRF One/Ubertooth One), monitor mode (airmon-ng start, iw dev, check kill), WPA2 4-way handshake capture (airodump-ng --bssid -c -w, aireplay-ng deauth), hashcat WPA2 cracking (hcxpcapngtool conversion, -m 22000, wordlist+rules+masks), WPA3 + Dragonblood vulnerability table (CVE-2019-9494/9496/9498/13377), WPA-Enterprise 802.1X (hostapd-wpe RADIUS server, eaphammer, MSCHAPv2 → asleap crack), BLE GATT testing (gatttool, ubertooth, replay attacks), Zigbee/Z-Wave (KillerBee, rtl_433, SDR frequency monitoring), RFID/NFC cloning (Flipper Zero, Proxmark3, MIFARE Classic darkside attack), wireless detection/defence table.
-
-**Lab**: airmon-ng start wlan0 → airodump-ng --bssid → hashcat mode 22000 → wifiphisher evil twin → hcitool scan BT. **135 XP.**
-
----
-
-### MOD-13 — Mobile Security `#7c4dff` | ADVANCED
-
-Android security model table (7 layers: Linux kernel/HAL/ART/app sandbox/permissions/SELinux/Keystore, each with bypass methods), APK structure (AndroidManifest.xml, classes.dex, lib/ native), native library analysis (.so with Ghidra/radare2), ADB workflow (shell/logcat/pull/push/monkey), Frida dynamic instrumentation (frida-ps/Java.use()/implementation override/crypto logger hooking SecretKeySpec + Cipher.doFinal), iOS security architecture table (Secure Enclave/TrustZone/SIP/App Sandbox/ASLR+PIE), iOS jailbreak tools (checkra1n/palera1n/Dopamine), iOS data storage locations (Keychain/NSUserDefaults/Core Data/iCloud backup — what's accessible without jailbreak), full Burp Suite proxy setup for both platforms, 6-phase mobile pentest methodology, OWASP Mobile Top 10 2024 (M1-M10), mobile malware indicator table, 14-tool reference.
-
-**Lab**: jadx decompile → adb shell → frida-ps -U → objection SSL bypass → iOS NSUserDefaults backup accessible. **130 XP.**
-
----
-
-## Interactive Lab Terminal Engine
-
-The `LabTerminal` component (`app/components/LabTerminal.tsx`, 380 lines) is the core interactive learning engine.
-
-### Step Interface
-
-```typescript
-export interface LabStep {
-  id: string          // unique step identifier
-  title: string       // step heading shown in card
-  objective: string   // what the user must do/answer
-  hint: string        // revealed on "hint" command or HINT button
-  answers: string[]   // accepted answers — any match passes
-                      // '*' = any non-empty input accepted
-  flag?: string       // optional FLAG{...} reward displayed on pass
-  xp: number          // XP awarded for correct answer
-  explanation: string // explanation shown after correct answer
-}
+### XP and Progress Sync
 ```
-
-### Answer Matching
-
-```typescript
-function normalise(s: string) {
-  return s.trim().toLowerCase().replace(/\s+/g, ' ')
-}
-
-function checkAnswer(input: string, answers: string[]): boolean {
-  const norm = normalise(input)
-  return answers.some(a => {
-    if (a === '*') return norm.length > 0
-    return normalise(a) === norm || norm.includes(normalise(a))
-  })
-}
+User completes step
+  → localStorage updated immediately (offline-first)
+  → ghostnet_progress_updated event fired
+  → ProgressTracker, GhostAgent, NavUserBadge all re-render
+  → If authenticated: POST /api/progress → Supabase upsert
+  → Rank recalculated server-side via DB trigger
+  → Realtime channel notifies leaderboard
 ```
-
-Whitespace-tolerant, case-insensitive, substring-matching. A user typing `nmap -sS` matches against `['nmap -sS', '-sS', 'syn scan']` regardless of spacing.
-
-### Features
-
-| Feature | Detail |
-|---------|--------|
-| Answer normalisation | Case-insensitive, whitespace-collapsed, substring match |
-| Wildcard | `answers: ['*']` accepts any non-empty input |
-| Hint system | `hint` command or HINT button — shows step hint in terminal output |
-| Skip | `skip` command — advances without XP (flag not revealed) |
-| Clear | `clear` command — clears terminal output buffer |
-| XP flash | Fixed-position `+N XP` toast with CSS fadeUp animation |
-| Step progress bar | Color-coded segments per step |
-| FLAG display | `FLAG{...}` rendered in accent color after correct answer |
-| localStorage | Key `lab_{labId}` — persists `{completed[], xp, step, done}` |
-| Supabase sync | POST `/api/progress` on full lab completion if authenticated |
-| Restart | Clears localStorage + resets all state to step 0 |
-| Offline resilience | Supabase wrapped in try/catch — localStorage always succeeds |
-
-### Total Lab XP Available
-
-| Lab | XP |
-|-----|-----|
-| MOD-01 Tor | 130 |
-| MOD-02 OSINT | 130 |
-| MOD-03 Crypto | 120 |
-| MOD-04 Offensive | 130 |
-| MOD-05 Active Directory | 145 |
-| MOD-06 Web Attacks | 120 |
-| MOD-07 Malware | 130 |
-| MOD-08 Network Attacks | 125 |
-| MOD-09 Cloud Security | 145 |
-| MOD-10 Social Engineering | 120 |
-| MOD-11 Red Team | 135 |
-| MOD-12 Wireless | 135 |
-| MOD-13 Mobile Security | 130 |
-| **TOTAL** | **1,695 XP** |
 
 ---
 
 ## The 9 Interactive Tools
 
-### 1. Threat Intel `/intel`
-Live CVE feed from NVD/NIST. Filterable by CRITICAL/HIGH/MEDIUM/LOW severity. Each entry links to the full NVD detail page. Combine with Shodan Builder to find internet-exposed instances of vulnerable software.
-
-### 2. Tool Reference `/tools`
-200+ working security commands across every major tool: Nmap, SQLmap, Metasploit, msfvenom, Hydra, Hashcat, Gobuster, Burp Suite, ffuf, Nikto, Impacket, CrackMapExec, BloodHound, Mimikatz, netcat, socat, Wireshark/tshark, aircrack-ng suite, Frida/Objection, ADB, AWS CLI, Docker/kubectl. Every command is copy-ready with explanations.
-
-### 3. Research Terminal `/terminal`
-Browser-based interactive terminal for command exploration, syntax practice, and workflow research without switching to a VM.
-
-### 4. Payload Generator `/payload`
-40+ offensive payloads: reverse shells (bash/Python/PHP/PowerShell/netcat/socat), XSS vectors (reflected/stored/DOM/polyglots/filter bypasses), SQL injection (UNION/boolean blind/time-based/error-based/stacked), LFI path traversal, command injection, XXE (basic/file read/SSRF/blind OOB), SSTI (Jinja2/Twig/Freemarker/Smarty), CSRF, open redirect. Each documented with mechanical explanation of how and why it works.
-
-### 5. Blockchain Tracer `/crypto-tracer`
-On-chain transaction analysis for Bitcoin and Ethereum. Input wallet address or tx hash to visualize fund flows, identify exchange deposits (KYC choke points), flag mixer usage (Tornado Cash/CoinJoin/Wasabi), and build attribution chains — same methodology as Chainalysis and TRM Labs.
-
-### 6. CTF Toolkit `/ctf`
-Base64/hex/binary/URL encoders-decoders, hash identifier, frequency analysis, ROT13/Caesar/Vigenere crackers, steganography helpers (stegsolve/zsteg/steghide workflow), RSA attack tools (common factor/small exponent/Wiener's), format string helpers, pwntools templates.
-
-### 7. Report Generator `/report-generator`
-Full AI-assisted pentest report builder: engagement form, AI executive summary generation, dynamic findings manager (unlimited findings with severity/CVSS/asset/description/impact/recommendation), AI draft buttons per finding, structured plaintext output with copy button, risk summary badges. AI drafts as a senior penetration tester.
-
-### 8. Attack Path Visualizer `/attack-path`
-MITRE ATT&CK kill chain builder. 9 phases, 5 techniques per phase (45 total with real T-IDs). Add steps, assign targets, add evidence notes, reorder, generate AI narrative, export. Presets: "Classic External Pentest" (9 steps) and "Phishing to Domain Compromise" (8 steps).
-
-### 9. Shodan Query Builder `/shodan`
-Point-and-click Shodan query constructor. 6 filter groups (Network/Location/Service/SSL-TLS/HTTP/ICS-IoT). Live query preview. 20 curated example queries. Negate any filter. Open Shodan directly with assembled query.
+| Tool | Path | Description |
+|------|------|-------------|
+| Live CVE Feed | `/intel` | Real-time NVD/NIST vulnerability feed, filterable by CRITICAL/HIGH/MEDIUM/LOW |
+| Command Reference | `/tools` | 200+ security commands with flags explained — nmap, sqlmap, metasploit, hashcat, impacket, CrackMapExec, Frida, AWS CLI and more |
+| Research Terminal | `/terminal` | Interactive browser terminal for command practice and output exploration |
+| Payload Generator | `/payload` | 40+ attack payloads: reverse shells, XSS, SQLi, LFI, XXE, SSTI, CSRF, command injection |
+| Blockchain Tracer | `/crypto-tracer` | Bitcoin and Ethereum transaction tracing, wallet analysis, mixer detection |
+| CTF Toolkit | `/ctf` | Decoders, hash identifiers, cipher crackers, RSA tools, steganography helpers, pwntools templates |
+| Report Generator | `/report-generator` | AI-assisted pentest report builder: findings manager, AI draft generation, executive summary, copy-ready output |
+| Attack Path Visualizer | `/attack-path` | MITRE ATT&CK kill chain builder — 9 phases, 45 techniques, AI narrative generation, preset paths |
+| Shodan Builder | `/shodan` | Point-and-click Shodan query constructor — 6 filter groups, 20 example queries, live preview |
 
 ---
 
-## AI Ghost Agent
+## GHOST AI Agent
 
-The Ghost Agent (`app/components/GhostAgent.tsx`, 807 lines) is a context-aware AI research assistant on every page.
+GHOST is the embedded AI research intelligence, rendered as a floating panel (bottom-right).
 
-### System Architecture
+### Capabilities
+- **Full platform knowledge**: knows every module, every lab step, every tool on the platform — answers are tied to actual GHOSTNET content, not generic security information
+- **Operator identity**: reads the authenticated user's callsign (username), rank, XP, and completed lab list — addresses operators by name, references their progress, calibrates to their level
+- **Skill-level adaptation**: Ghost/Specter operators get first-principles explanations with analogies; Wraith/Legend operators get peer-level exchange with no hand-holding
+- **Page context awareness**: knows exactly which page/module/tool the operator is currently on — every vague question is interpreted in context
+- **Persistent history**: conversation stored in `localStorage`, survives page navigation, up to 20 messages retained
+- **Real-time rank sync**: listens for `ghostnet_progress_updated` events — rank and XP update live without page reload
 
-```
-User input
-  |
-  v
-GhostAgent component
-  |-- reads ghostnet_progress from localStorage
-  |-- computes current rank + XP + labs completed
-  |-- builds systemPrompt:
-  |     [USER PROFILE]      <- skill-level calibration
-  |   + [SYSTEM_PROMPT]     <- 350-line expert security mentor prompt
-  |   + [PAGE_CONTEXT]      <- per-page 500-1000 word detail map
-  |
-  v
-POST /api/ghost
-  |
-  v
-Groq API (llama-3.3-70b-versatile, 2048 tokens)
-  |
-  v
-Response -> MessageBubble renderer (code block highlighting)
-  |
-  v
-saveHistory() -> localStorage ghost_chat_history (last 20 messages)
-```
-
-### Skill-Level Calibration
-
-| Rank | Guidance Injected |
-|------|------------------|
-| Script Kiddie | "Explain fundamentals clearly — avoid jargon without definition. Use analogies." |
-| Recon Agent | "User has basics down. Focus on practical commands and tool usage." |
-| Threat Hunter | "Go beyond basics — cover edge cases and tool flags." |
-| Exploit Dev+ | "Go deep on technical mechanics. Skip basics, lead with the technique." |
-| Ghost Tier+ | "Treat as a peer. Precise technical language, edge cases, opsec implications." |
-
-### Page Context Coverage
-
-`PAGE_CONTEXT` covers every route with a dedicated expert brief:
-- All 13 module concept pages (each 300-600 words of precise technical detail)
-- All 13 module lab pages (exact exercise breakdowns)
-- All 9 tool pages (feature documentation, use cases, Ghost help capabilities)
-- Dashboard page (full platform overview)
-
-### Features
-
-| Feature | Detail |
-|---------|--------|
-| Persistent memory | Last 20 messages saved to `ghost_chat_history` localStorage |
-| Clear history | CLEAR button in header — wipes and resets to welcome message |
-| Rank pill | Header shows current rank live from localStorage |
-| Code rendering | Triple-backtick blocks render as styled terminal `<pre>` |
-| Quick prompts | Context-sensitive suggestions per page type |
-| Typing indicator | 3-dot bounce animation |
-| Error handling | Inline error display, no crash |
-| Offline fallback | API failure silently handled |
-| Footer | "powered by Groq llama-3.3-70b" |
+### Technical Details
+- Model: `llama-3.3-70b-versatile` via Groq API
+- Max tokens: 4096
+- System prompt: operator identity block + full platform knowledge + page context injected per request
+- History: last 20 messages sent as context on every request
+- Rate limit: Groq free tier — 14,400 requests/day
 
 ---
 
-## Gamification System
+## Gamification and Rank System
 
-### Rank Progression
+### XP and Ranks
 
-| Rank | XP Required | Color |
-|------|------------|-------|
-| Script Kiddie | 0 | #5a7a5a |
-| Recon Agent | 500 | #00d4ff |
-| Threat Hunter | 1,500 | #00ff41 |
-| Exploit Dev | 3,000 | #ffb347 |
-| Red Operator | 5,000 | #ff4136 |
-| Ghost Tier | 8,000 | #bf5fff |
-| Ghost Operative | 12,000 | #bf5fff |
-| Phantom | 18,000 | #ff6ec7 |
-| Wraith | 26,000 | #ff3333 |
-| Shadow God | 36,000 | #ff9500 |
+All rank thresholds are calibrated to the total earnable XP across all 13 labs (5,450 XP). Every rank is reachable through normal platform use.
 
-### Streak Logic
+| Rank | XP Required | Color | How to reach |
+|------|-------------|-------|--------------|
+| Ghost | 0 | `#4a9a4a` | Starting rank |
+| Specter | 750 | `#00d4ff` | ~2 labs |
+| Phantom | 1,800 | `#bf5fff` | ~5-6 labs |
+| Wraith | 3,200 | `#ff4136` | ~9-10 labs |
+| Legend | 5,000 | `#ffb347` | All 13 labs |
 
-```
-On lab toggle (complete):
-  today    = new Date().toDateString()
-  lastAct  = new Date(progress.lastActivity).toDateString()
-  yesterday = new Date(Date.now() - 86400000).toDateString()
+Single source of truth: `RANK_LIST` and `getRank()` exported from `lib/supabase.ts`, imported by ProgressTracker, GhostAgent, AuthProvider, leaderboard — never duplicated.
 
-  if lastAct === yesterday  -> streak + 1
-  if lastAct === today      -> streak unchanged
-  else                      -> streak = 1 (reset)
-```
+### Badges (13+ defined in `supabase-schema.sql`)
 
-### Progress Tracker Widget
+| Category | Badges |
+|----------|--------|
+| Rank progression | Specter, Phantom, Wraith, Legend |
+| Lab completion | Lab Rat (3 labs), Operator (7), Elite Operator (10), Ghost Protocol (all 13) |
+| Module mastery | One badge per module (Tor Master, Domain Lord, Web Assassin, etc.) |
+| Streaks | Multi-day streak badges |
 
-Three-tab floating panel (bottom-left):
-- **PROGRESS**: 81 labs across 13 modules, click-to-toggle, XP award/deduct
-- **GOALS**: Streak counter, 3 daily goals, XP/rank/labs summary, leaderboard link
-- **NOTES**: Per-module markdown note editor, saved to localStorage
-
-### Leaderboard `/leaderboard`
-
-Two tabs:
-- **GLOBAL TOP 10**: Ranked operators table with XP, labs, streak, rank badge. I/II/III medals for top 3.
-- **MODULE PROGRESS**: 13-module grid with color-coded progress bars
-
-Personal stats card reads from localStorage. Sign-in prompt to appear on global board.
+### Streak and Daily Goals
+- Streak tracked per calendar day — completing any lab step counts as activity
+- Daily goals: complete a step today, complete 3+ labs total, reach 50% completion
+- All computed client-side from `localStorage` — no server round-trip needed
 
 ---
 
-## Authentication and Data Layer
+## Authentication and Session Management
 
-### Supabase Schema Summary
+### Entry Flow
+```
+First visit / session expired
+  → /welcome (cinematic splash screen)
+  → "ACCESS THE NETWORK" button
+  → /auth (login or register)
+  → dashboard (or original destination via ?from= param)
+
+Already authenticated with active session
+  → /welcome checks session on mount
+  → router.replace('/') immediately — splash skipped
+```
+
+### Session Timeout
+- **20-minute sliding inactivity timeout** — cookie refreshed on every request via middleware
+- After 20 minutes of no page loads: cookie expires → Supabase session invalidated → next visit shows splash screen and requires re-authentication
+- Cookie settings: `httpOnly: true`, `sameSite: 'lax'`, `secure: true` (production), `maxAge: 1200`
+
+### Middleware
+`middleware.ts` gates every route except:
+- `/welcome`, `/auth`, `/auth/callback` (public)
+- `/_next`, `/favicon`, `/api/` (static assets and API)
+- Dev mode bypass: if Supabase env vars are not configured, all access is allowed
+
+### Redirect Preservation
+Unauthenticated requests to any protected route are redirected to `/welcome?from=ORIGINAL_PATH`. After login, the user is sent to their original destination.
+
+---
+
+## Leaderboard and Admin Panel
+
+### Live Leaderboard (`/leaderboard`)
+- Queries `user_profiles` ordered by XP descending, limit 50
+- Realtime: `supabase.channel('leaderboard_realtime')` subscribing to `postgres_changes` on `user_profiles` and `lab_progress` tables
+- 30-second polling fallback for environments where WebSocket realtime is unavailable
+- Shows: rank badge, callsign, XP bar, ghost rank, labs completed count, last active
+
+### Admin Panel
+- Visible only to users whose email matches `NEXT_PUBLIC_ADMIN_EMAIL` (comma-separated for multiple admins)
+- Shows full user table including email addresses, XP, rank, streak, lab count
+- Expandable rows load per-user lab history from `lab_progress` table
+- Stats bar: total operators, total labs completed, average XP, highest rank achieved
+
+---
+
+## Database Schema
+
+Full schema in `supabase-schema.sql`. Key tables:
 
 ```sql
+-- User profiles (auto-created on signup via trigger)
 user_profiles (
-  id, user_id, username, xp, rank,
-  completed_labs TEXT[],
-  streak_days INTEGER,
-  last_activity TIMESTAMPTZ,
-  badges TEXT[],
-  created_at, updated_at
+  id uuid PRIMARY KEY,          -- matches auth.users.id
+  username text UNIQUE,
+  email text,
+  ghost_rank text,              -- Ghost | Specter | Phantom | Wraith | Legend
+  xp integer DEFAULT 0,
+  streak_days integer DEFAULT 0,
+  last_active timestamptz,
+  is_public boolean DEFAULT true
 )
 
+-- Lab completion records
 lab_progress (
-  id, user_id, lab_id, module_id,
-  xp_earned INTEGER,
-  completed_at TIMESTAMPTZ,
-  UNIQUE(user_id, lab_id)   -- idempotent completion
+  id uuid PRIMARY KEY,
+  user_id uuid REFERENCES user_profiles,
+  lab_id text,                  -- e.g. 'active-directory-lab'
+  module_id text,               -- e.g. 'active-directory'
+  completed boolean DEFAULT false,
+  xp_earned integer DEFAULT 0,
+  completed_at timestamptz,
+  attempts integer DEFAULT 1
 )
 
--- RPC
-update_xp_and_rank(p_user_id UUID, p_xp_delta INT)
-  -> increments xp, recalculates rank tier
+-- Badge definitions (seeded)
+badges (slug, name, description, icon, color, xp_reward,
+        requirement_type, requirement_value)
+
+-- User badge awards
+user_badges (user_id, badge_id, earned_at)
 ```
 
-### Offline-First Architecture
-
-```
-Lab complete event
-  |
-  +-> localStorage.setItem('lab_' + id, JSON)   <- always, sync
-  |
-  +-> supabase.auth.getUser()
-        |
-        +-- [authenticated] -> POST /api/progress -> DB upsert + XP RPC
-        |
-        +-- [not auth / offline] -> silent catch, localStorage is truth
-```
+### Key Database Functions
+- `award_xp(p_user_id, p_xp_delta)` — adds XP and automatically recalculates `ghost_rank` via CASE expression
+- Rank trigger: Ghost 0 / Specter 750 / Phantom 1,800 / Wraith 3,200 / Legend 5,000
+- Auto-profile trigger: creates `user_profiles` row on `auth.users` insert
 
 ---
 
 ## Component Architecture
 
-### Floating Widget Positions
-
+### Floating Widget Layout (fixed — do not change)
 ```
-Bottom-left stack:         Bottom-right stack:
-  CheatSheet:  b:24 l:24     GhostAgent: b:24 r:24
-  Progress:    b:70 l:24     CVEFeed:    b:70 r:24
+Bottom-left stack:
+  CheatSheet button:      bottom: 24px, left: 24px
+  ProgressTracker button: bottom: 70px, left: 24px
+
+Bottom-right stack:
+  GhostAgent button:      bottom: 24px, right: 24px
+  CVEFeed button:         bottom: 70px, right: 24px
+
 All panels open upward. All z-index >= 9000.
 ```
 
-### Error Boundary
+### Event Bus
+Custom browser events for cross-component reactivity (no global state manager):
+- `ghostnet_progress_updated` — fired on every lab step completion and manual progress toggle. Consumed by: ProgressTracker, GhostAgent, NavUserBadge, Dashboard stats.
+- `ghostnet_profile_refresh` — fired after Supabase profile sync. Consumed by: AuthProvider, leaderboard.
 
-React class component wrapping all floating widgets and main `{children}`. Catches render errors, shows error message + RETRY button, logs to console.
+### AuthProvider Context
+Wraps the entire app. Exposes: `user`, `profile`, `loading`, `signIn`, `signUp`, `signOut`, `refreshProfile`, `isSupabaseConfigured`.
 
-### Offline Banner
-
-`OfflineBanner` in layout root. Listens to `window offline/online` events. Shows amber warning bar when `navigator.onLine === false`. Text: "OFFLINE MODE — AI features and cloud sync unavailable. Progress saves locally."
+`NavUserBadge` (rendered inside the nav) reads `profile` to show the operator's callsign and rank pill in the top navigation bar.
 
 ---
 
 ## API Routes
 
-### POST /api/ghost
+### `POST /api/ghost`
+Proxies requests to Groq API.
+```typescript
+Body: { messages: Message[], systemPrompt: string }
+Response: { text: string }
+```
+Injects operator identity (callsign, rank, XP, completed labs) + page context + full platform knowledge into every request.
 
-```json
-Request:  { "systemPrompt": "...", "messages": [{"role":"user|assistant","content":"..."}] }
-Response: { "text": "..." }
-Model: llama-3.3-70b-versatile | Max tokens: 2048
+### `POST /api/progress`
+Awards XP for lab completion and syncs to Supabase.
+```typescript
+Body: { labId: string, moduleId: string, xpEarned: number, userId?: string }
+Response: { success: boolean, totalXp: number }
+```
+Upserts `lab_progress` record, calls `award_xp()` DB function.
+
+### `GET /api/progress`
+Fetches user's complete lab progress from Supabase.
+```typescript
+Query: ?userId=string
+Response: { labs: LabProgress[], totalXp: number }
 ```
 
-### POST /api/progress
-
-```json
-Request:  { "user_id": "uuid", "lab_id": "string", "module_id": "string", "xp_earned": 130 }
-Response: { "success": true }
-Behavior: UPSERT lab_progress (unique user_id+lab_id), call update_xp_and_rank RPC
-```
-
-### GET /api/auth/callback
-
-Supabase email confirmation handler. Exchanges code for session, redirects to `/profile`.
+### `GET /api/auth/callback`
+Handles Supabase email confirmation redirect. Exchanges code for session, redirects to dashboard.
 
 ---
 
 ## Getting Started
 
 ### Prerequisites
-
-- Node.js 18+
-- npm
-- Supabase project (optional)
-- Groq API key (optional)
+- Node.js 20+
+- A Supabase project (free tier) — optional but required for user accounts
+- A Groq API key (free tier) — optional but required for Ghost Agent
 
 ### Installation
 
 ```bash
-git clone https://github.com/yourusername/ghostnet.git
+git clone https://github.com/Levikib/ghostnet.git
 cd ghostnet
 npm install
-cp .env.example .env.local
-# Edit .env.local with your keys
-npm run dev
 ```
 
-Visit `http://localhost:3000`
+### Configuration
 
-### Production Build
+```bash
+cp .env.example .env.local
+# Edit .env.local with your keys
+```
+
+### Database Setup
+
+1. Go to your Supabase project → SQL Editor
+2. Paste and run the entire contents of `supabase-schema.sql`
+3. This creates all tables, triggers, functions, and seeds badge data
+
+### Run Development Server
+
+```bash
+npm run dev
+# Open http://localhost:3000
+```
+
+Without Supabase configured, the platform runs in dev mode — all routes accessible, progress saved to localStorage only.
+
+### Build for Production
 
 ```bash
 npm run build
@@ -653,108 +542,87 @@ npm start
 
 ## Environment Variables
 
-```bash
-# Supabase (optional — platform works without it)
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-
-# Groq (optional — Ghost Agent degrades gracefully without it)
-GROQ_API_KEY=gsk_your_groq_api_key
-```
-
----
-
-## Database Setup
-
-1. Create a Supabase project at [supabase.com](https://supabase.com)
-2. Open SQL Editor
-3. Paste and run `supabase-schema.sql`
-
-This creates all tables, RLS policies, the XP RPC function, and seed data.
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `GROQ_API_KEY` | Yes (for Ghost Agent) | Groq API key — free at console.groq.com |
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes (for auth) | Your Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes (for auth) | Supabase anon/public key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes (for server API) | Supabase service role key (never expose client-side) |
+| `NEXT_PUBLIC_ADMIN_EMAIL` | Yes (for admin panel) | Comma-separated admin email(s) for leaderboard admin tab |
+| `SHODAN_API_KEY` | No | Enhances Shodan builder tool |
+| `HIBP_API_KEY` | No | HaveIBeenPwned breach lookups |
 
 ---
 
 ## Deployment
 
-### Vercel
+### Vercel (Recommended)
 
 ```bash
+# Install Vercel CLI
 npm i -g vercel
-vercel
-# Set env vars in Vercel Dashboard
+
+# Deploy
+vercel --prod
 ```
 
-### Notes
+Add all environment variables in Vercel dashboard → Project → Settings → Environment Variables.
 
-- `.babelrc` must remain present — SWC is intentionally disabled
-- `NEXT_PUBLIC_` prefix required on all client-side env vars
-- All 45 pages build as static — no server runtime required except API routes
+Update Supabase Auth settings:
+- **Site URL**: `https://your-project.vercel.app`
+- **Redirect URLs**: `https://your-project.vercel.app/api/auth/callback`
+
+### Self-Hosted
+
+```bash
+npm run build
+PORT=3000 npm start
+```
+
+Use nginx as a reverse proxy with SSL (Let's Encrypt via certbot).
 
 ---
 
-## Changelog
+## Roadmap — Version 2
 
-### v2.0 — April 2026 (Current)
+Version 2 is in active development. The major upgrade:
 
-#### TASK 2 — Interactive Lab Terminal Engine
-- New `LabTerminal` component (380 lines): step state machine, answer verification with normalisation, hint system, FLAG rewards, XP flash animations, progress bar
-- localStorage persistence per lab (`lab_{id}` key)
-- Supabase cloud sync on lab completion for authenticated users
-- Wired into all 13 module lab pages — 65 total interactive steps, 1,695 total XP available
+### Docker Sandbox Environment
+Real isolated lab environments — each user session spins up Docker containers on demand:
+- **Kali Linux container** — real attack machine with all tools installed (nmap, metasploit, sqlmap, hashcat, impacket, BloodHound, etc.)
+- **Vulnerable target containers** — per-module targets: DVWA for web attacks, Metasploitable for offensive, custom AD environment for Active Directory, etc.
+- **xterm.js terminal** — real interactive shell in the browser connected via WebSocket
+- **Session lifecycle** — containers spin up on lab start, idle timeout tears them down automatically
+- **Scenario engine** — randomised vulnerable environments: random target IPs, hostnames, service versions, credentials, flags — different scenario every session
 
-#### TASK 3 — Content Depth Upgrade (6 modules massively expanded)
-- MOD-01 Tor: 8 → 14 sections. Added: C2 over Tor, vanity .onion (mkp224o), hidden service hardening, OnionScan, red team detection, bridge comparison table
-- MOD-07 Malware: 9 → 13 sections. Added: INetSim setup, PE entropy analysis, FLOSS, x64dbg workflow with ScyllaHide, ransomware family table, full IR checklist
-- MOD-09 Cloud Security: 7 → 12 sections. Added: AWS attack surface table, 15 IAM privesc paths, Lambda exploitation, EKS attack, CI/CD pipeline attacks, defensive baseline
-- MOD-10 Social Engineering: 7 → 11 sections. Added: attack surface by role table, BEC taxonomy with dollar figures, deepfakes + AI-assisted SE, 6-phase red team planning, MFA resistance table
-- MOD-12 Wireless: 7 → 13 sections. Added: hardware comparison table, WPA3 Dragonblood table, WPA-Enterprise RADIUS capture, BLE GATT testing, Zigbee/Z-Wave, RFID/NFC cloning
-- MOD-13 Mobile Security: 7 → 13 sections. Added: Android security model table, Frida crypto logger script, iOS architecture table, jailbreak tools, iOS data storage table, OWASP Mobile Top 10 2024
+Infrastructure: Oracle Cloud Always Free (Ampere A1, 4 OCPUs, 24GB RAM) running Docker with per-session container orchestration.
 
-#### TASK 4 — Gamification
-- `/leaderboard` page: global top 10 table, module progress grid, personal stats card
-- ProgressTracker GOALS tab: visual streak counter, 3 daily goals, XP/rank summary, leaderboard link
-- Streak tracking with calendar-day logic (increment on consecutive days, reset on gap)
+### Also Planned for V2
+- Mobile-optimised lab pages
+- CTF challenge mode with real flags and timed scoring
+- Team/cohort features for instructors
+- Module completion certificates
 
-#### TASK 5 — Ghost Agent Upgrade
-- Skill-level awareness: reads rank/XP from localStorage, injects USER PROFILE section into every Groq API call
-- Persistent chat history: save/restore last 20 messages via `ghost_chat_history` localStorage key
-- CLEAR button in header to reset history
-- Rank pill displayed live in chat header
-- Footer updated to "powered by Groq llama-3.3-70b"
+---
 
-#### TASK 6 — UI/UX CTA Overhaul
-- Quick Access Bar on homepage: 6 accent-colored shortcut links with glow on primary
-- Module cards: LAUNCH LAB button with box-shadow glow, CONCEPT demoted to secondary
-- Module preview panel: LAUNCH LAB as primary glowing CTA, READ CONCEPT secondary
-- Nav: "BOARD" link added pointing to /leaderboard
+## Contributing
 
-#### TASK 7 — Polish and Hardening
-- `ErrorBoundary` component: wraps all 4 floating widgets + main page content, RETRY button
-- `OfflineBanner`: live navigator.onLine tracking, amber persistent warning bar
-- All components tested: 45 pages, 0 build errors
-
-### v1.0 — March 2026
-
-Initial platform launch: 13 modules, 9 tools, Ghost Agent, Supabase auth, ProgressTracker, CVE feed, unified nav with dropdowns.
+This is a private project. For issues, questions, or access requests, open an issue on the repository.
 
 ---
 
 ## License
 
-MIT License — see [LICENSE](LICENSE) for full text.
-
-**For educational and authorised security research use only.**
+MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
 <div align="center">
 
 ```
-GHOSTNET // SECURITY RESEARCH PLATFORM
-FOR EDUCATIONAL AND AUTHORISED USE ONLY
-BUILT BY SHANGHOST ADMIN
+GHOSTNET // FOR EDUCATIONAL AND AUTHORISED USE ONLY
 ```
 
-*"Understanding how systems break is how you learn to defend them."*
+Built by **ShanGhost** · Powered by Next.js, Supabase, and Groq
 
 </div>
