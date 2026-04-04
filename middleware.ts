@@ -37,6 +37,11 @@ export async function middleware(request: NextRequest) {
     request: { headers: request.headers },
   })
 
+  // Sliding inactivity timeout — 20 minutes
+  // Cookie is refreshed on every request, so active users stay logged in.
+  // 20 minutes of no requests = cookie expires = session ends = splash screen on next visit.
+  const SESSION_MAX_AGE = 60 * 20 // 20 minutes in seconds
+
   const supabase = createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
       getAll() {
@@ -47,11 +52,10 @@ export async function middleware(request: NextRequest) {
           request.cookies.set(name, value)
           response.cookies.set(name, value, {
             ...options,
-            // Session cookie settings — persist across browser sessions
             httpOnly: true,
             sameSite: 'lax',
             secure: process.env.NODE_ENV === 'production',
-            maxAge: 60 * 60 * 24 * 7, // 7 days
+            maxAge: SESSION_MAX_AGE, // sliding — resets on every request
           })
         })
       },

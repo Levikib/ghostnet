@@ -1,6 +1,7 @@
 'use client'
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { createClient } from '../../lib/supabase/client'
 
 const mono = 'JetBrains Mono, monospace'
 
@@ -98,6 +99,17 @@ export default function WelcomePage() {
       delay: Math.random() * 4,
     }))
   )
+
+  // If already authenticated with an active session, skip the splash entirely
+  useEffect(() => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    if (!supabaseUrl || !supabaseKey || supabaseUrl === 'your_supabase_url_here') return
+    const supabase = createClient()
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) router.replace('/')
+    })
+  }, [router])
 
   const line1 = useScramble('GHOSTNET', 1200, 35)
   const line2 = useScramble('SECURITY RESEARCH PLATFORM', 2600, 28)
