@@ -2401,6 +2401,21 @@ export default function NetworkAttacksPage() {
         </p>
       </div>
 
+      {/* Chapter overview stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '2.5rem' }}>
+        {[
+          ['8', 'CHAPTERS'],
+          ['~2.8hr', 'TOTAL READ'],
+          ['ADVANCED', 'DIFFICULTY'],
+          ['MOD-08', 'IDENTIFIER'],
+        ].map(([val, label], i) => (
+          <div key={i} style={{ background: 'rgba(0,255,255,0.04)', border: '1px solid rgba(0,255,255,0.15)', borderRadius: '6px', padding: '1rem', textAlign: 'center' }}>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.2rem', fontWeight: 700, color: accent }}>{val}</div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.6rem', color: '#1a4a4a', letterSpacing: '0.15em', marginTop: '2px' }}>{label}</div>
+          </div>
+        ))}
+      </div>
+
       {/* Codex */}
       <ModuleCodex
         moduleId="network-attacks"
@@ -2408,11 +2423,19 @@ export default function NetworkAttacksPage() {
         chapters={chapters}
       />
 
-      {/* Module footer nav */}
+      {/* Bottom navigation */}
       <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #0a2020' }}>
+        <div style={{ background: 'rgba(0,255,255,0.04)', border: '1px solid rgba(0,255,255,0.2)', borderRadius: '8px', padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.65rem', color: '#1a4a4a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>READY TO PRACTICE?</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1rem', color: accent, marginBottom: '0.5rem', fontWeight: 600 }}>MOD-08 Interactive Lab</div>
+          <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#1a4a4a', marginBottom: '1.5rem' }}>21 steps &middot; 445 XP &middot; Real commands &middot; Flag captures</div>
+          <Link href="/modules/network-attacks/lab" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.85rem', color: accent, padding: '12px 32px', border: '1px solid rgba(0,255,255,0.6)', borderRadius: '6px', background: 'rgba(0,255,255,0.1)', fontWeight: 700, letterSpacing: '0.12em', boxShadow: '0 0 20px rgba(0,255,255,0.15)', display: 'inline-block' }}>
+            LAUNCH LAB &#8594;
+          </Link>
+        </div>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Link href="/modules/malware" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a5a5a' }}>&#8592; MOD-07: MALWARE</Link>
-          <Link href="/modules/cloud-security" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#3a5a5a' }}>MOD-09: CLOUD SECURITY &#8594;</Link>
+          <Link href="/modules/malware" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#1a4a4a' }}>&#8592; MOD-07: MALWARE</Link>
+          <Link href="/modules/cloud-security" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.75rem', color: '#1a4a4a' }}>MOD-09: CLOUD SECURITY &#8594;</Link>
         </div>
       </div>
     </div>

@@ -819,8 +819,39 @@ export default function CryptoPage() {
         </p>
       </div>
 
+      {/* Chapter overview stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '2.5rem' }}>
+        {[
+          ['9', 'CHAPTERS'],
+          ['~3.0hr', 'TOTAL READ'],
+          ['INTERMEDIATE', 'DIFFICULTY'],
+          ['MOD-03', 'IDENTIFIER'],
+        ].map(([val, label], i) => (
+          <div key={i} style={{ background: 'rgba(255,179,71,0.04)', border: '1px solid rgba(255,179,71,0.15)', borderRadius: '6px', padding: '1rem', textAlign: 'center' }}>
+            <div style={{ fontFamily: mono, fontSize: '1.2rem', fontWeight: 700, color: accent }}>{val}</div>
+            <div style={{ fontFamily: mono, fontSize: '0.6rem', color: '#4a3a1a', letterSpacing: '0.15em', marginTop: '2px' }}>{label}</div>
+          </div>
+        ))}
+      </div>
+
       {/* Codex */}
       <ModuleCodex moduleId="crypto" accent={accent} chapters={chapters} />
+
+      {/* Bottom navigation */}
+      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #1a1200' }}>
+        <div style={{ background: 'rgba(255,179,71,0.04)', border: '1px solid rgba(255,179,71,0.2)', borderRadius: '8px', padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ fontFamily: mono, fontSize: '0.65rem', color: '#4a3a1a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>READY TO PRACTICE?</div>
+          <div style={{ fontFamily: mono, fontSize: '1rem', color: accent, marginBottom: '0.5rem', fontWeight: 600 }}>MOD-03 Interactive Lab</div>
+          <div style={{ fontFamily: mono, fontSize: '0.75rem', color: '#4a3a1a', marginBottom: '1.5rem' }}>20 steps &middot; 405 XP &middot; Real commands &middot; Flag captures</div>
+          <Link href="/modules/crypto/lab" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.85rem', color: accent, padding: '12px 32px', border: '1px solid rgba(255,179,71,0.6)', borderRadius: '6px', background: 'rgba(255,179,71,0.1)', fontWeight: 700, letterSpacing: '0.12em', boxShadow: '0 0 20px rgba(255,179,71,0.15)', display: 'inline-block' }}>
+            LAUNCH LAB &#8594;
+          </Link>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Link href="/modules/osint" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.75rem', color: '#4a3a1a' }}>&#8592; MOD-02: OSINT</Link>
+          <Link href="/modules/offensive" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.75rem', color: '#4a3a1a' }}>MOD-04: OFFENSIVE &#8594;</Link>
+        </div>
+      </div>
     </div>
   )
 }

@@ -1017,23 +1017,36 @@ export default function TorPage() {
         </p>
       </div>
 
+      {/* Chapter overview stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '2.5rem' }}>
+        {[
+          ['8', 'CHAPTERS'],
+          ['~2.5hr', 'TOTAL READ'],
+          ['BEGINNER', 'DIFFICULTY'],
+          ['MOD-01', 'IDENTIFIER'],
+        ].map(([val, label], i) => (
+          <div key={i} style={{ background: 'rgba(0,255,65,0.04)', border: '1px solid rgba(0,255,65,0.15)', borderRadius: '6px', padding: '1rem', textAlign: 'center' }}>
+            <div style={{ fontFamily: mono, fontSize: '1.2rem', fontWeight: 700, color: accent }}>{val}</div>
+            <div style={{ fontFamily: mono, fontSize: '0.6rem', color: '#1a4a1a', letterSpacing: '0.15em', marginTop: '2px' }}>{label}</div>
+          </div>
+        ))}
+      </div>
+
       <ModuleCodex moduleId="tor" accent={accent} chapters={chapters} />
 
-      {/* Footer nav */}
-      <div style={{
-        marginTop: '3rem', paddingTop: '1.5rem',
-        borderTop: '1px solid #0e1810',
-        display: 'flex', justifyContent: 'flex-end',
-        fontFamily: mono, fontSize: '0.7rem'
-      }}>
-        <Link href="/modules/osint" style={{
-          color: '#00d4ff', textDecoration: 'none',
-          padding: '6px 16px', border: '1px solid rgba(0,212,255,0.3)',
-          borderRadius: '4px', background: 'rgba(0,212,255,0.05)',
-          letterSpacing: '0.05em'
-        }}>
-          NEXT: MOD-02 OSINT &amp; SURVEILLANCE &#8594;
-        </Link>
+      {/* Bottom navigation */}
+      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #0a2010' }}>
+        <div style={{ background: 'rgba(0,255,65,0.04)', border: '1px solid rgba(0,255,65,0.2)', borderRadius: '8px', padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ fontFamily: mono, fontSize: '0.65rem', color: '#1a4a1a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>READY TO PRACTICE?</div>
+          <div style={{ fontFamily: mono, fontSize: '1rem', color: accent, marginBottom: '0.5rem', fontWeight: 600 }}>MOD-01 Interactive Lab</div>
+          <div style={{ fontFamily: mono, fontSize: '0.75rem', color: '#1a4a1a', marginBottom: '1.5rem' }}>17 steps &middot; 345 XP &middot; Real commands &middot; Flag captures</div>
+          <Link href="/modules/tor/lab" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.85rem', color: accent, padding: '12px 32px', border: '1px solid rgba(0,255,65,0.6)', borderRadius: '6px', background: 'rgba(0,255,65,0.1)', fontWeight: 700, letterSpacing: '0.12em', boxShadow: '0 0 20px rgba(0,255,65,0.15)', display: 'inline-block' }}>
+            LAUNCH LAB &#8594;
+          </Link>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Link href="/modules/osint" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.75rem', color: '#1a4a1a' }}>MOD-02: OSINT &#8594;</Link>
+        </div>
       </div>
     </div>
   )
