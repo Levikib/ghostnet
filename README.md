@@ -11,7 +11,7 @@
 
 **A full-stack cybersecurity research and training platform.**
 
-13 modules · 243 lab steps · 5,450 XP · 9 live tools · AI Ghost Agent · Full gamification · Mandatory auth gate · Live leaderboard
+13 modules · 243 lab steps · 5,450 XP · 9 live tools · AI Ghost Agent · Full gamification · Mandatory auth gate · Live leaderboard · Fully responsive
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=nextdotjs)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)](https://typescriptlang.org)
@@ -36,10 +36,11 @@ It is not a course. It is not a quiz app. It is an **operational platform** — 
 - **5,450 XP earnable** — calibrated precisely to a 5-rank progression system where completing all 13 labs takes you from Ghost → Legend
 - **9 live interactive tools** — payload generator, blockchain tracer, live CVE feed, Shodan query builder, MITRE ATT&CK kill chain visualizer, AI pentest report generator, CTF toolkit, 200+ command reference, and research terminal
 - **GHOST AI agent** — powered by Groq's llama-3.3-70b, context-aware per page, operator-identity driven (knows your callsign, rank, completed labs), adapts depth to your skill level, 4096-token responses
-- **Cinematic welcome experience** — matrix rain splash screen with scramble-text reveal, boot sequence animation, and phase state machine before authentication
+- **Cinematic welcome experience** — matrix rain splash screen with scramble-text reveal, boot sequence animation, and phase state machine before authentication; shown on first visit and after every logout
 - **Mandatory authentication** — middleware-gated routes, 20-minute sliding inactivity timeout, session cookies with httpOnly/sameSite/secure settings
 - **Live leaderboard** — real Supabase data, realtime channel subscriptions, 30-second polling fallback, admin panel with full user monitoring
 - **Full gamification** — XP, 5 rank tiers, streak tracking, daily goals, 13+ badges, progress notes per module
+- **Fully responsive** — mobile-first nav with hamburger menu, auth-aware PROFILE/ACCOUNT routing, floating widgets auto-hide when mobile menu is open, stat cards and lab content adapted for small screens
 
 ---
 
@@ -72,7 +73,7 @@ It is not a course. It is not a quiz app. It is an **operational platform** — 
 |                           GHOSTNET v1.0                          |
 |                                                                  |
 |  ENTRY FLOW:  /welcome (splash) → /auth (login) → / (dashboard) |
-|               20-min inactivity timeout → back to /welcome       |
+|               logout / 20-min inactivity → /welcome (splash)     |
 |                                                                  |
 |  +------------------+  +----------------+  +----------------+   |
 |  |   13 MODULES     |  |    9 TOOLS     |  | GAMIFICATION   |   |
@@ -114,7 +115,7 @@ It is not a course. It is not a quiz app. It is an **operational platform** — 
 | Layer | Technology | Notes |
 |-------|-----------|-------|
 | Framework | Next.js 14 App Router | `'use client'` on all pages |
-| Language | TypeScript 5 | `ignoreBuildErrors: true` for speed |
+| Language | TypeScript 5 | `ignoreBuildErrors: false` — strict mode enforced |
 | Compiler | Babel (`.babelrc`) | SWC disabled — custom Babel config |
 | Styling | Tailwind CSS + inline styles | JetBrains Mono font, terminal aesthetic |
 | Auth | Supabase Auth + `@supabase/ssr` | Middleware-gated, httpOnly session cookies |
@@ -132,7 +133,9 @@ It is not a course. It is not a quiz app. It is an **operational platform** — 
 ghostnet/
 ├── app/
 │   ├── layout.tsx                  # Root layout: Nav (desktop + mobile hamburger),
-│   │                               #   AuthProvider, floating widgets, ErrorBoundary
+│   │                               #   MobileMenuContext hides floating widgets when
+│   │                               #   mobile menu open; auth-aware TOOLS list
+│   │                               #   (PROFILE when logged in, ACCOUNT when not)
 │   ├── page.tsx                    # Dashboard: stats, module grid, tools, learning paths
 │   ├── welcome/page.tsx            # Cinematic splash: matrix rain, scramble text,
 │   │                               #   boot sequence, phase state machine
@@ -200,11 +203,12 @@ ghostnet/
 │       └── auth/callback/route.ts  # Supabase email confirmation redirect handler
 │
 ├── lib/
-│   ├── supabase.ts                 # Browser client, TypeScript types, RANK_LIST,
-│   │                               #   getRank(), RANK_COLORS, RANK_GLOWS — single
-│   │                               #   source of truth for all rank/XP logic
-│   ├── supabase/client.ts          # @supabase/ssr browser client factory
-│   └── supabase/server.ts          # @supabase/ssr server client factory
+│   ├── supabase.ts                 # TypeScript types, RANK_LIST, getRank(),
+│   │                               #   RANK_COLORS — single source of truth
+│   │                               #   for all rank/XP logic on the platform
+│   ├── supabase/
+│   │   ├── client.ts               # @supabase/ssr browser client factory
+│   │   └── server.ts               # @supabase/ssr server client (API routes only)
 │
 ├── middleware.ts                   # Auth gate: all routes protected, unauthenticated
 │                                   #   → /welcome, 20-min sliding session timeout
@@ -214,7 +218,7 @@ ghostnet/
 └── .env.example                    # Environment variable template with instructions
 ```
 
-**Stats:** 50 TypeScript files · 243 lab steps · 5,450 XP earnable · 46 built pages · 0 build errors
+**Stats:** 50+ TypeScript files · 243 lab steps · 5,450 XP earnable · 46 built pages · 0 build errors · TypeScript strict mode
 
 ---
 
@@ -350,7 +354,7 @@ Single source of truth: `RANK_LIST` and `getRank()` exported from `lib/supabase.
 
 ### Entry Flow
 ```
-First visit / session expired
+First visit / session expired / after logout
   → /welcome (cinematic splash screen)
   → "ACCESS THE NETWORK" button
   → /auth (login or register)
@@ -359,6 +363,10 @@ First visit / session expired
 Already authenticated with active session
   → /welcome checks session on mount
   → router.replace('/') immediately — splash skipped
+
+Logout (desktop or mobile)
+  → supabase.auth.signOut()
+  → router.push('/welcome') — splash always shown on sign-out
 ```
 
 ### Session Timeout
@@ -451,6 +459,24 @@ Bottom-right stack:
 
 All panels open upward. All z-index >= 9000.
 ```
+
+All four floating widgets are **unmounted** while the mobile menu is open (via `MobileMenuContext`) to prevent overlap. They remount automatically when the menu closes.
+
+### Mobile Navigation
+The mobile hamburger menu (≤768px) includes:
+- **Auth row at top**: MY PROFILE + LOGOUT when authenticated; LOGIN/CREATE ACCOUNT when not
+- **All 13 modules** with CONCEPT and LAB links per module
+- **All 9 tools** with descriptions
+- Full-height panel with `padding-bottom: 5rem` to avoid clipping near-bottom items
+- Closes automatically on any navigation (`useEffect` on `pathname`)
+
+### Module Concept Pages
+Every module concept page (`/modules/[name]/page.tsx`) follows a consistent layout:
+1. Breadcrumb with CONCEPT / LAB toggle links
+2. Page header: module ID, title, subtitle topic tags
+3. **4-column stat card grid** (`.module-stat-grid`) — chapters, read time, difficulty, identifier — collapses to 2 columns at ≤640px
+4. `<ModuleCodex>` — chapter-by-chapter deep content renderer
+5. **Launch Lab CTA** — XP, steps, link to lab + prev/next module navigation
 
 ### Event Bus
 Custom browser events for cross-component reactivity (no global state manager):
@@ -598,7 +624,6 @@ Real isolated lab environments — each user session spins up Docker containers 
 Infrastructure: Oracle Cloud Always Free (Ampere A1, 4 OCPUs, 24GB RAM) running Docker with per-session container orchestration.
 
 ### Also Planned for V2
-- Mobile-optimised lab pages
 - CTF challenge mode with real flags and timed scoring
 - Team/cohort features for instructors
 - Module completion certificates
