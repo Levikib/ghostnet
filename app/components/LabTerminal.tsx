@@ -269,7 +269,7 @@ export default function LabTerminal({ labId, moduleId, title, accent, steps, onC
     <div style={{ margin: '2rem 0', fontFamily: mono }}>
       {/* XP flash */}
       {xpFlash > 0 && (
-        <div style={{ position: 'fixed', top: '80px', right: '24px', zIndex: 9500, background: 'rgba(0,255,65,0.15)', border: '1px solid rgba(0,255,65,0.5)', borderRadius: '6px', padding: '8px 18px', fontSize: '14px', color: '#00ff41', fontFamily: mono, animation: 'labXpFade 2s ease forwards' }}>
+        <div className="xp-toast" style={{ position: 'fixed', top: '80px', right: '24px', zIndex: 9500, background: 'rgba(0,255,65,0.15)', border: '1px solid rgba(0,255,65,0.5)', borderRadius: '6px', padding: '8px 18px', fontSize: '14px', color: '#00ff41', fontFamily: mono, animation: 'labXpFade 2s ease forwards' }}>
           +{xpFlash} XP
           <style>{`@keyframes labXpFade{0%{opacity:1;transform:translateY(0)}80%{opacity:1}100%{opacity:0;transform:translateY(-28px)}}`}</style>
         </div>
@@ -278,7 +278,7 @@ export default function LabTerminal({ labId, moduleId, title, accent, steps, onC
       {/* Step navigator */}
       <div style={{ marginBottom: '12px' }}>
         {/* Progress bar */}
-        <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
+        <div className="step-progress-bar" style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
           {steps.map((s, i) => (
             <div
               key={i}
@@ -352,7 +352,7 @@ export default function LabTerminal({ labId, moduleId, title, accent, steps, onC
               HINT
             </button>
           </div>
-          <div style={{ fontSize: '0.82rem', color: '#8a9a8a', lineHeight: 1.7 }}>{step.objective}</div>
+          <div className="lab-objective" style={{ fontSize: '0.82rem', color: '#8a9a8a', lineHeight: 1.7 }}>{step.objective}</div>
           {showHint && (
             <div style={{ marginTop: '10px', padding: '8px 12px', background: 'rgba(255,179,71,0.05)', border: '1px solid rgba(255,179,71,0.2)', borderRadius: '4px', fontSize: '0.78rem', color: '#ffb347', lineHeight: 1.6 }}>
               ▸ {step.hint}

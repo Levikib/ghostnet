@@ -269,3 +269,100 @@ pre::before {
     grid-template-columns: 1fr;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────
+   LAB PAGE MOBILE POLISH
+   ───────────────────────────────────────────────────────────────── */
+
+/* All pre/code blocks scroll horizontally instead of overflowing */
+pre, code {
+  overflow-x: auto;
+  max-width: 100%;
+  white-space: pre;
+}
+
+/* Inline code wraps rather than breaks layout */
+p code, li code, span code {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+@media (max-width: 768px) {
+  /* Lab terminal step objective text — readable on mobile */
+  .lab-objective {
+    font-size: 0.8rem !important;
+    line-height: 1.65 !important;
+  }
+
+  /* Lab header flex rows — stack on mobile */
+  .lab-header-row {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  /* Module concept page section headers */
+  .module-section-title {
+    font-size: 1rem !important;
+  }
+
+  /* Step progress bar — larger tap targets */
+  .step-progress-bar > div {
+    height: 6px !important;
+    min-width: 8px !important;
+  }
+
+  /* Code blocks in labs — ensure horizontal scroll on small screens */
+  pre {
+    font-size: 0.7rem !important;
+    padding: 10px !important;
+    border-radius: 4px !important;
+  }
+
+  /* Terminal input area */
+  .lab-input-area {
+    padding: 8px !important;
+  }
+
+  /* Lab page main content — tighter padding */
+  .lab-page-content {
+    padding: 0.75rem !important;
+  }
+
+  /* Phase/section badge pills — wrap instead of overflow */
+  .phase-badges {
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+
+  /* XP earned toast — reposition on mobile so it doesn't cover nav */
+  .xp-toast {
+    top: auto !important;
+    bottom: 80px !important;
+    right: 12px !important;
+    left: 12px !important;
+    text-align: center !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Sub-label text — prevent rendering below readable threshold */
+  .module-meta-label {
+    font-size: 7px !important;
+    letter-spacing: 0.1em !important;
+  }
+
+  /* Step counter and XP label in lab header */
+  .step-counter {
+    font-size: 8px !important;
+  }
+
+  /* Tool reference cards */
+  .tool-card-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Leaderboard operator row — hide less critical columns */
+  .leaderboard-col-hide {
+    display: none !important;
+  }
+}

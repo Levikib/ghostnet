@@ -597,7 +597,7 @@ const chapters: CodexChapter[] = [
         <Pre label="OPENSSL S_CLIENT - MANUAL TLS INSPECTION">{'# Connect and see full cert chain\nopenssl s_client -connect example.com:443 -showcerts\n\n# Test specific TLS version\nopenssl s_client -connect example.com:443 -tls1_2\nopenssl s_client -connect example.com:443 -tls1_3\n\n# Send HTTP request after TLS handshake\necho "GET / HTTP/1.0" | openssl s_client -connect example.com:443 -quiet\n\n# Check cipher suites supported\nnmap --script ssl-enum-ciphers -p 443 example.com'}</Pre>
 
         <H3>Wireshark TLS Decryption</H3>
-        <P>TLS traffic can be decrypted in Wireshark if you have the session keys. Set the SSLKEYLOGFILE environment variable to a file path - Firefox and Chrome will write session keys there. Import it in Wireshark under Preferences > TLS > Pre-Master Secret log filename.</P>
+        <P>TLS traffic can be decrypted in Wireshark if you have the session keys. Set the SSLKEYLOGFILE environment variable to a file path - Firefox and Chrome will write session keys there. Import it in Wireshark under Preferences &gt; TLS &gt; Pre-Master Secret log filename.</P>
         <Pre label="SSLKEYLOGFILE TLS DECRYPTION">{'# Linux/Mac: set before starting browser\nexport SSLKEYLOGFILE=~/tls-keys.log\nfirefox &\n\n# Capture traffic with tcpdump\ntcpdump -i eth0 -w capture.pcap port 443\n\n# In Wireshark: Edit > Preferences > Protocols > TLS\n# Set "(Pre)-Master-Secret log filename" to ~/tls-keys.log'}</Pre>
 
         <H3>SSH Cryptography</H3>
