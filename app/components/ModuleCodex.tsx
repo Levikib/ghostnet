@@ -96,7 +96,7 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
       )}
 
       {/* Chapter nav strip */}
-      <div style={{
+      <div className="codex-nav-strip" style={{
         background: '#05080a', border: '1px solid #0e1810',
         borderRadius: '6px', padding: '0.75rem 1rem', marginBottom: '1.5rem'
       }}>
@@ -134,7 +134,7 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
       </div>
 
       {/* Chapter header */}
-      <div style={{
+      <div className="codex-chapter-header" style={{
         border: '1px solid ' + accent + '22', borderRadius: '8px',
         padding: '1.5rem 2rem', marginBottom: '2rem',
         background: 'linear-gradient(135deg, rgba(0,0,0,0.4) 0%, ' + accent + '08 100%)'
@@ -155,7 +155,7 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
         <div style={{ fontFamily: mono, fontSize: '0.65rem', color: accent + '66', letterSpacing: '0.2em', marginBottom: '0.4rem' }}>
           // CHAPTER {String(current + 1).padStart(2, '0')}
         </div>
-        <h2 style={{ fontFamily: mono, fontSize: '1.5rem', fontWeight: 700, color: accent, margin: 0, textShadow: '0 0 20px ' + accent + '44' }}>
+        <h2 className="codex-chapter-title" style={{ fontFamily: mono, fontSize: '1.5rem', fontWeight: 700, color: accent, margin: 0, textShadow: '0 0 20px ' + accent + '44' }}>
           {ch.title}
         </h2>
       </div>
@@ -164,7 +164,7 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
       <div>{ch.content}</div>
 
       {/* Key takeaways */}
-      <div style={{
+      <div className="codex-takeaways" style={{
         background: accent + '08', border: '1px solid ' + accent + '22',
         borderRadius: '6px', padding: '1.25rem 1.5rem', marginTop: '2.5rem'
       }}>
@@ -205,7 +205,7 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid #0e1810'
       }}>
-        <button onClick={() => current > 0 && goTo(current - 1)}
+        <button className="codex-prev-btn" onClick={() => current > 0 && goTo(current - 1)}
           disabled={current === 0}
           style={{
             fontFamily: mono, fontSize: '0.75rem', cursor: current > 0 ? 'pointer' : 'default',
@@ -215,10 +215,10 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
           }}>
           &#8592; {current > 0 ? chapters[current - 1].title : 'Start'}
         </button>
-        <span style={{ fontFamily: mono, fontSize: '0.6rem', color: '#2a3a2a' }}>
+        <span style={{ fontFamily: mono, fontSize: '0.6rem', color: '#2a3a2a', flexShrink: 0 }}>
           {current + 1} / {chapters.length}
         </span>
-        <button onClick={() => current < chapters.length - 1 && goTo(current + 1)}
+        <button className="codex-next-btn" onClick={() => current < chapters.length - 1 && goTo(current + 1)}
           disabled={current === chapters.length - 1}
           style={{
             fontFamily: mono, fontSize: '0.75rem', cursor: current < chapters.length - 1 ? 'pointer' : 'default',

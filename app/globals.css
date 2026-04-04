@@ -366,3 +366,59 @@ p code, li code, span code {
     display: none !important;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────
+   MODULE CONCEPT PAGE MOBILE POLISH
+   ───────────────────────────────────────────────────────────────── */
+
+/* Stat cards: 4-col → 2-col on tablet, 2-col on mobile */
+.module-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 2.5rem;
+}
+
+@media (max-width: 640px) {
+  .module-stat-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  /* Chapter nav strip — tighter padding */
+  .codex-nav-strip {
+    padding: 0.5rem 0.6rem !important;
+  }
+
+  /* Chapter header card — reduce padding */
+  .codex-chapter-header {
+    padding: 1rem 1rem !important;
+  }
+
+  /* Chapter title h2 — scale down */
+  .codex-chapter-title {
+    font-size: 1.1rem !important;
+  }
+
+  /* Prev/Next buttons — truncate long titles, min touch target */
+  .codex-prev-btn,
+  .codex-next-btn {
+    font-size: 0.65rem !important;
+    padding: 8px 10px !important;
+    max-width: 40vw !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    display: inline-block !important;
+  }
+
+  /* Key takeaways box — tighter padding */
+  .codex-takeaways {
+    padding: 1rem !important;
+  }
+
+  /* Tables in module content — force horizontal scroll */
+  table {
+    min-width: 480px;
+  }
+}
