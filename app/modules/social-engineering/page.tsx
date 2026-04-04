@@ -2005,7 +2005,7 @@ export default function SocialEngineeringPage() {
       </div>
 
       {/* Chapter overview stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '2.5rem' }}>
+      <div className="module-stat-grid">
         {[
           ['9', 'CHAPTERS'],
           ['~3.0hr', 'TOTAL READ'],

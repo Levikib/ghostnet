@@ -1861,7 +1861,7 @@ export default function CloudSecurity() {
       </div>
 
       {/* Chapter overview stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '2.5rem' }}>
+      <div className="module-stat-grid">
         {[
           ['8', 'CHAPTERS'],
           ['~2.8hr', 'TOTAL READ'],
