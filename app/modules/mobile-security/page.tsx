@@ -2021,8 +2021,38 @@ export default function MobileSecurity() {
         <span style={{ fontFamily: mono, fontSize: '0.65rem', color: '#2a1a4a', alignSelf: 'center' }}>MOD-13 of 13</span>
       </div>
 
+      {/* Chapter overview stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '2.5rem' }}>
+        {[
+          ['9', 'CHAPTERS'],
+          ['~3.0hr', 'TOTAL READ'],
+          ['ADVANCED', 'DIFFICULTY'],
+          ['MOD-13', 'IDENTIFIER'],
+        ].map(([val, label], i) => (
+          <div key={i} style={{ background: 'rgba(124,77,255,0.04)', border: '1px solid rgba(124,77,255,0.15)', borderRadius: '6px', padding: '1rem', textAlign: 'center' }}>
+            <div style={{ fontFamily: mono, fontSize: '1.2rem', fontWeight: 700, color: accent }}>{val}</div>
+            <div style={{ fontFamily: mono, fontSize: '0.6rem', color: '#2a1a4a', letterSpacing: '0.15em', marginTop: '2px' }}>{label}</div>
+          </div>
+        ))}
+      </div>
+
       {/* Codex */}
       <ModuleCodex moduleId="mobile-security" accent={accent} chapters={chapters} />
+
+      {/* Bottom navigation */}
+      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #140028' }}>
+        <div style={{ background: 'rgba(124,77,255,0.04)', border: '1px solid rgba(124,77,255,0.2)', borderRadius: '8px', padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ fontFamily: mono, fontSize: '0.65rem', color: '#2a1a4a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>READY TO PRACTICE?</div>
+          <div style={{ fontFamily: mono, fontSize: '1rem', color: accent, marginBottom: '0.5rem', fontWeight: 600 }}>MOD-13 Interactive Lab</div>
+          <div style={{ fontFamily: mono, fontSize: '0.75rem', color: '#2a1a4a', marginBottom: '1.5rem' }}>18 steps &middot; 435 XP &middot; Real commands &middot; Flag captures</div>
+          <Link href="/modules/mobile-security/lab" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.85rem', color: accent, padding: '12px 32px', border: '1px solid rgba(124,77,255,0.6)', borderRadius: '6px', background: 'rgba(124,77,255,0.1)', fontWeight: 700, letterSpacing: '0.12em', boxShadow: '0 0 20px rgba(124,77,255,0.15)', display: 'inline-block' }}>
+            LAUNCH LAB &#8594;
+          </Link>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+          <Link href="/modules/wireless-attacks" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.75rem', color: '#2a1a4a' }}>&#8592; MOD-12: WIRELESS ATTACKS</Link>
+        </div>
+      </div>
     </div>
   )
 }

@@ -22,14 +22,15 @@ interface ExploitNews {
 }
 
 const DEFI_EXPLOITS: ExploitNews[] = [
-  { title: 'Radiant Capital', amount: '$50M', protocol: 'DeFi Lending', date: '2024-10', vector: 'Compromised developer devices + multisig', url: 'https://rekt.news/radiant-capital-rekt2/' },
-  { title: 'Eigenlayer Restaking', amount: '$5.7M', protocol: 'LRT Protocol', date: '2024-10', vector: 'Social engineering — fake Zoom meeting', url: 'https://rekt.news' },
-  { title: 'UwU Lend', amount: '$20M', protocol: 'DeFi Lending', date: '2024-06', vector: 'Oracle price manipulation via flash loan', url: 'https://rekt.news/uwu-lend-rekt/' },
-  { title: 'Gala Games', amount: '$21M', protocol: 'Gaming Token', date: '2024-05', vector: 'Compromised admin key — unauthorized mint', url: 'https://rekt.news' },
-  { title: 'Pike Finance', amount: '$1.9M', protocol: 'Cross-chain', date: '2024-05', vector: 'USDC receiver exploit — storage manipulation', url: 'https://rekt.news' },
+  { title: 'Bybit Exchange', amount: '$1.46B', protocol: 'CEX / Safe Multisig', date: '2025-02', vector: 'North Korea (Lazarus) — malicious Safe UI injection, blind multisig signing', url: 'https://rekt.news/bybit-rekt/' },
+  { title: 'Infini Protocol', amount: '$49.5M', protocol: 'Stablecoin Yield', date: '2025-02', vector: 'Rogue developer retained admin rights post-audit, drained vault', url: 'https://rekt.news' },
+  { title: 'zkLend', amount: '$9.6M', protocol: 'StarkNet Lending', date: '2025-02', vector: 'Rounding error in accumulator — flash loan amplified precision exploit', url: 'https://rekt.news' },
+  { title: 'Ionic Money', amount: '$8.6M', protocol: 'Cross-chain Lending', date: '2025-01', vector: 'Fake collateral — fraudulent token listed as legitimate asset', url: 'https://rekt.news' },
+  { title: 'Radiant Capital', amount: '$50M', protocol: 'DeFi Lending', date: '2024-10', vector: 'Compromised developer devices + malicious multisig transaction injection', url: 'https://rekt.news/radiant-capital-rekt2/' },
+  { title: 'Munchables', amount: '$62.5M', protocol: 'NFT/Gaming', date: '2024-03', vector: 'Rogue developer — storage slot manipulation to set own balance', url: 'https://rekt.news/munchables-rekt/' },
   { title: 'Prisma Finance', amount: '$11.6M', protocol: 'CDP Protocol', date: '2024-03', vector: 'Flash loan + reentrancy in migration contract', url: 'https://rekt.news/prisma-finance-rekt/' },
-  { title: 'Munchables', amount: '$62.5M', protocol: 'NFT/Gaming', date: '2024-03', vector: 'Rogue developer — storage slot manipulation', url: 'https://rekt.news/munchables-rekt/' },
-  { title: 'Seneca Protocol', amount: '$6.4M', protocol: 'CDP Stablecoin', date: '2024-02', vector: 'Arbitrary call vulnerability in collateral handling', url: 'https://rekt.news' },
+  { title: 'Orbit Bridge', amount: '$82M', protocol: 'Cross-chain Bridge', date: '2024-01', vector: 'Compromised validator keys — 7 of 10 multisig signers targeted', url: 'https://rekt.news/orbit-bridge-rekt/' },
+  { title: 'Euler Finance', amount: '$197M', protocol: 'Lending Protocol', date: '2023-03', vector: 'Flash loan + donation attack bypassing health check — donateToReserves()', url: 'https://rekt.news/euler-rekt/' },
 ]
 
 const SEVERITY_COLOR: Record<string, string> = {

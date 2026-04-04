@@ -1978,15 +1978,41 @@ export default function WebAttacksModule() {
         <p style={{ color: '#5a7a5a', fontFamily: mono, fontSize: '0.75rem', lineHeight: 1.6 }}>OWASP Top 10 · Burp Suite mastery · SQLi · XSS · SSRF · XXE · JWT · OAuth · Deserialization · WAF bypass</p>
       </div>
 
+      {/* Chapter overview stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '2.5rem' }}>
+        {[
+          ['10', 'CHAPTERS'],
+          ['~3.5hr', 'TOTAL READ'],
+          ['ADVANCED', 'DIFFICULTY'],
+          ['MOD-06', 'IDENTIFIER'],
+        ].map(([val, label], i) => (
+          <div key={i} style={{ background: 'rgba(0,212,255,0.04)', border: '1px solid rgba(0,212,255,0.15)', borderRadius: '6px', padding: '1rem', textAlign: 'center' }}>
+            <div style={{ fontFamily: mono, fontSize: '1.2rem', fontWeight: 700, color: accent }}>{val}</div>
+            <div style={{ fontFamily: mono, fontSize: '0.6rem', color: '#1a4a5a', letterSpacing: '0.15em', marginTop: '2px' }}>{label}</div>
+          </div>
+        ))}
+      </div>
+
       <ModuleCodex
         moduleId="web-attacks"
         accent={accent}
         chapters={chapters}
       />
 
-      <div style={{ marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid #0a1a22', display: 'flex', justifyContent: 'space-between' }}>
-        <Link href="/modules/active-directory" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.72rem', color: '#3a6a3a' }}>&#8592; MOD-05: ACTIVE DIRECTORY</Link>
-        <Link href="/modules/malware" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.72rem', color: '#3a6a3a' }}>MOD-07: MALWARE &#8594;</Link>
+      {/* Bottom navigation */}
+      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #0a1a22' }}>
+        <div style={{ background: 'rgba(0,212,255,0.04)', border: '1px solid rgba(0,212,255,0.2)', borderRadius: '8px', padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ fontFamily: mono, fontSize: '0.65rem', color: '#1a4a5a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>READY TO PRACTICE?</div>
+          <div style={{ fontFamily: mono, fontSize: '1rem', color: accent, marginBottom: '0.5rem', fontWeight: 600 }}>MOD-06 Interactive Lab</div>
+          <div style={{ fontFamily: mono, fontSize: '0.75rem', color: '#1a4a5a', marginBottom: '1.5rem' }}>21 steps &middot; 445 XP &middot; Real commands &middot; Flag captures</div>
+          <Link href="/modules/web-attacks/lab" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.85rem', color: accent, padding: '12px 32px', border: '1px solid rgba(0,212,255,0.6)', borderRadius: '6px', background: 'rgba(0,212,255,0.1)', fontWeight: 700, letterSpacing: '0.12em', boxShadow: '0 0 20px rgba(0,212,255,0.15)', display: 'inline-block' }}>
+            LAUNCH LAB &#8594;
+          </Link>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Link href="/modules/active-directory" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.75rem', color: '#1a4a5a' }}>&#8592; MOD-05: ACTIVE DIRECTORY</Link>
+          <Link href="/modules/malware" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.75rem', color: '#1a4a5a' }}>MOD-07: MALWARE &#8594;</Link>
+        </div>
       </div>
     </div>
   )

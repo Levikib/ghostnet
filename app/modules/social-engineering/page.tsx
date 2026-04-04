@@ -2004,6 +2004,21 @@ export default function SocialEngineeringPage() {
         </p>
       </div>
 
+      {/* Chapter overview stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '2.5rem' }}>
+        {[
+          ['9', 'CHAPTERS'],
+          ['~3.0hr', 'TOTAL READ'],
+          ['INTERMEDIATE', 'DIFFICULTY'],
+          ['MOD-10', 'IDENTIFIER'],
+        ].map(([val, label], i) => (
+          <div key={i} style={{ background: 'rgba(255,110,199,0.04)', border: '1px solid rgba(255,110,199,0.15)', borderRadius: '6px', padding: '1rem', textAlign: 'center' }}>
+            <div style={{ fontFamily: mono, fontSize: '1.2rem', fontWeight: 700, color: accent }}>{val}</div>
+            <div style={{ fontFamily: mono, fontSize: '0.6rem', color: '#4a1a3a', letterSpacing: '0.15em', marginTop: '2px' }}>{label}</div>
+          </div>
+        ))}
+      </div>
+
       {/* Codex */}
       <ModuleCodex
         moduleId="social-engineering"
@@ -2011,10 +2026,20 @@ export default function SocialEngineeringPage() {
         chapters={chapters}
       />
 
-      {/* Module nav */}
-      <div style={{ marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid #1a0014', display: 'flex', justifyContent: 'space-between' }}>
-        <Link href="/modules/cloud-security" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.75rem', color: '#6a4a5a' }}>&#8592; MOD-09: CLOUD SECURITY</Link>
-        <Link href="/modules/red-team" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.75rem', color: '#6a4a5a' }}>MOD-11: RED TEAM &#8594;</Link>
+      {/* Bottom navigation */}
+      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #1a0014' }}>
+        <div style={{ background: 'rgba(255,110,199,0.04)', border: '1px solid rgba(255,110,199,0.2)', borderRadius: '8px', padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ fontFamily: mono, fontSize: '0.65rem', color: '#4a1a3a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>READY TO PRACTICE?</div>
+          <div style={{ fontFamily: mono, fontSize: '1rem', color: accent, marginBottom: '0.5rem', fontWeight: 600 }}>MOD-10 Interactive Lab</div>
+          <div style={{ fontFamily: mono, fontSize: '0.75rem', color: '#4a1a3a', marginBottom: '1.5rem' }}>16 steps &middot; 300 XP &middot; Real commands &middot; Flag captures</div>
+          <Link href="/modules/social-engineering/lab" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.85rem', color: accent, padding: '12px 32px', border: '1px solid rgba(255,110,199,0.6)', borderRadius: '6px', background: 'rgba(255,110,199,0.1)', fontWeight: 700, letterSpacing: '0.12em', boxShadow: '0 0 20px rgba(255,110,199,0.15)', display: 'inline-block' }}>
+            LAUNCH LAB &#8594;
+          </Link>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Link href="/modules/cloud-security" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.75rem', color: '#4a1a3a' }}>&#8592; MOD-09: CLOUD SECURITY</Link>
+          <Link href="/modules/red-team" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.75rem', color: '#4a1a3a' }}>MOD-11: RED TEAM &#8594;</Link>
+        </div>
       </div>
     </div>
   )

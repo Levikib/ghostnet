@@ -987,12 +987,37 @@ export default function RedTeamPage() {
         <p style={{ color: '#6a3a3a', fontFamily: mono, fontSize: '0.75rem', lineHeight: 1.6 }}>Full campaign methodology · C2 frameworks · EDR evasion · Lateral movement · Persistence · Exfiltration · TIBER-EU</p>
       </div>
 
+      {/* Chapter overview stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '2.5rem' }}>
+        {[
+          ['9', 'CHAPTERS'],
+          ['~3.0hr', 'TOTAL READ'],
+          ['EXPERT', 'DIFFICULTY'],
+          ['MOD-11', 'IDENTIFIER'],
+        ].map(([val, label], i) => (
+          <div key={i} style={{ background: 'rgba(255,51,51,0.04)', border: '1px solid rgba(255,51,51,0.15)', borderRadius: '6px', padding: '1rem', textAlign: 'center' }}>
+            <div style={{ fontFamily: mono, fontSize: '1.2rem', fontWeight: 700, color: accent }}>{val}</div>
+            <div style={{ fontFamily: mono, fontSize: '0.6rem', color: '#4a1a1a', letterSpacing: '0.15em', marginTop: '2px' }}>{label}</div>
+          </div>
+        ))}
+      </div>
+
       <ModuleCodex moduleId="red-team" accent={accent} chapters={chapters} />
 
-      {/* Footer nav */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid #150000' }}>
-        <Link href="/modules/social-engineering" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.75rem', color: '#4a1a1a' }}>&#8592; MOD-10: SOCIAL ENGINEERING</Link>
-        <Link href="/modules/wireless-attacks" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.75rem', color: '#4a1a1a' }}>MOD-12: WIRELESS &#8594;</Link>
+      {/* Bottom navigation */}
+      <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid #150000' }}>
+        <div style={{ background: 'rgba(255,51,51,0.04)', border: '1px solid rgba(255,51,51,0.2)', borderRadius: '8px', padding: '2rem', textAlign: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ fontFamily: mono, fontSize: '0.65rem', color: '#4a1a1a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>READY TO PRACTICE?</div>
+          <div style={{ fontFamily: mono, fontSize: '1rem', color: accent, marginBottom: '0.5rem', fontWeight: 600 }}>MOD-11 Interactive Lab</div>
+          <div style={{ fontFamily: mono, fontSize: '0.75rem', color: '#4a1a1a', marginBottom: '1.5rem' }}>18 steps &middot; 465 XP &middot; Real commands &middot; Flag captures</div>
+          <Link href="/modules/red-team/lab" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.85rem', color: accent, padding: '12px 32px', border: '1px solid rgba(255,51,51,0.6)', borderRadius: '6px', background: 'rgba(255,51,51,0.1)', fontWeight: 700, letterSpacing: '0.12em', boxShadow: '0 0 20px rgba(255,51,51,0.15)', display: 'inline-block' }}>
+            LAUNCH LAB &#8594;
+          </Link>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Link href="/modules/social-engineering" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.75rem', color: '#4a1a1a' }}>&#8592; MOD-10: SOCIAL ENGINEERING</Link>
+          <Link href="/modules/wireless-attacks" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.75rem', color: '#4a1a1a' }}>MOD-12: WIRELESS ATTACKS &#8594;</Link>
+        </div>
       </div>
     </div>
   )
