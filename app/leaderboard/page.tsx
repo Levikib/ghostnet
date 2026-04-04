@@ -7,8 +7,6 @@ import { RANK_LIST } from '../../lib/supabase'
 const accent = '#00d4ff'
 const mono = 'JetBrains Mono, monospace'
 
-// Admin email — only this account sees the admin panel
-const ADMIN_EMAIL = 'shanghost@ghostnet.io'
 
 const MOD_COLORS: Record<string, string> = {
   'tor': '#00ff41', 'osint': '#00d4ff', 'crypto': '#ffb347',
@@ -72,8 +70,8 @@ export default function LeaderboardPage() {
     // Get current user
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
-      const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || ADMIN_EMAIL).split(',').map(e => e.trim())
-      setIsAdmin(adminEmails.includes(user.email || ''))
+      // Admin check is server-side — never trust client-side email comparison
+      fetch('/api/admin').then(r => r.json()).then(({ isAdmin }) => setIsAdmin(!!isAdmin)).catch(() => {})
 
       const { data: profile } = await supabase
         .from('user_profiles')
