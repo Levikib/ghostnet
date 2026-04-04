@@ -197,11 +197,13 @@ begin
   returning xp into new_xp;
 
   -- Recalculate rank
+  -- Total earnable XP across 13 labs: ~5,450
+  -- Ghost 0 | Specter 750 | Phantom 1,800 | Wraith 3,200 | Legend 5,000
   new_rank := case
-    when new_xp >= 15000 then 'Legend'
-    when new_xp >= 7500  then 'Wraith'
-    when new_xp >= 3000  then 'Phantom'
-    when new_xp >= 1000  then 'Specter'
+    when new_xp >= 5000 then 'Legend'
+    when new_xp >= 3200 then 'Wraith'
+    when new_xp >= 1800 then 'Phantom'
+    when new_xp >= 750  then 'Specter'
     else 'Ghost'
   end;
 
@@ -218,15 +220,15 @@ insert into public.badges (slug, name, description, icon, color, xp_reward, requ
 values
   -- Progression badges
   ('first_blood',     'First Blood',        'Complete your first lab',                    '🩸', '#ff4136', 50,   'labs_completed',  1),
-  ('specter',         'Specter',            'Reach Specter rank (1,000 XP)',              '👻', '#00d4ff', 100,  'total_xp',        1000),
-  ('phantom',         'Phantom',            'Reach Phantom rank (3,000 XP)',              '🌑', '#bf5fff', 200,  'total_xp',        3000),
-  ('wraith',          'Wraith',             'Reach Wraith rank (7,500 XP)',               '💀', '#ff4136', 500,  'total_xp',        7500),
-  ('legend',          'Legend',             'Reach Legend rank (15,000 XP)',              '⚡', '#ffb347', 1000, 'total_xp',        15000),
-  -- Lab completion badges
-  ('lab_x5',          'Lab Rat',            'Complete 5 labs',                            '🐀', '#00ff41', 75,   'labs_completed',  5),
-  ('lab_x10',         'Operator',           'Complete 10 labs',                           '🔧', '#00d4ff', 150,  'labs_completed',  10),
-  ('lab_x25',         'Elite Operator',     'Complete 25 labs',                           '🎯', '#ffb347', 300,  'labs_completed',  25),
-  ('lab_x50',         'Ghost Protocol',     'Complete all 50+ labs',                      '🔱', '#ff4136', 750,  'labs_completed',  50),
+  ('specter',         'Specter',            'Reach Specter rank (750 XP)',                '👻', '#00d4ff', 100,  'total_xp',        750),
+  ('phantom',         'Phantom',            'Reach Phantom rank (1,800 XP)',              '🌑', '#bf5fff', 200,  'total_xp',        1800),
+  ('wraith',          'Wraith',             'Reach Wraith rank (3,200 XP)',               '💀', '#ff4136', 500,  'total_xp',        3200),
+  ('legend',          'Legend',             'Reach Legend rank (5,000 XP)',               '⚡', '#ffb347', 1000, 'total_xp',        5000),
+  -- Lab completion badges (13 labs total on the platform)
+  ('lab_x3',          'Lab Rat',            'Complete 3 labs',                            '🐀', '#00ff41', 75,   'labs_completed',  3),
+  ('lab_x7',          'Operator',           'Complete 7 labs',                            '🔧', '#00d4ff', 150,  'labs_completed',  7),
+  ('lab_x10',         'Elite Operator',     'Complete 10 labs',                           '🎯', '#ffb347', 300,  'labs_completed',  10),
+  ('lab_x13',         'Ghost Protocol',     'Complete all 13 labs — full platform clear', '🔱', '#ff4136', 750,  'labs_completed',  13),
   -- Module mastery badges
   ('tor_master',      'Tor Master',         'Complete all Tor & Dark Web labs',           '🧅', '#00ff41', 200,  'module_mastery',  1),
   ('osint_master',    'OSINT Ghost',        'Complete all OSINT & Surveillance labs',     '👁️', '#00d4ff', 200,  'module_mastery',  2),

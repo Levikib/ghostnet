@@ -8,7 +8,6 @@ const accent = '#aaff00'
 const moduleId = 'wireless-attacks'
 const moduleName = 'Wireless Attacks'
 const moduleNum = '12'
-const xpTotal = 455
 
 const steps: LabStep[] = [
   {
@@ -181,6 +180,8 @@ const steps: LabStep[] = [
     explanation: 'Full wireless pentest methodology: PHASE 1 - RECONNAISSANCE: Passive survey: airodump-ng all channels, document SSIDs, BSSIDs, clients, signal strength, encryption type, WPS enabled. Identify: corporate SSIDs vs guest vs IoT, hidden SSIDs (still visible in probe responses), rogue APs (SSIDs matching corporate but different BSSID/channel). Tools: Kismet (passive, logs to pcap), WiFi Pineapple (active and passive). PHASE 2 - VULNERABILITY IDENTIFICATION: WEP detection (flag as critical - broken), WPA2 with WPS (reaver/bully attack), weak passphrases (dictionary attack), enterprise with no cert validation (PEAP capture), open networks, default router credentials. PHASE 3 - EXPLOITATION: Ordered by risk: WEP (immediate crack), WPS (pixie dust or PIN brute), WPA2 handshake + weak PSK, WPA Enterprise credential capture, Evil twin for remaining. PHASE 4 - POST-EXPLOITATION: From internal network: scan with nmap, test web interfaces of APs (admin panel), lateral movement. PHASE 5 - REPORTING: Per-AP findings with SSID, BSSID, channel, vulnerability, risk, recommendation. Include signal strength map if physical survey. Regulatory note: always get written authorisation before testing - transmitting on licensed bands without authorisation is illegal. Some attacks (deauth) may be illegal even with authorisation in some jurisdictions - clarify scope. Hardware kit: at minimum 2 adapters (monitor mode + AP creation), ideally Alfa AWUS036ACH (dual-band, high power), Proxmark3, HackRF One, Bluetooth sniffer.'
   }
 ]
+
+const xpTotal = steps.reduce((sum, s) => sum + s.xp, 0)
 
 export default function WirelessAttacksLab() {
   const [guidedDone, setGuidedDone] = useState(false)

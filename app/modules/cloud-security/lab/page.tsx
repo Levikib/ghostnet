@@ -8,7 +8,6 @@ const accent = '#ff9500'
 const moduleId = 'cloud-security'
 const moduleName = 'Cloud Security'
 const moduleNum = '09'
-const xpTotal = 490
 
 const steps: LabStep[] = [
   {
@@ -209,6 +208,8 @@ const steps: LabStep[] = [
     explanation: 'A complete cloud penetration test follows a structured kill chain across eight phases. Phase 1 - Recon: subdomain enumeration with tools like subfinder or amass discovers S3 bucket hostnames (COMPANY.s3.amazonaws.com), GitHub and GitLab organisation scanning with truffleHog or gitleaks finds committed credentials in git history (including deleted files and old commits), and Shodan searches for exposed cloud management interfaces. Phase 2 - Initial Access: an exposed key found in GitHub, an SSRF vulnerability in a web app that reaches the EC2 IMDS, a compromised employee OAuth token via phishing, or a public S3 bucket containing credentials files. Phase 3 - Enumeration: aws sts get-caller-identity (who am I and which account?), enumerate-iam (what actions can I perform?), ScoutSuite or Prowler for a comprehensive security posture assessment across all services, and CloudMapper to visualise network topology and IAM relationships. Phase 4 - Exploitation: S3 data exfiltration, Lambda source code download and analysis, EC2 UserData modification to inject commands on next reboot, RDS snapshot copy to an attacker-controlled account. Phase 5 - Privilege Escalation: all 21 IAM privesc paths (Pacu iam__privesc_scan), role chaining through multiple accounts, and cross-account role assumptions. Phase 6 - Persistence: create a new IAM user with console access and programmatic keys, install a Lambda backdoor triggered by CloudWatch Events on a schedule, register an SSM Run Command document that executes on all instances. Phase 7 - Lateral Movement: assume roles in subsidiary or partner accounts, pivot from cloud to on-premises network via AWS Direct Connect or VPN gateways. Phase 8 - Exfiltration: sync sensitive S3 data to an attacker bucket in another account, share an RDS snapshot to the attacker account, retrieve Glacier vault archives. Reporting deliverables: blast radius analysis (what data was accessible), step-by-step credential rotation guide, IAM policy least-privilege recommendations with specific policy JSON, and a prioritised remediation roadmap. Key tools: Pacu (AWS exploitation framework with 40+ modules), ScoutSuite (multi-cloud posture assessment), Prowler (CIS and NIST compliance checks), CloudMapper (attack path visualisation), and Cartography (graph-based attack path analysis using Neo4j).'
   }
 ]
+
+const xpTotal = steps.reduce((sum, s) => sum + s.xp, 0)
 
 export default function CloudSecurityLab() {
   const [guidedDone, setGuidedDone] = useState(false)

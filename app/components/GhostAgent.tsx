@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { useAuth } from './AuthProvider'
+import { RANK_LIST } from '../../lib/supabase'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -479,39 +480,22 @@ function buildWelcomeMessage(username?: string, rank?: string, labsCompleted?: n
 const WELCOME_MESSAGE: Message = buildWelcomeMessage()
 
 
-const RANKS = [
-  { title: 'Script Kiddie', xp: 0 },
-  { title: 'Recon Agent', xp: 500 },
-  { title: 'Threat Hunter', xp: 1500 },
-  { title: 'Exploit Dev', xp: 3000 },
-  { title: 'Red Operator', xp: 5000 },
-  { title: 'Ghost Tier', xp: 8000 },
-  { title: 'Ghost Operative', xp: 12000 },
-  { title: 'Phantom', xp: 18000 },
-  { title: 'Wraith', xp: 26000 },
-  { title: 'Shadow God', xp: 36000 },
-]
-
+// Use RANK_LIST from lib/supabase as single source of truth
 function getRankFromXP(xp: number): string {
-  let rank = RANKS[0].title
-  for (const r of RANKS) {
-    if (xp >= r.xp) rank = r.title
+  let rank = RANK_LIST[0].title as string
+  for (const r of RANK_LIST) {
+    if (xp >= r.minXp) rank = r.title
     else break
   }
   return rank
 }
 
 function getSkillGuidance(rank: string): string {
-  if (rank === 'Script Kiddie') return 'Explain concepts from first principles, define all jargon, use analogies.'
-  if (rank === 'Recon Agent') return 'Explain concepts clearly but assume basic Linux/networking knowledge.'
-  if (rank === 'Threat Hunter') return 'Assume solid fundamentals, focus on technique depth and tool flags.'
-  if (rank === 'Exploit Dev') return 'Go deep on exploit mechanics, edge cases, and tool internals.'
-  if (rank === 'Red Operator') return 'Advanced adversary simulation focus, operational security, evasion.'
-  if (rank === 'Ghost Tier') return 'Expert level — focus on novel techniques, research, and tooling internals.'
-  if (rank === 'Ghost Operative') return 'Elite — assume deep expertise, engage at research/zero-day discussion level.'
-  if (rank === 'Phantom') return 'Master level — brief, dense, no hand-holding needed.'
-  if (rank === 'Wraith') return 'Grandmaster — peer-level technical exchange, minimal explanation.'
-  return 'Legend tier — engage as a technical peer and research collaborator.'
+  if (rank === 'Ghost')   return 'New operator. Explain concepts from first principles, define all jargon, use analogies. Build their mental model step by step.'
+  if (rank === 'Specter') return 'Has some labs done. Explain clearly but assume basic Linux/networking/security knowledge. Focus on technique depth.'
+  if (rank === 'Phantom') return 'Solid foundations. Assume working knowledge. Focus on exploit mechanics, edge cases, evasion techniques, and tool internals.'
+  if (rank === 'Wraith')  return 'Advanced operator. Adversary simulation focus — OPSEC, evasion, detection bypass, lateral movement. Minimal hand-holding.'
+  return 'Legend tier. Peer-level technical exchange. Brief, dense, research-grade. Engage as a collaborator not a teacher.'
 }
 
 const HISTORY_KEY = 'ghost_chat_history'
