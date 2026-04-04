@@ -252,3 +252,72 @@ values
   ('report_writer',   'Pentest Pro',        'Generate a full pentest report',             '📄', '#00ff41', 100,  'special',         2),
   ('tool_master',     'Toolsmith',          'Use all 9 interactive tools',                '🛠️', '#00d4ff', 100,  'special',         3)
 on conflict (slug) do nothing;
+
+-- ═══════════════════════════════════════════════════════════════════
+-- SECURITY HARDENING — run after initial schema setup
+-- ═══════════════════════════════════════════════════════════════════
+
+-- ── Defence-in-depth constraints on user_profiles ────────────────────────────
+-- These are belt-and-suspenders: the application validates first, DB is last line.
+
+alter table public.user_profiles
+  add constraint if not exists chk_xp_max           check (xp <= 10000),
+  add constraint if not exists chk_username_length   check (char_length(username) between 3 and 24),
+  add constraint if not exists chk_username_format   check (username ~ '^[a-zA-Z0-9_-]+$'),
+  add constraint if not exists chk_rank_valid        check (ghost_rank in ('Ghost','Specter','Phantom','Wraith','Legend')),
+  add constraint if not exists chk_streak_max        check (streak_days <= 3650);
+
+-- ── Defence-in-depth constraints on lab_progress ─────────────────────────────
+alter table public.lab_progress
+  add constraint if not exists chk_xp_earned_max     check (xp_earned <= 600),
+  add constraint if not exists chk_xp_earned_min     check (xp_earned >= 0),
+  add constraint if not exists chk_notes_length      check (notes is null or char_length(notes) <= 500),
+  add constraint if not exists chk_lab_id_format     check (lab_id ~ '^[a-z0-9-]+$'),
+  add constraint if not exists chk_module_id_format  check (module_id ~ '^[a-z0-9-]+$');
+
+-- ── Audit log table ───────────────────────────────────────────────────────────
+-- Immutable record of security-relevant events. append-only (no update/delete RLS).
+create table if not exists public.audit_log (
+  id          uuid default uuid_generate_v4() primary key,
+  user_id     uuid references auth.users(id) on delete set null,
+  event_type  text not null
+                check (event_type in (
+                  'login','logout','signup','password_change',
+                  'lab_complete','xp_awarded','admin_access',
+                  'account_deleted','suspicious_request'
+                )),
+  event_data  jsonb default '{}'::jsonb,
+  ip_hint     text,   -- first 3 octets only, for privacy (e.g. '192.168.1')
+  created_at  timestamptz not null default now()
+);
+
+alter table public.audit_log enable row level security;
+
+-- Users can read their own audit entries; nobody can modify or delete
+create policy "Users can view their own audit log"
+  on public.audit_log for select
+  using (auth.uid() = user_id);
+
+-- No insert policy for regular users — only service role can write audit entries
+-- (insert is done from API routes using the service role client)
+
+-- ── Function: log_audit_event ─────────────────────────────────────────────────
+create or replace function public.log_audit_event(
+  p_user_id   uuid,
+  p_event     text,
+  p_data      jsonb default '{}'::jsonb,
+  p_ip_hint   text default null
+)
+returns void language plpgsql security definer as $$
+begin
+  insert into public.audit_log (user_id, event_type, event_data, ip_hint)
+  values (p_user_id, p_event, coalesce(p_data, '{}'::jsonb), p_ip_hint);
+end;
+$$;
+
+-- ── Revoke public execute on sensitive functions ──────────────────────────────
+-- Only service role should call update_xp_and_rank directly
+revoke execute on function public.update_xp_and_rank(uuid, integer) from public, anon;
+revoke execute on function public.log_audit_event(uuid, text, jsonb, text) from public, anon;
+-- handle_new_user is called by trigger only — revoke direct call access
+revoke execute on function public.handle_new_user() from public, anon;

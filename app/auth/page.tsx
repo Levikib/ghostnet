@@ -1,5 +1,6 @@
 'use client'
 import React, { useState, Suspense } from 'react'
+import Link from 'next/link'
 import { createClient } from '../../lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 
@@ -31,12 +32,20 @@ function AuthForm() {
         router.push(redirectTo)
         router.refresh()
       } else {
-        if (!username.trim()) { setError('Username is required'); return }
+        const trimmedUsername = username.trim()
+        if (!trimmedUsername) { setError('Username is required'); return }
+        // Username: 3–24 chars, letters/numbers/underscores/hyphens only — no HTML injection
+        if (!/^[a-zA-Z0-9_-]{3,24}$/.test(trimmedUsername)) {
+          setError('Username must be 3–24 characters: letters, numbers, _ or - only')
+          return
+        }
         if (password.length < 8) { setError('Password must be at least 8 characters'); return }
+        // Basic email format check before hitting Supabase
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('Enter a valid email address'); return }
         const { error: err } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { username } },
+          options: { data: { username: trimmedUsername } },
         })
         if (err) { setError(err.message); return }
         setMessage('Account created. Check your email to confirm, then log in.')
@@ -191,8 +200,15 @@ function AuthForm() {
       </div>
 
       {/* Footer */}
-      <div style={{ marginTop: '2rem', fontFamily: mono, fontSize: '7px', color: '#0f2a0f', letterSpacing: '0.2em', textAlign: 'center' }}>
-        GHOSTNET // FOR EDUCATIONAL AND AUTHORISED USE ONLY
+      <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+        <div style={{ fontFamily: mono, fontSize: '7px', color: '#0f2a0f', letterSpacing: '0.2em', marginBottom: '8px' }}>
+          GHOSTNET // FOR EDUCATIONAL AND AUTHORISED USE ONLY
+        </div>
+        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+          <Link href="/privacy" style={{ fontFamily: mono, fontSize: '7px', color: '#1a3a1a', textDecoration: 'none', letterSpacing: '0.1em' }}>PRIVACY POLICY</Link>
+          <span style={{ fontFamily: mono, fontSize: '7px', color: '#0f2a0f' }}>·</span>
+          <Link href="/terms" style={{ fontFamily: mono, fontSize: '7px', color: '#1a3a1a', textDecoration: 'none', letterSpacing: '0.1em' }}>TERMS OF SERVICE</Link>
+        </div>
       </div>
     </div>
   )

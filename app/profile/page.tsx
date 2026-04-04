@@ -122,6 +122,22 @@ export default function ProfilePage() {
   const [dataLoading, setDataLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'progress' | 'badges' | 'history'>('overview')
   const [copyDone, setCopyDone] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
+
+  async function handleDeleteAccount() {
+    if (!deleteConfirm) { setDeleteConfirm(true); return }
+    setDeleteLoading(true)
+    try {
+      const res = await fetch('/api/account', { method: 'DELETE' })
+      if (!res.ok) { const d = await res.json(); alert('Error: ' + d.error); return }
+      // Clear local storage then redirect to welcome
+      localStorage.clear()
+      router.push('/welcome')
+    } finally {
+      setDeleteLoading(false)
+    }
+  }
 
   // Redirect unauthenticated users
   useEffect(() => {
@@ -630,6 +646,42 @@ export default function ProfilePage() {
         >
           &#8651; SIGN OUT
         </button>
+      </div>
+
+      {/* ── Danger Zone ─────────────────────────────────────────────────────── */}
+      <div style={{ marginTop: '3rem', borderTop: '1px solid rgba(255,65,54,0.15)', paddingTop: '2rem' }}>
+        <div style={{ fontFamily: mono, fontSize: '0.6rem', color: '#ff4136', letterSpacing: '0.25em', marginBottom: '1rem', opacity: 0.6 }}>
+          ⚠ DANGER ZONE
+        </div>
+        <div style={{ background: 'rgba(255,65,54,0.03)', border: '1px solid rgba(255,65,54,0.15)', borderRadius: '6px', padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' as const }}>
+          <div>
+            <div style={{ fontFamily: mono, fontSize: '0.75rem', color: '#ff4136', marginBottom: '3px' }}>Delete Account</div>
+            <div style={{ fontFamily: mono, fontSize: '0.65rem', color: '#4a3a3a', lineHeight: 1.5 }}>
+              Permanently deletes your account, all XP, lab history, and badges. This cannot be undone.
+            </div>
+          </div>
+          <button
+            onClick={handleDeleteAccount}
+            disabled={deleteLoading}
+            style={{
+              background: deleteConfirm ? 'rgba(255,65,54,0.15)' : 'transparent',
+              border: '1px solid rgba(255,65,54,0.5)',
+              borderRadius: '4px', padding: '8px 18px', cursor: 'pointer',
+              fontFamily: mono, fontSize: '8px', color: '#ff4136',
+              letterSpacing: '0.12em', transition: 'all 0.15s', flexShrink: 0,
+            }}
+          >
+            {deleteLoading ? 'DELETING...' : deleteConfirm ? '⚠ CONFIRM DELETE' : 'DELETE ACCOUNT'}
+          </button>
+        </div>
+        {deleteConfirm && (
+          <div style={{ fontFamily: mono, fontSize: '0.65rem', color: '#ff4136', marginTop: '6px', opacity: 0.7 }}>
+            Click again to permanently delete. This action cannot be reversed.{' '}
+            <button onClick={() => setDeleteConfirm(false)} style={{ background: 'none', border: 'none', color: '#5a8a5a', cursor: 'pointer', fontFamily: mono, fontSize: '0.65rem', textDecoration: 'underline' }}>
+              Cancel
+            </button>
+          </div>
+        )}
       </div>
 
     </div>
