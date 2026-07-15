@@ -128,17 +128,21 @@ export default function WelcomePage() {
 
   useEffect(() => {
     let i = 0
+    let cancelled = false
+    let pending: ReturnType<typeof setTimeout>
     const addLine = () => {
+      if (cancelled) return
       if (i < BOOT_LINES.length) {
-        setBootLines(prev => [...prev, BOOT_LINES[i]])
+        const nextLine = BOOT_LINES[i]
+        setBootLines(prev => [...prev, nextLine])
         i++
-        setTimeout(addLine, 180 + Math.random() * 140)
+        pending = setTimeout(addLine, 180 + Math.random() * 140)
       } else {
-        setTimeout(() => setPhase('logo'), 300)
+        pending = setTimeout(() => { if (!cancelled) setPhase('logo') }, 300)
       }
     }
-    const t = setTimeout(addLine, 400)
-    return () => clearTimeout(t)
+    pending = setTimeout(addLine, 400)
+    return () => { cancelled = true; clearTimeout(pending) }
   }, [])
 
   useEffect(() => {
@@ -249,7 +253,7 @@ export default function WelcomePage() {
             {bootLines.map((line, i) => (
               <div key={i} style={{
                 opacity: i === bootLines.length - 1 ? 1 : 0.55,
-                color: line.includes('OK') ? '#00ff41' : line.includes('REQUIRED') ? '#ffb347' : '#4a8a4a',
+                color: line?.includes('OK') ? '#00ff41' : line?.includes('REQUIRED') ? '#ffb347' : '#4a8a4a',
                 textShadow: i === bootLines.length - 1 ? '0 0 8px rgba(0,255,65,0.4)' : 'none',
               }}>
                 {line}{i === bootLines.length - 1 && <span style={{ opacity: showCursor ? 1 : 0 }}>_</span>}
