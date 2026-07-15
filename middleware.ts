@@ -2,6 +2,8 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 // ── Public routes — never require auth ────────────────────────────────────────
+// Guests can browse freely to get a feel for the platform. Only progress-tracking,
+// personal data, and AI-cost-bearing tools require an account.
 const PUBLIC_PATHS = [
   '/welcome',
   '/auth',
@@ -10,6 +12,10 @@ const PUBLIC_PATHS = [
   '/privacy',
   '/terms',
 ]
+
+// Module CONCEPT pages (read-only learning content) are public.
+// Their /lab sub-routes are NOT — labs track XP/progress and require an account.
+const PUBLIC_MODULE_CONCEPT = /^\/modules\/[^/]+\/?$/
 
 // ── Static asset prefixes — always pass through ───────────────────────────────
 // /api/ is NOT here — every API route enforces its own auth
@@ -78,6 +84,11 @@ export async function middleware(request: NextRequest) {
 
   // Always allow public pages
   if (PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'))) {
+    return NextResponse.next()
+  }
+
+  // Module concept pages are public — guests can learn without an account
+  if (PUBLIC_MODULE_CONCEPT.test(pathname)) {
     return NextResponse.next()
   }
 

@@ -390,6 +390,18 @@ function OfflineBanner() {
 
 function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const path = usePathname()
+
+  // Bare-chrome pages — no nav, no floating widgets, no dashboard bleed-through
+  const isBareChrome = path === '/welcome' || path.startsWith('/auth')
+
+  if (isBareChrome) {
+    return (
+      <main style={{ minHeight: '100vh' }}>
+        <ErrorBoundary label="Page">{children}</ErrorBoundary>
+      </main>
+    )
+  }
 
   return (
     <MobileMenuContext.Provider value={mobileMenuOpen}>

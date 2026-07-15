@@ -5,6 +5,9 @@ const NONE = "'none'"
 const UNSAFE_INLINE = "'unsafe-inline'"
 // next/image and fonts need data: for inline images; JetBrains Mono loaded from Google Fonts
 const GOOGLE_FONTS = 'https://fonts.googleapis.com https://fonts.gstatic.com'
+// Next.js dev-mode HMR/React Refresh evaluates module code via eval() — required in dev only.
+// Production bundles never eval, so this stays out of the prod CSP.
+const DEV_UNSAFE_EVAL = process.env.NODE_ENV !== 'production' ? " 'unsafe-eval'" : ''
 
 const securityHeaders = [
   // ── Strict Transport Security ──────────────────────────────────────────────
@@ -53,7 +56,7 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       `default-src ${SELF}`,
-      `script-src ${SELF} ${UNSAFE_INLINE}`,   // Next.js requires unsafe-inline for hydration
+      `script-src ${SELF} ${UNSAFE_INLINE}${DEV_UNSAFE_EVAL}`,   // Next.js requires unsafe-inline for hydration; unsafe-eval added in dev only for HMR
       `style-src ${SELF} ${UNSAFE_INLINE} ${GOOGLE_FONTS}`,
       `font-src ${SELF} ${GOOGLE_FONTS}`,
       `img-src ${SELF} data: https:`,

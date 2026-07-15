@@ -197,6 +197,14 @@ function AuthForm() {
             {mode === 'login' ? 'Register here' : 'Login'}
           </button>
         </div>
+
+        {mode === 'login' && (
+          <div style={{ marginTop: '0.75rem', textAlign: 'center' }}>
+            <Link href="/auth/forgot-password" style={{ fontFamily: mono, fontSize: '0.68rem', color: '#3a7a3a', textDecoration: 'underline' }}>
+              Forgot password?
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Footer */}

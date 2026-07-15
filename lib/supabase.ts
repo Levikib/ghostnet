@@ -1,17 +1,10 @@
 'use client'
-import { createClient } from '@supabase/supabase-js'
+import { createClient as createBrowserClient } from './supabase/client'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key'
-
-// Browser client — used in components
-// When env vars are missing the client is created but all calls will fail gracefully
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-  },
-})
+// Single shared browser client instance — never create a second GoTrueClient.
+// SSR cookie handling lives in lib/supabase/client.ts; this re-exports the same
+// instance so components can keep importing `supabase` from here for types/ranks.
+export const supabase = createBrowserClient()
 
 // Type definitions matching the Supabase schema
 export interface UserProfile {
