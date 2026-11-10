@@ -431,8 +431,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>GHOSTNET | Security Research Platform</title>
+        <meta name="description" content="GHOSTNET: hands-on security research labs across 13 modules, from OSINT and web attacks to cloud and red teaming, with an AI guide." />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        {/* Fonts: was a CSS @import (stylesheet, then font CSS, then font files, all blocking first paint). Now a
+            preconnected, non-blocking stylesheet: media="print" until it arrives, then switched to all. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" media="print" data-gn-fonts="" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "(function(){var l=document.querySelector('link[data-gn-fonts]');if(!l)return;var on=function(){l.media='all'};if(l.sheet){on()}else{l.addEventListener('load',on)}})();",
+          }}
+        />
       </head>
       <body>
         <AuthProvider>
