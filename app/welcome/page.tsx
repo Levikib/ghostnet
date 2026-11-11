@@ -2,433 +2,169 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { looksSignedIn } from '../../lib/client/api'
-import PortalBreach from './PortalBreach'
+import { C, Decode, HackStyles, TermLines, TermLine, Typed, mono, useReducedMotion } from '../components/hack/Hack'
+import CityNet from '../components/hack/CityNet'
+import Profiler from './Profiler'
 import Briefing from './Briefing'
+import NetworkBreach from './NetworkBreach'
 
-const mono = 'JetBrains Mono, monospace'
+type Phase = 'intercept' | 'title' | 'profile' | 'briefing' | 'breach'
 
-const GLYPHS = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*<>/\\|~'
+const INTERCEPT: TermLine[] = [
+  { t: 'ssh ghost@relay-07.onion -p 2222', kind: 'cmd', speed: 30 },
+  { t: '[*] onion circuit built · 3 hops · 412ms', c: C.dim, pause: 260 },
+  { t: '[*] tunnel encrypted · chacha20-poly1305', c: C.dim, pause: 140 },
+  { t: './intercept --target visitor --silent', kind: 'cmd', speed: 30 },
+  { t: '[+] signal acquired', c: C.green, pause: 380 },
+  { t: '[+] fingerprinting device…', c: C.white, pause: 220 },
+  { t: '0x7f3a  4748 4f53 544e 4554 2f2f 6e6f 6465 3037', c: C.faint, pause: 40 },
+  { t: '0x7f4a  6f70 6572 6174 6f72 2e75 6e6b 6e6f 776e', c: C.faint, pause: 40 },
+  { t: '0x7f5a  6163 6365 7373 2e72 6571 7569 7265 6421', c: C.faint, pause: 40 },
+  { t: '[!] handshake complete. opening channel', c: C.amber, pause: 420 },
+]
 
-function randomGlyph() {
-  return GLYPHS[Math.floor(Math.random() * GLYPHS.length)]
-}
-
-// Scramble text effect
-function useScramble(target: string, delay: number = 0, speed: number = 40) {
-  const [display, setDisplay] = useState('')
-  const [done, setDone] = useState(false)
-
-  useEffect(() => {
-    let t = setTimeout(() => {
-      let iter = 0
-      const interval = setInterval(() => {
-        setDisplay(
-          target.split('').map((char, i) => {
-            if (char === ' ') return ' '
-            if (i < iter) return target[i]
-            return randomGlyph()
-          }).join('')
-        )
-        iter += 0.4
-        if (iter >= target.length) {
-          setDisplay(target)
-          setDone(true)
-          clearInterval(interval)
-        }
-      }, speed)
-      return () => clearInterval(interval)
-    }, delay)
-    return () => clearTimeout(t)
-  }, [target, delay, speed])
-
-  return { display, done }
-}
-
-// Rain column
-function RainColumn({ x, delay }: { x: number; delay: number }) {
-  const [chars, setChars] = useState<{ char: string; opacity: number }[]>([])
-
-  useEffect(() => {
-    const len = 8 + Math.floor(Math.random() * 16)
-    const initial = Array.from({ length: len }, () => ({
-      char: randomGlyph(),
-      opacity: Math.random(),
-    }))
-    setChars(initial)
-    const interval = setInterval(() => {
-      setChars(prev => prev.map((c, i) => ({
-        char: Math.random() > 0.85 ? randomGlyph() : c.char,
-        opacity: i === 0 ? 1 : (prev[i - 1]?.opacity ?? 0) * 0.82,
-      })))
-    }, 80 + Math.random() * 60)
-    return () => clearInterval(interval)
-  }, [])
-
-  return (
-    <div style={{
-      position: 'absolute',
-      left: x + '%',
-      top: (-delay * 20) + '%',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '0px',
-      animation: 'rainFall ' + (3 + Math.random() * 4).toFixed(1) + 's linear ' + delay + 's infinite',
-      fontFamily: mono,
-      fontSize: '13px',
-      lineHeight: '1.4',
-      userSelect: 'none',
-      pointerEvents: 'none',
-    }}>
-      {chars.map((c, i) => (
-        <span key={i} style={{
-          color: i === 0 ? '#ffffff' : '#00ff41',
-          opacity: c.opacity * (i === 0 ? 1 : 0.6),
-          textShadow: i === 0 ? '0 0 8px #00ff41, 0 0 20px #00ff41' : 'none',
-        }}>{c.char}</span>
-      ))}
-    </div>
-  )
-}
+const STEPS: { id: Phase; label: string }[] = [
+  { id: 'intercept', label: 'INTERCEPT' },
+  { id: 'profile', label: 'PROFILE' },
+  { id: 'briefing', label: 'BRIEFING' },
+  { id: 'breach', label: 'BREACH' },
+]
 
 export default function WelcomePage() {
   const router = useRouter()
-  const [phase, setPhase] = useState<'boot' | 'logo' | 'tagline' | 'ready' | 'briefing' | 'portal'>('boot')
-  const [reduced, setReduced] = useState(false)
-  useEffect(() => { setReduced(window.matchMedia('(prefers-reduced-motion: reduce)').matches) }, [])
-  const [bootLines, setBootLines] = useState<string[]>([])
-  const [showCursor, setShowCursor] = useState(true)
-  const [rainCols] = useState(() =>
-    Array.from({ length: 28 }, (_, i) => ({
-      x: (i / 28) * 100 + (Math.random() * 3 - 1.5),
-      delay: Math.random() * 4,
-    }))
-  )
+  const reduced = useReducedMotion()
+  const [phase, setPhase] = useState<Phase>('intercept')
+  const [returning, setReturning] = useState(false)
+  const [briefed, setBriefed] = useState(false)
+  const [cut, setCut] = useState(0)
+  const [clock, setClock] = useState('')
+  const [titleReady, setTitleReady] = useState(false)
 
   // Already signed in: skip the splash and go where they were heading.
   useEffect(() => {
     if (looksSignedIn()) {
       const from = new URLSearchParams(window.location.search).get('from')
       router.replace(from && from.startsWith('/') && !from.startsWith('//') ? from : '/')
+      return
     }
+    try {
+      setReturning(localStorage.getItem('gn_operator') === '1')
+      setBriefed(localStorage.getItem('gn_briefed') === '1')
+    } catch {}
   }, [router])
 
-  const line1 = useScramble('GHOSTNET', 1200, 35)
-  const line2 = useScramble('SECURITY RESEARCH PLATFORM', 2600, 28)
-  const line3 = useScramble('ENTER THE NETWORK', 4200, 32)
-
-  // Boot sequence lines
-  const BOOT_LINES = [
-    '> INITIALISING KERNEL...',
-    '> LOADING CRYPTOGRAPHIC MODULES... OK',
-    '> ESTABLISHING ENCRYPTED TUNNEL... OK',
-    '> SCANNING THREAT SURFACE...',
-    '> 13 ATTACK VECTORS LOADED',
-    '> NEURAL RECON GRID ONLINE',
-    '> IDENTITY VERIFICATION REQUIRED',
-  ]
-
   useEffect(() => {
-    let i = 0
-    let cancelled = false
-    let pending: ReturnType<typeof setTimeout>
-    const addLine = () => {
-      if (cancelled) return
-      if (i < BOOT_LINES.length) {
-        const nextLine = BOOT_LINES[i]
-        setBootLines(prev => [...prev, nextLine])
-        i++
-        pending = setTimeout(addLine, 180 + Math.random() * 140)
-      } else {
-        pending = setTimeout(() => { if (!cancelled) setPhase('logo') }, 300)
-      }
-    }
-    pending = setTimeout(addLine, 400)
-    return () => { cancelled = true; clearTimeout(pending) }
-  }, [])
-
-  useEffect(() => {
-    const t = setInterval(() => setShowCursor(p => !p), 530)
+    const tick = () => setClock(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }))
+    tick()
+    const t = setInterval(tick, 1000)
     return () => clearInterval(t)
   }, [])
 
-  useEffect(() => {
-    if (line1.done) setPhase(p => (p === 'boot' ? 'logo' : p))
-  }, [line1.done])
-
-  useEffect(() => {
-    if (line3.done) setTimeout(() => setPhase(p => (p === 'briefing' || p === 'portal' ? p : 'ready')), 600)
-  }, [line3.done])
+  const go = (p: Phase) => { setCut(c => c + 1); setPhase(p) }
 
   function authTarget(mode: 'register' | 'login') {
     const from = new URLSearchParams(window.location.search).get('from')
     return '/auth?mode=' + mode + (from && from.startsWith('/') && !from.startsWith('//') ? '&from=' + encodeURIComponent(from) : '')
   }
 
-  function handleEnter() {
-    let briefed = false
-    try { briefed = localStorage.getItem('gn_briefed') === '1' } catch {}
-    setPhase(briefed ? 'portal' : 'briefing')
-  }
+  function begin() { go(briefed ? 'breach' : 'profile') }
+  function briefingDone() { try { localStorage.setItem('gn_briefed', '1') } catch {} ; setBriefed(true); go('breach') }
+  function onBreached() { router.push(authTarget(returning ? 'login' : 'register')) }
+  function signIn(e: React.MouseEvent) { e.preventDefault(); router.push(authTarget('login')) }
 
-  function onBriefed() {
-    try { localStorage.setItem('gn_briefed', '1') } catch {}
-    setPhase('portal')
-  }
-
-  function onBreached() {
-    let returning = false
-    try { returning = localStorage.getItem('gn_operator') === '1' } catch {}
-    router.push(authTarget(returning ? 'login' : 'register'))
-  }
+  const stepIdx = phase === 'title' ? 0 : STEPS.findIndex(s => s.id === phase)
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0,
-      background: '#000000',
-      overflow: 'hidden',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 9999,
-    }}>
-      <style>{`
-        @keyframes rainFall {
-          from { transform: translateY(-100vh) }
-          to   { transform: translateY(110vh) }
-        }
-        @keyframes pulseGlow {
-          0%, 100% { text-shadow: 0 0 20px #00ff41, 0 0 60px #00ff41, 0 0 100px #00ff41; }
-          50%       { text-shadow: 0 0 40px #00ff41, 0 0 100px #00ff41, 0 0 160px #00ff41; }
-        }
-        @keyframes fadeSlideUp {
-          from { opacity: 0; transform: translateY(24px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes scanline {
-          from { transform: translateY(-100%); }
-          to   { transform: translateY(100vh); }
-        }
-        @keyframes borderPulse {
-          0%, 100% { border-color: rgba(0,255,65,0.4); box-shadow: 0 0 20px rgba(0,255,65,0.1); }
-          50%       { border-color: rgba(0,255,65,0.8); box-shadow: 0 0 40px rgba(0,255,65,0.25); }
-        }
-        @keyframes subtleScan {
-          0%   { background-position: 0 0; }
-          100% { background-position: 0 100px; }
-        }
-        .enter-btn:hover {
-          background: rgba(0,255,65,0.12) !important;
-          border-color: #00ff41 !important;
-          color: #00ff41 !important;
-          box-shadow: 0 0 30px rgba(0,255,65,0.3) !important;
-          transform: translateY(-1px);
-        }
-        .enter-btn:active {
-          transform: translateY(0px);
-        }
-      `}</style>
+    <div className="wl-root">
+      <HackStyles />
+      <CityNet intensity={phase === 'breach' ? 1.6 : phase === 'intercept' ? 0.4 : 1} />
+      <div className="hx-vig" aria-hidden="true" />
+      <div className="hx-scan" aria-hidden="true" />
+      <div className="hx-noise" aria-hidden="true" />
+      {!reduced && <div className="wl-crt" aria-hidden="true" />}
+      {cut > 0 && <div key={cut} className="hx-burst" aria-hidden="true" />}
 
-      {/* Matrix rain background */}
-      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', opacity: 0.18 }}>
-        {rainCols.map((col, i) => (
-          <RainColumn key={i} x={col.x} delay={col.delay} />
+      {/* HUD */}
+      <header className="wl-hud">
+        <a href="/welcome" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }} aria-label="GHOSTNET">
+          <span className="wl-mark">GN</span>
+          <span style={{ fontFamily: mono, fontSize: '.72rem', letterSpacing: '.3em', color: C.white, fontWeight: 700 }}>GHOSTNET</span>
+          <span className="wl-hide-sm" style={{ fontFamily: mono, fontSize: '.58rem', letterSpacing: '.2em', color: C.faint }}>// NODE 07</span>
+        </a>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <span className="wl-hide-sm" style={{ fontFamily: mono, fontSize: '.62rem', letterSpacing: '.2em', color: C.dim }}>{clock}</span>
+          <a href="/auth?mode=login" onClick={signIn} className="hx-link">SIGN IN</a>
+        </div>
+      </header>
+
+      <main className="wl-main">
+        {phase === 'intercept' && (
+          <div className="hx-in" style={{ width: '100%', maxWidth: '560px' }}>
+            <TermLines lines={INTERCEPT} instant={reduced} onDone={() => setTimeout(() => go('title'), reduced ? 0 : 450)} style={{ fontSize: 'clamp(.7rem, 2.6vw, .8rem)' }} />
+            <button className="hx-link" style={{ marginTop: '22px' }} onClick={() => go('title')}>SKIP ▸</button>
+          </div>
+        )}
+
+        {phase === 'title' && (
+          <div className="hx-in" style={{ textAlign: 'center', width: '100%', maxWidth: '760px' }}>
+            <div style={{ fontFamily: mono, fontSize: '.6rem', letterSpacing: '.5em', color: C.cyan, marginBottom: '14px' }}>CHANNEL OPEN</div>
+            <h1 className="hx-glitch" data-text="GHOSTNET" style={{ margin: 0, fontFamily: mono, fontWeight: 800, fontSize: 'clamp(3rem, 13vw, 6.4rem)', letterSpacing: '.14em', color: C.white, lineHeight: 1, textShadow: '0 0 40px rgba(0,212,255,.25)' }}>
+              <Decode text="GHOSTNET" duration={reduced ? 1 : 900} instant={reduced} />
+            </h1>
+            <p style={{ fontFamily: mono, fontSize: 'clamp(.72rem, 2.6vw, .92rem)', letterSpacing: '.18em', color: '#c9d9df', margin: '22px auto 0', minHeight: '3.4em', maxWidth: '560px', lineHeight: 1.7 }}>
+              <Typed text="LEARN HOW SYSTEMS BREAK. THEN LEARN TO DEFEND THEM." speed={24} delay={reduced ? 0 : 900} instant={reduced} onDone={() => setTitleReady(true)} />
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap', margin: '6px 0 30px', opacity: titleReady ? 1 : 0, transition: 'opacity .5s' }}>
+              {['13 MODULES', '13 LABS', '5,450 XP', '5 RANKS'].map(t => <span key={t} className="hx-tag" style={{ color: C.dim }}>{t}</span>)}
+            </div>
+            <div style={{ minHeight: '110px' }}>
+              {titleReady && (
+                <div className="hx-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+                  <button className="hx-btn" onClick={begin} autoFocus style={{ padding: '17px 34px' }}>{briefed ? 'BREACH THE GATEWAY ▸' : 'JACK IN ▸'}</button>
+                  <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                    {briefed && <button className="hx-link" onClick={() => go('briefing')}>REPLAY BRIEFING</button>}
+                    <a href="/auth?mode=login" onClick={signIn} className="hx-link">{returning ? 'WELCOME BACK · SIGN IN' : 'ALREADY AN OPERATOR? SIGN IN'}</a>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {phase === 'profile' && <Profiler onDone={() => go('briefing')} onSkip={() => go('briefing')} instant={reduced} />}
+        {phase === 'briefing' && <Briefing onDone={briefingDone} onSkip={briefingDone} instant={reduced} />}
+
+        {phase === 'breach' && (
+          <div className="hx-in" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ fontFamily: mono, fontSize: '.6rem', letterSpacing: '.4em', color: C.red, marginBottom: '6px' }}>// BREACH PROTOCOL ARMED</div>
+            <h1 style={{ margin: '0 0 6px', fontFamily: mono, fontSize: 'clamp(1.1rem, 4.4vw, 1.7rem)', letterSpacing: '.14em', color: C.white, textAlign: 'center' }}>
+              <Decode text="HACK YOUR WAY IN" duration={600} instant={reduced} />
+            </h1>
+            <NetworkBreach onBreached={onBreached} reduced={reduced} />
+          </div>
+        )}
+      </main>
+
+      {/* progress rail */}
+      <footer className="wl-rail" aria-label="Progress">
+        {STEPS.map((s, i) => (
+          <span key={s.id} style={{ color: i === stepIdx ? C.white : i < stepIdx ? C.cyan : C.faint }}>
+            <b style={{ color: i === stepIdx ? C.cyan : 'inherit' }}>{'0' + (i + 1)}</b> {s.label}
+          </span>
         ))}
-      </div>
+      </footer>
 
-      {/* Scanline overlay */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: 'repeating-linear-gradient(0deg, rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 1px, transparent 1px, transparent 3px)',
-        pointerEvents: 'none', zIndex: 1,
-      }} />
-
-      {/* Moving scan beam */}
-      <div style={{
-        position: 'absolute', left: 0, right: 0, height: '2px',
-        background: 'linear-gradient(90deg, transparent, rgba(0,255,65,0.06), rgba(0,255,65,0.12), rgba(0,255,65,0.06), transparent)',
-        animation: 'scanline 6s linear infinite',
-        zIndex: 2, pointerEvents: 'none',
-      }} />
-
-      {/* Vignette */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%)',
-        pointerEvents: 'none', zIndex: 1,
-      }} />
-
-      {/* Content */}
-      <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '700px', padding: '0 24px', gap: '0' }}>
-
-        {/* Boot terminal — shown during boot phase */}
-        {phase === 'boot' && (
-          <div style={{
-            fontFamily: mono, fontSize: '0.72rem', color: '#00ff41',
-            lineHeight: 2, letterSpacing: '0.05em',
-            textAlign: 'left', width: '100%', maxWidth: '480px',
-            animation: 'fadeSlideUp 0.4s ease both',
-          }}>
-            {bootLines.map((line, i) => (
-              <div key={i} style={{
-                opacity: i === bootLines.length - 1 ? 1 : 0.55,
-                color: line?.includes('OK') ? '#00ff41' : line?.includes('REQUIRED') ? '#ffb347' : '#4a8a4a',
-                textShadow: i === bootLines.length - 1 ? '0 0 8px rgba(0,255,65,0.4)' : 'none',
-              }}>
-                {line}{i === bootLines.length - 1 && <span style={{ opacity: showCursor ? 1 : 0 }}>_</span>}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Main logo — shown after boot */}
-        {phase === 'briefing' && <Briefing onDone={onBriefed} onSkip={onBriefed} />}
-
-        {phase === 'portal' && (
-          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', animation: 'fadeSlideUp .5s ease both' }}>
-            <div style={{ fontFamily: mono, fontSize: '0.62rem', letterSpacing: '0.4em', color: '#ff4136', marginBottom: '0.6rem' }}>// BREACH PROTOCOL ARMED</div>
-            <div style={{ fontFamily: mono, fontSize: 'clamp(1.1rem, 4vw, 1.6rem)', letterSpacing: '0.2em', color: '#e8ffe8', marginBottom: '1.2rem', textAlign: 'center' }}>BREAK INTO THE NETWORK</div>
-            <PortalBreach onBreached={onBreached} reduced={reduced} />
-            <a href={'/auth?mode=login'} onClick={e => { e.preventDefault(); router.push(authTarget('login')) }} style={{ marginTop: '1.4rem', fontFamily: mono, fontSize: '0.65rem', letterSpacing: '0.2em', color: '#00d4ff', textDecoration: 'none', borderBottom: '1px dashed rgba(0,212,255,0.4)', paddingBottom: '2px' }}>ALREADY AN OPERATOR? SIGN IN</a>
-          </div>
-        )}
-
-        {phase !== 'boot' && phase !== 'briefing' && phase !== 'portal' && (
-          <>
-            {/* Corner brackets */}
-            <div style={{ position: 'relative', marginBottom: '0.5rem' }}>
-              <div style={{
-                position: 'absolute', top: '-16px', left: '-20px',
-                width: '20px', height: '20px',
-                borderTop: '2px solid rgba(0,255,65,0.5)',
-                borderLeft: '2px solid rgba(0,255,65,0.5)',
-              }} />
-              <div style={{
-                position: 'absolute', top: '-16px', right: '-20px',
-                width: '20px', height: '20px',
-                borderTop: '2px solid rgba(0,255,65,0.5)',
-                borderRight: '2px solid rgba(0,255,65,0.5)',
-              }} />
-
-              {/* GHOSTNET wordmark */}
-              <div style={{
-                fontFamily: mono,
-                fontSize: 'clamp(3.2rem, 10vw, 5.5rem)',
-                fontWeight: 700,
-                color: '#00ff41',
-                letterSpacing: '0.18em',
-                lineHeight: 1,
-                animation: 'pulseGlow 3s ease-in-out infinite',
-                userSelect: 'none',
-              }}>
-                {line1.display || 'GHOSTNET'}
-              </div>
-
-              <div style={{
-                position: 'absolute', bottom: '-16px', left: '-20px',
-                width: '20px', height: '20px',
-                borderBottom: '2px solid rgba(0,255,65,0.5)',
-                borderLeft: '2px solid rgba(0,255,65,0.5)',
-              }} />
-              <div style={{
-                position: 'absolute', bottom: '-16px', right: '-20px',
-                width: '20px', height: '20px',
-                borderBottom: '2px solid rgba(0,255,65,0.5)',
-                borderRight: '2px solid rgba(0,255,65,0.5)',
-              }} />
-            </div>
-
-            {/* Subtitle */}
-            <div style={{
-              fontFamily: mono,
-              fontSize: 'clamp(0.6rem, 2vw, 0.8rem)',
-              color: '#00d4ff',
-              letterSpacing: '0.45em',
-              marginTop: '1.6rem',
-              marginBottom: '0.5rem',
-              opacity: phase === 'logo' ? 0 : 1,
-              transition: 'opacity 0.6s ease 0.2s',
-              animation: phase !== 'logo' ? 'fadeSlideUp 0.7s ease 0.1s both' : 'none',
-            }}>
-              {line2.display}
-            </div>
-
-            {/* Divider */}
-            <div style={{
-              width: '320px', height: '1px',
-              background: 'linear-gradient(90deg, transparent, rgba(0,255,65,0.4), rgba(0,212,255,0.4), transparent)',
-              margin: '1.4rem 0',
-              opacity: phase === 'logo' ? 0 : 1,
-              transition: 'opacity 0.5s ease 0.8s',
-            }} />
-
-            {/* Tagline */}
-            <div style={{
-              fontFamily: mono,
-              fontSize: 'clamp(0.7rem, 2.2vw, 0.9rem)',
-              color: '#c0e0c0',
-              letterSpacing: '0.25em',
-              marginBottom: '0.4rem',
-              opacity: phase === 'logo' ? 0 : 1,
-              transition: 'opacity 0.5s ease 1s',
-              textAlign: 'center',
-              lineHeight: 1.7,
-            }}>
-              {line3.display}
-            </div>
-
-            {/* Descriptor line */}
-            <div style={{
-              fontFamily: mono, fontSize: '0.65rem',
-              color: '#3a6a3a', letterSpacing: '0.2em',
-              marginBottom: '2rem',
-              opacity: phase === 'ready' ? 1 : 0,
-              transition: 'opacity 0.8s ease 0.3s',
-            }}>
-              13 MODULES · INTERACTIVE LABS · LIVE THREAT INTEL
-            </div>
-
-            {/* CTA Button */}
-            <button
-              onClick={handleEnter}
-              className="enter-btn"
-              style={{
-                fontFamily: mono,
-                fontSize: '0.8rem',
-                letterSpacing: '0.3em',
-                color: '#00ff41',
-                background: 'rgba(0,255,65,0.05)',
-                border: '1px solid rgba(0,255,65,0.5)',
-                padding: '14px 48px',
-                cursor: 'pointer',
-                borderRadius: '3px',
-                transition: 'all 0.2s ease',
-                animation: phase === 'ready' ? 'fadeSlideUp 0.6s ease both, borderPulse 2.5s ease-in-out 0.6s infinite' : 'none',
-                opacity: phase === 'ready' ? 1 : 0,
-                display: phase === 'ready' ? 'block' : 'none',
-                marginBottom: '2.5rem',
-              }}
-            >
-              INITIATE BREACH PROTOCOL
-            </button>
-
-            {/* Bottom status */}
-            <div style={{
-              display: 'flex', gap: '16px', flexWrap: 'wrap' as const, justifyContent: 'center',
-              fontFamily: mono, fontSize: '0.58rem',
-              color: '#1a4a1a', letterSpacing: '0.15em',
-              opacity: phase === 'ready' ? 1 : 0,
-              transition: 'opacity 1s ease 0.5s',
-            }}>
-              <span style={{ color: '#00ff41', opacity: 0.4 }}>◈ SECURE CONNECTION</span>
-              <span style={{ opacity: 0.3 }}>|</span>
-              <span style={{ opacity: 0.4 }}>END-TO-END ENCRYPTED</span>
-              <span style={{ opacity: 0.3 }}>|</span>
-              <span style={{ opacity: 0.4 }}>AUTHORISED ACCESS ONLY</span>
-            </div>
-          </>
-        )}
-      </div>
+      <style>{`
+        .wl-root { position: fixed; inset: 0; z-index: 9999; background: #04070a; color: #e8f3f6; overflow-x: hidden; overflow-y: auto; }
+        .wl-hud { position: sticky; top: 0; z-index: 20; display: flex; justify-content: space-between; align-items: center; padding: 16px clamp(16px, 4vw, 32px); background: linear-gradient(#04070a, rgba(4,7,10,0)); }
+        .wl-mark { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 800; color: #04070a; background: #e8f3f6; padding: 5px 6px; clip-path: polygon(0 0, 100% 0, 100% 70%, 70% 100%, 0 100%); }
+        .wl-main { position: relative; z-index: 10; min-height: calc(100% - 120px); display: flex; align-items: center; justify-content: center; padding: 12px 16px 80px; box-sizing: border-box; }
+        .wl-rail { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; justify-content: center; gap: clamp(12px, 4vw, 34px); padding: 14px 16px; font-family: 'JetBrains Mono', monospace; font-size: .56rem; letter-spacing: .24em; background: linear-gradient(rgba(4,7,10,0), #04070a 60%); }
+        .wl-rail span { transition: color .3s; white-space: nowrap; }
+        .wl-crt { position: fixed; inset: 0; z-index: 60; pointer-events: none; background: #e8f3f6; animation: wlCrt .7s cubic-bezier(.7,0,.3,1) both; }
+        @keyframes wlCrt { 0% { opacity: 1; transform: scale(1, .004) } 35% { opacity: 1; transform: scale(1, .004) } 60% { opacity: .9; transform: scale(1, 1) } 100% { opacity: 0; transform: scale(1, 1) } }
+        @media (max-width: 560px) { .wl-hide-sm { display: none } .wl-rail { font-size: .5rem; letter-spacing: .14em; gap: 10px } }
+      `}</style>
     </div>
   )
 }
