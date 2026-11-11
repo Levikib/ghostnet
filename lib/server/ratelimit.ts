@@ -1,0 +1,17 @@
+import { one } from './db'
+
+/**
+ * Fixed-window rate limit stored in Postgres (no Redis needed).
+ * Returns true when the call is allowed.
+ */
+export async function rateLimit(key: string, limit: number, windowSeconds: number): Promise<boolean> {
+  const row = await one<{ count: number }>(
+    `INSERT INTO rate_limits (key, window_start, count) VALUES ($1, now(), 1)
+     ON CONFLICT (key) DO UPDATE SET
+       count = CASE WHEN rate_limits.window_start < now() - ($2 || ' seconds')::interval THEN 1 ELSE rate_limits.count + 1 END,
+       window_start = CASE WHEN rate_limits.window_start < now() - ($2 || ' seconds')::interval THEN now() ELSE rate_limits.window_start END
+     RETURNING count`,
+    [key, String(windowSeconds)],
+  )
+  return (row?.count ?? 1) <= limit
+}

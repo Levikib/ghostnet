@@ -1,10 +1,6 @@
-'use client'
-import { createClient as createBrowserClient } from './supabase/client'
-
-// Single shared browser client instance — never create a second GoTrueClient.
-// SSR cookie handling lives in lib/supabase/client.ts; this re-exports the same
-// instance so components can keep importing `supabase` from here for types/ranks.
-export const supabase = createBrowserClient()
+// Rank / XP rules and shared types. (The file keeps its historical name:
+// it is the single source of truth for ranks. GHOSTNET no longer uses
+// Supabase; data lives in Neon behind /api/*.)
 
 // Type definitions matching the Supabase schema
 export interface UserProfile {

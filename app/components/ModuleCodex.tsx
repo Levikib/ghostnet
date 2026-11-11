@@ -1,5 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
+import { fetchServerProgress, syncChapter } from '../../lib/client/progress'
 
 const mono = 'JetBrains Mono, monospace'
 
@@ -40,16 +41,25 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
         setResumeFrom(n)
       }
     }
-  }, [storageKey, chapters.length])
+    // Signed in: chapters read on any device count, and the resume point follows the account.
+    fetchServerProgress().then(sp => {
+      const c = sp?.chapters[moduleId]
+      if (!c) return
+      setVisited(prev => new Set([...Array.from(prev), ...c.read.filter(i => i < chapters.length)]))
+      const local = saved ? parseInt(saved, 10) : 0
+      if (c.last > 0 && c.last < chapters.length && c.last > local) setResumeFrom(c.last)
+    })
+  }, [storageKey, chapters.length, moduleId])
 
   useEffect(() => {
     localStorage.setItem(storageKey, String(current))
+    syncChapter(moduleId, current, chapters.length)
     setVisited(prev => {
       const next = new Set(prev)
       next.add(current)
       return next
     })
-  }, [current, storageKey])
+  }, [current, storageKey, moduleId, chapters.length])
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {

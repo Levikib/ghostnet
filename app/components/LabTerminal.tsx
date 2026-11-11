@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { supabase } from '../../lib/supabase'
+import { fetchServerProgress, syncLabComplete, syncLabStep } from '../../lib/client/progress'
 
 export interface LabStep {
   id: string
@@ -68,6 +68,17 @@ export default function LabTerminal({ labId, moduleId, title, accent, steps, onC
       if (data.step !== undefined) setCurrentStep(data.step)
       if (data.done) setAllDone(true)
     }
+    // Signed in on another device? Resume from the server if it is further along.
+    fetchServerProgress().then(sp => {
+      const lp = sp?.labs[labId]
+      if (!lp) return
+      if (lp.completed) { setAllDone(true); return }
+      const localStep = saved ? (JSON.parse(saved).step || 0) : 0
+      if (lp.steps_done > localStep && lp.steps_done < steps.length) {
+        setCurrentStep(lp.steps_done)
+        setCompleted(new Set(Array.from({ length: lp.steps_done }, (_, i) => i)))
+      }
+    })
     setLines([
       { text: '╔═══════════════════════════════════════════════╗', type: 'sys' },
       { text: '║  GHOSTNET INTERACTIVE LAB TERMINAL             ║', type: 'sys' },
@@ -123,32 +134,15 @@ export default function LabTerminal({ labId, moduleId, title, accent, steps, onC
       }
     }
 
-    // Supabase if logged in
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user && done) {
-        setSaving(true)
-        const resp = await fetch('/api/progress', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            user_id: user.id,
-            lab_id: labId,
-            module_id: moduleId,
-            xp_earned: newXp,
-          }),
-        })
-        if (resp.ok) {
-          setSaved(true)
-          // Trigger profile refresh so NavUserBadge + profile page update instantly
-          window.dispatchEvent(new Event('ghostnet_profile_refresh'))
-        }
-        setSaving(false)
-      }
-    } catch {
-      // offline — localStorage only
+    // Server (signed-in operators): step count every time, completion once.
+    syncLabStep(labId, moduleId, newCompleted.size, steps.length)
+    if (done) {
+      setSaving(true)
+      const ok = await syncLabComplete(labId, moduleId)
+      if (ok) setSaved(true)
+      setSaving(false)
     }
-  }, [labId, moduleId, currentStep])
+  }, [labId, moduleId, currentStep, steps.length])
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault()

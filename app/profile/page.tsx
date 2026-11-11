@@ -1,689 +1,377 @@
 'use client'
-import React, { useEffect, useState } from 'react'
-import { useAuth } from '../components/AuthProvider'
-import { supabase, RANK_COLORS, RANK_THRESHOLDS } from '../../lib/supabase'
+import React, { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useAuth, Operator } from '../components/AuthProvider'
+import OperatorAvatar, { AVATAR_COLORS } from '../components/OperatorAvatar'
+import OtpInput from '../components/OtpInput'
+import { api } from '../../lib/client/api'
+import { CATALOG } from '../../lib/learning'
+import { RANK_COLORS, RANK_LIST } from '../../lib/supabase'
 
 const mono = 'JetBrains Mono, monospace'
+const sans = 'DM Sans, system-ui, sans-serif'
+type Tab = 'progress' | 'profile' | 'security'
 
-// ─── Constants ───────────────────────────────────────────────────────────────
+const panel: React.CSSProperties = { background: 'linear-gradient(160deg, rgba(4,16,6,.9), rgba(1,7,2,.95))', border: '1px solid rgba(0,255,65,.14)', padding: 'clamp(16px, 4vw, 24px)' }
+const label: React.CSSProperties = { display: 'block', fontFamily: mono, fontSize: '.58rem', letterSpacing: '.24em', color: '#4f9f5f', marginBottom: '7px' }
+const field: React.CSSProperties = { width: '100%', boxSizing: 'border-box', background: 'rgba(0,14,3,.75)', border: '1px solid rgba(0,255,65,.22)', padding: '11px 13px', color: '#d8ffd8', fontFamily: mono, fontSize: '.86rem', outline: 'none' }
+const btn = (c = '#00ff41', solid = false): React.CSSProperties => ({ fontFamily: mono, fontSize: '.66rem', letterSpacing: '.2em', fontWeight: 700, padding: '10px 16px', cursor: 'pointer', border: '1px solid ' + c, color: solid ? '#001a05' : c, background: solid ? c : c + '10' })
 
-const ALL_MODULES = [
-  { id: 'tor',               num: '01', label: 'Tor & Dark Web',       color: '#00ff41', href: '/modules/tor',               labId: 'tor-lab',               xpMax: 345 },
-  { id: 'osint',             num: '02', label: 'OSINT & Surveillance',  color: '#00d4ff', href: '/modules/osint',             labId: 'osint-lab',             xpMax: 305 },
-  { id: 'crypto',            num: '03', label: 'Crypto & Blockchain',   color: '#ffb347', href: '/modules/crypto',            labId: 'crypto-lab',            xpMax: 300 },
-  { id: 'offensive',         num: '04', label: 'Offensive Security',    color: '#bf5fff', href: '/modules/offensive',         labId: 'offensive-lab',         xpMax: 280 },
-  { id: 'active-directory',  num: '05', label: 'Active Directory',      color: '#ff4136', href: '/modules/active-directory',  labId: 'active-directory-lab',  xpMax: 235 },
-  { id: 'web-attacks',       num: '06', label: 'Web Attacks',           color: '#00d4ff', href: '/modules/web-attacks',       labId: 'web-attacks-lab',       xpMax: 225 },
-  { id: 'malware',           num: '07', label: 'Malware Analysis',      color: '#00ff41', href: '/modules/malware',           labId: 'malware-lab',           xpMax: 210 },
-  { id: 'network-attacks',   num: '08', label: 'Network Attacks',       color: '#00ffff', href: '/modules/network-attacks',   labId: 'network-attacks-lab',   xpMax: 175 },
-  { id: 'cloud-security',    num: '09', label: 'Cloud Security',        color: '#ff9500', href: '/modules/cloud-security',    labId: 'cloud-security-lab',    xpMax: 145 },
-  { id: 'social-engineering',num: '10', label: 'Social Engineering',    color: '#ff6ec7', href: '/modules/social-engineering',labId: 'social-engineering-lab',xpMax: 120 },
-  { id: 'red-team',          num: '11', label: 'Red Team Ops',          color: '#ff3333', href: '/modules/red-team',          labId: 'red-team-lab',          xpMax: 135 },
-  { id: 'wireless-attacks',  num: '12', label: 'Wireless Attacks',      color: '#aaff00', href: '/modules/wireless-attacks',  labId: 'wireless-attacks-lab',  xpMax: 135 },
-  { id: 'mobile-security',   num: '13', label: 'Mobile Security',       color: '#7c4dff', href: '/modules/mobile-security',   labId: 'mobile-security-lab',   xpMax: 130 },
-]
-
-const RANK_NAMES = ['Ghost', 'Specter', 'Phantom', 'Wraith', 'Legend'] as const
-const RANK_VISIBLE_COLORS: Record<string, string> = {
-  Ghost:   '#4a9a4a',
-  Specter: '#00d4ff',
-  Phantom: '#bf5fff',
-  Wraith:  '#ff4136',
-  Legend:  '#ffb347',
+function ago(iso: string | null): string {
+  if (!iso) return 'never'
+  const s = (Date.now() - new Date(iso).getTime()) / 1000
+  if (s < 60) return 'just now'
+  if (s < 3600) return Math.floor(s / 60) + ' min ago'
+  if (s < 86400) return Math.floor(s / 3600) + ' h ago'
+  if (s < 86400 * 30) return Math.floor(s / 86400) + ' days ago'
+  return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface BadgeWithStatus {
-  id: string
-  slug: string
-  name: string
-  description: string
-  icon: string
-  color: string
-  xp_reward: number
-  requirement_type: string
-  requirement_value: number
-  earned: boolean
-  earned_at?: string
-}
-
-interface LabStat {
-  lab_id: string
-  module_id: string
-  xp_earned: number
-  completed_at?: string
-  attempts?: number
-}
-
-interface LocalProgress {
-  xp: number
-  completedLabs: string[]
-  streak: number
-  lastActivity: string
-}
-
-// ─── LocalStorage helper ──────────────────────────────────────────────────────
-
-function readLocalProgress(): LocalProgress {
-  if (typeof window === 'undefined') return { xp: 0, completedLabs: [], streak: 0, lastActivity: '' }
-  try {
-    const raw = localStorage.getItem('ghostnet_progress')
-    if (raw) return JSON.parse(raw)
-  } catch {}
-  return { xp: 0, completedLabs: [], streak: 0, lastActivity: '' }
-}
-
-function readLocalLabData(): LabStat[] {
-  if (typeof window === 'undefined') return []
-  const labs: LabStat[] = []
-  ALL_MODULES.forEach(m => {
-    try {
-      const raw = localStorage.getItem('lab_' + m.labId)
-      if (raw) {
-        const d = JSON.parse(raw)
-        if (d.done) {
-          labs.push({
-            lab_id: m.labId,
-            module_id: m.id,
-            xp_earned: d.xp || 0,
-            completed_at: d.completedAt,
-          })
-        }
-      }
-    } catch {}
-  })
-  return labs
-}
-
-// ─── Stat Card ────────────────────────────────────────────────────────────────
-
-function StatCard({ label, value, color, sub }: { label: string; value: string | number; color: string; sub?: string }) {
+function Ring({ pct, color, size = 56 }: { pct: number; color: string; size?: number }) {
+  const r = 22, c = 2 * Math.PI * r
   return (
-    <div style={{ textAlign: 'center', background: '#0a140a', border: '1px solid ' + color + '28', borderRadius: '8px', padding: '14px 18px', minWidth: '80px' }}>
-      <div style={{ fontFamily: mono, fontSize: '1.6rem', color, fontWeight: 700, lineHeight: 1 }}>{value}</div>
-      {sub && <div style={{ fontFamily: mono, fontSize: '7px', color: color + '88', marginTop: '2px' }}>{sub}</div>}
-      <div style={{ fontFamily: mono, fontSize: '7px', color: '#3a6a3a', letterSpacing: '0.15em', marginTop: '4px' }}>{label}</div>
+    <svg width={size} height={size} viewBox="0 0 56 56" aria-hidden="true">
+      <circle cx="28" cy="28" r={r} fill="none" stroke="#0c2a12" strokeWidth="5" />
+      <circle cx="28" cy="28" r={r} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct / 100)} transform="rotate(-90 28 28)" style={{ transition: 'stroke-dashoffset .8s ease', filter: 'drop-shadow(0 0 4px ' + color + '88)' }} />
+      <text x="28" y="32" textAnchor="middle" fontFamily={mono} fontSize="12" fontWeight="700" fill={pct ? color : '#2f5f3f'}>{pct}%</text>
+    </svg>
+  )
+}
+
+function activityText(a: Operator['recent'][number]): string {
+  const m = CATALOG.find(x => x.id === a.module_id)
+  if (a.kind === 'lab_complete') return 'Completed the ' + (m?.title || a.module_id) + ' lab'
+  if (a.kind === 'chapter') return 'Read chapter ' + (Number(a.ref) + 1) + ' of ' + (m?.title || a.module_id)
+  return a.kind
+}
+
+// ─────────────────────────────────────────────────────────── PROGRESS
+function ProgressTab({ p }: { p: Operator }) {
+  const started = p.modules.filter(m => m.percent > 0).sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''))
+  const next = started.find(m => m.percent < 100) || p.modules.find(m => p.interests.includes(m.id) && m.percent === 0) || p.modules.find(m => m.percent === 0)
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+      {next && (
+        <Link href={'/modules/' + next.id} style={{ ...panel, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '16px', borderColor: next.color + '55' }}>
+          <Ring pct={next.percent} color={next.color} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: mono, fontSize: '.58rem', letterSpacing: '.26em', color: next.color }}>{next.percent ? 'CONTINUE WHERE YOU LEFT OFF' : 'RECOMMENDED NEXT'}</div>
+            <div style={{ fontFamily: mono, fontSize: '1rem', color: '#eaffea', marginTop: '4px' }}>MOD-{next.code} · {next.title}</div>
+            <div style={{ fontFamily: sans, fontSize: '.8rem', color: '#6f9f7f', marginTop: '3px' }}>
+              {next.chaptersRead}/{next.chaptersTotal} chapters · lab {next.labCompleted ? 'complete' : next.labTotal ? next.labSteps + '/' + next.labTotal + ' steps' : 'not started'}{next.updatedAt ? ' · last active ' + ago(next.updatedAt) : ''}
+            </div>
+          </div>
+          <span style={{ fontFamily: mono, color: next.color, fontSize: '1.2rem' }}>▸</span>
+        </Link>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 240px), 1fr))', gap: '12px' }}>
+        {p.modules.map(m => (
+          <div key={m.id} style={{ ...panel, padding: '16px', borderColor: m.percent ? m.color + '40' : 'rgba(0,255,65,.08)', opacity: m.percent ? 1 : 0.78 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <Ring pct={m.percent} color={m.color} size={50} />
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontFamily: mono, fontSize: '.56rem', letterSpacing: '.22em', color: m.color }}>MOD-{m.code}{m.labCompleted ? ' · ✓ LAB' : ''}</div>
+                <div style={{ fontFamily: sans, fontSize: '.88rem', color: '#d8f0d8', marginTop: '2px', lineHeight: 1.3 }}>{m.title}</div>
+              </div>
+            </div>
+            <div style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '8px', fontFamily: mono, fontSize: '.6rem', color: '#5f8f6f' }}>
+              <div>CHAPTERS<div style={{ height: '3px', background: '#0c2a12', marginTop: '4px' }}><div style={{ height: '100%', width: (m.chaptersTotal ? (m.chaptersRead / m.chaptersTotal) * 100 : 0) + '%', background: m.color }} /></div><span style={{ color: '#9fcfaf' }}>{m.chaptersRead}/{m.chaptersTotal}</span></div>
+              <div>LAB<div style={{ height: '3px', background: '#0c2a12', marginTop: '4px' }}><div style={{ height: '100%', width: (m.labCompleted ? 100 : m.labTotal ? (m.labSteps / m.labTotal) * 100 : 0) + '%', background: m.color }} /></div><span style={{ color: '#9fcfaf' }}>{m.labCompleted ? 'DONE' : m.labTotal ? m.labSteps + '/' + m.labTotal : '—'}</span></div>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+              <Link href={'/modules/' + m.id} style={{ ...btn(m.color), textDecoration: 'none', flex: 1, textAlign: 'center', padding: '8px' }}>{m.chaptersRead ? 'READ' : 'START'}</Link>
+              <Link href={'/modules/' + m.id + '/lab'} style={{ ...btn(m.color), textDecoration: 'none', flex: 1, textAlign: 'center', padding: '8px' }}>{m.labCompleted ? 'REPLAY' : 'LAB'}</Link>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={panel}>
+        <div style={{ fontFamily: mono, fontSize: '.6rem', letterSpacing: '.26em', color: '#4f9f5f', marginBottom: '12px' }}>// ACTIVITY LOG</div>
+        {p.recent.length === 0 ? (
+          <p style={{ fontFamily: sans, color: '#6f9f7f', fontSize: '.88rem', margin: 0 }}>Nothing yet. Open any module and your first chapter will show up here.</p>
+        ) : (
+          <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {p.recent.map((a, i) => (
+              <li key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', fontFamily: sans, fontSize: '.85rem', color: '#b8d8b8', borderBottom: '1px solid rgba(0,255,65,.06)', paddingBottom: '7px' }}>
+                <span>{activityText(a)}</span>
+                <span style={{ fontFamily: mono, fontSize: '.66rem', color: a.xp ? '#00ff41' : '#3f6f4f', whiteSpace: 'nowrap' }}>{a.xp ? '+' + a.xp + ' XP · ' : ''}{ago(a.created_at)}</span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
     </div>
   )
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
-
-export default function ProfilePage() {
-  const { user, profile, signOut, isSupabaseConfigured, loading } = useAuth()
-  const router = useRouter()
-
-  const [badges, setBadges] = useState<BadgeWithStatus[]>([])
-  const [labStats, setLabStats] = useState<LabStat[]>([])
-  const [localProgress, setLocalProgress] = useState<LocalProgress>({ xp: 0, completedLabs: [], streak: 0, lastActivity: '' })
-  const [dataLoading, setDataLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'overview' | 'progress' | 'badges' | 'history'>('overview')
-  const [copyDone, setCopyDone] = useState(false)
-  const [deleteConfirm, setDeleteConfirm] = useState(false)
-  const [deleteLoading, setDeleteLoading] = useState(false)
-
-  async function handleDeleteAccount() {
-    if (!deleteConfirm) { setDeleteConfirm(true); return }
-    setDeleteLoading(true)
-    try {
-      const res = await fetch('/api/account', { method: 'DELETE' })
-      if (!res.ok) { const d = await res.json(); alert('Error: ' + d.error); return }
-      // Clear local storage then redirect to welcome
-      localStorage.clear()
-      router.push('/welcome')
-    } finally {
-      setDeleteLoading(false)
-    }
+// ─────────────────────────────────────────────────────────── PROFILE
+function ProfileTab({ p, onSaved }: { p: Operator; onSaved: (u: Operator) => void }) {
+  const [f, setF] = useState({ display_name: p.display_name, username: p.username, bio: p.bio || '', country: p.country || '', goal: p.goal || '', skill_level: p.skill_level || 'beginner', avatar_seed: p.avatar_seed || p.username, avatar_color: p.avatar_color || AVATAR_COLORS[0], is_public: p.is_public, interests: p.interests })
+  const [msg, setMsg] = useState<{ ok: boolean; t: string } | null>(null)
+  const [busy, setBusy] = useState(false)
+  async function save() {
+    setBusy(true); setMsg(null)
+    const r = await api<{ user?: Operator }>('/api/profile', f, 'PATCH')
+    setBusy(false)
+    if (r.ok === false) return setMsg({ ok: false, t: r.error || 'Could not save.' })
+    if (r.user) onSaved(r.user)
+    setMsg({ ok: true, t: 'Profile saved.' })
   }
-
-  // Redirect unauthenticated users
-  useEffect(() => {
-    if (!loading && !user) router.push('/auth')
-  }, [user, loading, router])
-
-  // Load localStorage data immediately (works offline)
-  useEffect(() => {
-    const loadLocal = () => {
-      setLocalProgress(readLocalProgress())
-      setLabStats(prev => {
-        // Only replace with localStorage data if Supabase not loaded
-        const localData = readLocalLabData()
-        return localData.length > 0 ? localData : prev
-      })
-      setDataLoading(false)
-    }
-    loadLocal()
-    // Re-sync whenever LabTerminal fires a completion event
-    window.addEventListener('ghostnet_progress_updated', loadLocal)
-    return () => window.removeEventListener('ghostnet_progress_updated', loadLocal)
-  }, [])
-
-  // Layer Supabase data on top if available
-  const loadSupabaseData = async () => {
-    if (!user || !isSupabaseConfigured) return
-    try {
-      const [{ data: allBadges }, { data: userBadges }, { data: labProgress }] = await Promise.all([
-        supabase.from('badges').select('*').order('requirement_value'),
-        supabase.from('user_badges').select('badge_id, earned_at').eq('user_id', user!.id),
-        supabase.from('lab_progress').select('*').eq('user_id', user!.id).eq('completed', true).order('completed_at', { ascending: false }),
-      ])
-      if (allBadges) {
-        const earnedIds = new Set((userBadges || []).map((b: { badge_id: string }) => b.badge_id))
-        const earnedMap = Object.fromEntries((userBadges || []).map((b: { badge_id: string; earned_at: string }) => [b.badge_id, b.earned_at]))
-        setBadges(allBadges.map((b: BadgeWithStatus) => ({ ...b, earned: earnedIds.has(b.id), earned_at: earnedMap[b.id] })))
-      }
-      if (labProgress && labProgress.length > 0) setLabStats(labProgress)
-    } catch {}
-  }
-
-  useEffect(() => {
-    loadSupabaseData()
-  }, [user, isSupabaseConfigured])
-
-  // Re-fetch Supabase after lab completion (triggered by LabTerminal)
-  useEffect(() => {
-    const onRefresh = () => loadSupabaseData()
-    window.addEventListener('ghostnet_profile_refresh', onRefresh)
-    return () => window.removeEventListener('ghostnet_profile_refresh', onRefresh)
-  }, [user, isSupabaseConfigured])
-
-  // ── Loading state ──
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', fontFamily: mono, color: '#4a8a4a', fontSize: '0.8rem', letterSpacing: '0.2em' }}>
-        LOADING OPERATOR PROFILE...
-      </div>
-    )
-  }
-
-  if (!user) return null
-
-  // ── Derive display values ──
-  const displayName = profile?.username || user.user_metadata?.username || user.email?.split('@')[0] || 'OPERATOR'
-  const rank = profile?.ghost_rank || 'Ghost'
-  const rankColor = RANK_VISIBLE_COLORS[rank] || '#4a9a4a'
-  const xp = profile?.xp || localProgress.xp || 0
-  const streak = profile?.streak_days || localProgress.streak || 0
-  const memberSince = profile?.created_at ? new Date(profile.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Unknown'
-
-  // XP progress to next rank
-  const rankEntries = Object.entries(RANK_THRESHOLDS) as [string, number][]
-  const curRankIdx = rankEntries.findIndex(([r]) => r === rank)
-  const nextRank = rankEntries[curRankIdx + 1]
-  const curRankXp = RANK_THRESHOLDS[rank as keyof typeof RANK_THRESHOLDS] || 0
-  const nextRankXp = nextRank ? nextRank[1] : null
-  const xpToNext = nextRankXp ? nextRankXp - xp : 0
-  const rankProgress = nextRankXp ? Math.min(100, Math.round(((xp - curRankXp) / (nextRankXp - curRankXp)) * 100)) : 100
-
-  // Module completion from lab stats
-  const completedModuleIds = new Set(labStats.map(l => l.module_id))
-  const totalLabXp = labStats.reduce((s, l) => s + (l.xp_earned || 0), 0)
-  const earnedBadges = badges.filter(b => b.earned)
-
-  // Labs per module (merge Supabase + localStorage)
-  const labsByModule: Record<string, LabStat[]> = {}
-  labStats.forEach(l => {
-    const key = l.module_id
-    if (!labsByModule[key]) labsByModule[key] = []
-    labsByModule[key].push(l)
-  })
-
-  // Recent activity (last 5)
-  const recentLabs = [...labStats].sort((a, b) => {
-    if (!a.completed_at) return 1
-    if (!b.completed_at) return -1
-    return new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime()
-  }).slice(0, 5)
-
-  const completedCount = labStats.length
-  const modulesStarted = Object.keys(labsByModule).length
-
-  function handleCopyUID() {
-    navigator.clipboard.writeText(user!.id)
-    setCopyDone(true)
-    setTimeout(() => setCopyDone(false), 2000)
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────────
   return (
-    <div style={{ maxWidth: '960px', margin: '0 auto', fontFamily: mono }}>
-
-      {/* ── Profile header ── */}
-      <div style={{ background: '#030a03', border: '1px solid ' + rankColor + '30', borderRadius: '12px', padding: '2rem', marginBottom: '1.5rem', position: 'relative', overflow: 'hidden' }}>
-        {/* Accent line */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg, transparent, ' + rankColor + ', transparent)' }} />
-        {/* Glow bg */}
-        <div style={{ position: 'absolute', top: '-60px', right: '-60px', width: '200px', height: '200px', background: rankColor, opacity: 0.03, borderRadius: '50%', filter: 'blur(40px)' }} />
-
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem', flexWrap: 'wrap', position: 'relative' }}>
-
-          {/* Avatar */}
-          <div style={{ width: '72px', height: '72px', borderRadius: '10px', border: '2px solid ' + rankColor + '55', background: rankColor + '12', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 0 20px ' + rankColor + '20' }}>
-            <span style={{ fontSize: '2rem', color: rankColor, fontWeight: 700, fontFamily: mono }}>
-              {displayName[0].toUpperCase()}
-            </span>
-          </div>
-
-          {/* Identity + XP bar */}
-          <div style={{ flex: 1, minWidth: '220px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '6px' }}>
-              <h1 style={{ fontFamily: mono, fontSize: '1.5rem', color: '#d8e8d8', margin: 0, fontWeight: 700, letterSpacing: '0.04em' }}>{displayName.toUpperCase()}</h1>
-              <span style={{ fontFamily: mono, fontSize: '8px', color: rankColor, background: rankColor + '18', border: '1px solid ' + rankColor + '40', padding: '3px 10px', borderRadius: '3px', letterSpacing: '0.2em', fontWeight: 700 }}>
-                {rank.toUpperCase()}
-              </span>
-            </div>
-
-            <div style={{ fontSize: '0.72rem', color: '#4a7a4a', marginBottom: '1rem', lineHeight: 1.6 }}>
-              {streak > 0 && <span style={{ color: '#ffb347' }}>{streak}-DAY STREAK &nbsp;·&nbsp; </span>}
-              <span>Member since {memberSince}</span>
-              {user.email && <span style={{ color: '#2a5a2a' }}> &nbsp;·&nbsp; {user.email}</span>}
-            </div>
-
-            {/* XP progress */}
-            <div style={{ marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-              <span style={{ fontSize: '0.8rem', color: rankColor, fontWeight: 700 }}>{xp.toLocaleString()} XP</span>
-              {nextRank && (
-                <span style={{ fontSize: '0.65rem', color: '#3a6a3a' }}>
-                  {xpToNext.toLocaleString()} XP to {nextRank[0].toUpperCase()}
-                </span>
-              )}
-              {!nextRank && <span style={{ fontSize: '0.65rem', color: rankColor }}>MAX RANK ACHIEVED</span>}
-            </div>
-            <div style={{ height: '7px', background: '#0a140a', borderRadius: '4px', border: '1px solid #1a3a1a', overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: rankProgress + '%', background: 'linear-gradient(90deg, ' + rankColor + '88, ' + rankColor + ')', borderRadius: '4px', boxShadow: '0 0 8px ' + rankColor + '66', transition: 'width 1.2s ease' }} />
-            </div>
-
-            {/* Rank ladder */}
-            <div style={{ display: 'flex', gap: '4px', marginTop: '10px', flexWrap: 'wrap' }}>
-              {RANK_NAMES.map((r, i) => {
-                const rColor = RANK_VISIBLE_COLORS[r]
-                const isCurrent = r === rank
-                const isPast = i < curRankIdx
-                return (
-                  <div key={r} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <div style={{
-                      width: '6px', height: '6px', borderRadius: '50%',
-                      background: isCurrent || isPast ? rColor : 'transparent',
-                      border: '1px solid ' + rColor + (isCurrent || isPast ? '' : '44'),
-                      boxShadow: isCurrent ? '0 0 6px ' + rColor : 'none',
-                    }} />
-                    <span style={{ fontSize: '6px', color: isCurrent ? rColor : isPast ? rColor + '77' : '#1a3a1a', letterSpacing: '0.1em' }}>{r.toUpperCase()}</span>
-                    {i < RANK_NAMES.length - 1 && <span style={{ fontSize: '6px', color: '#1a3a1a' }}>—</span>}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Stat cards */}
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignSelf: 'flex-start' }}>
-            <StatCard label="LABS DONE" value={completedCount} color="#00ff41" sub={completedCount + '/13 labs'} />
-            <StatCard label="TOTAL XP" value={xp.toLocaleString()} color={rankColor} />
-            <StatCard label="MODULES" value={modulesStarted} color="#00d4ff" sub={modulesStarted + '/13'} />
-            <StatCard label="STREAK" value={streak} color="#ffb347" sub={streak > 0 ? 'days active' : 'start today'} />
-            {badges.length > 0 && <StatCard label="BADGES" value={earnedBadges.length} color="#bf5fff" sub={earnedBadges.length + '/' + badges.length} />}
+    <div style={{ ...panel, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <OperatorAvatar seed={f.avatar_seed} color={f.avatar_color} size={96} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <button style={btn('#00d4ff')} onClick={() => setF({ ...f, avatar_seed: p.username + ':' + Math.random().toString(36).slice(2, 8) })}>↻ NEW SIGIL</button>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {AVATAR_COLORS.map(c => <button key={c} aria-label={'Colour ' + c} onClick={() => setF({ ...f, avatar_color: c })} style={{ width: '24px', height: '24px', borderRadius: '50%', background: c, cursor: 'pointer', border: f.avatar_color === c ? '2px solid #fff' : '2px solid transparent' }} />)}
           </div>
         </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))', gap: '14px' }}>
+        <label><span style={label}>DISPLAY NAME</span><input style={field} value={f.display_name} maxLength={40} onChange={e => setF({ ...f, display_name: e.target.value })} /></label>
+        <label><span style={label}>CALLSIGN</span><input style={field} value={f.username} maxLength={20} onChange={e => setF({ ...f, username: e.target.value.replace(/\s/g, '') })} /></label>
+        <label><span style={label}>COUNTRY</span><input style={field} value={f.country} maxLength={56} onChange={e => setF({ ...f, country: e.target.value })} /></label>
+        <label><span style={label}>CLEARANCE</span>
+          <select style={field} value={f.skill_level} onChange={e => setF({ ...f, skill_level: e.target.value })}>
+            <option value="beginner">New recruit</option><option value="intermediate">Field agent</option><option value="advanced">Specialist</option><option value="expert">Veteran</option>
+          </select>
+        </label>
+      </div>
+      <label><span style={label}>BIO</span><textarea style={{ ...field, minHeight: '80px', fontFamily: sans, resize: 'vertical' }} maxLength={280} value={f.bio} onChange={e => setF({ ...f, bio: e.target.value })} placeholder="What are you working toward?" /></label>
+      <label><span style={label}>MISSION</span><input style={{ ...field, fontFamily: sans }} maxLength={160} value={f.goal} onChange={e => setF({ ...f, goal: e.target.value })} placeholder="e.g. Pass OSCP by June" /></label>
+      <div>
+        <span style={label}>FOCUS SECTORS</span>
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+          {CATALOG.map(m => { const on = f.interests.includes(m.id); return (
+            <button key={m.id} onClick={() => setF({ ...f, interests: on ? f.interests.filter(x => x !== m.id) : [...f.interests, m.id] })} style={{ fontFamily: mono, fontSize: '.6rem', padding: '6px 10px', cursor: 'pointer', border: '1px solid ' + (on ? m.color : 'rgba(0,255,65,.14)'), color: on ? m.color : '#5f8f6f', background: on ? m.color + '12' : 'transparent' }}>{m.code} {m.title}</button>
+          ) })}
+        </div>
+      </div>
+      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontFamily: sans, fontSize: '.88rem', color: '#9fcfaf', cursor: 'pointer' }}>
+        <input type="checkbox" checked={f.is_public} onChange={e => setF({ ...f, is_public: e.target.checked })} /> Show me on the public leaderboard
+      </label>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+        <button style={btn('#00ff41', true)} onClick={save} disabled={busy}>{busy ? 'SAVING…' : 'SAVE PROFILE'}</button>
+        {msg && <span role="status" style={{ fontFamily: sans, fontSize: '.85rem', color: msg.ok ? '#00ff41' : '#ff6b5f' }}>{msg.t}</span>}
+      </div>
+    </div>
+  )
+}
 
-        {/* Recent activity strip */}
-        {recentLabs.length > 0 && (
-          <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid #0d1f0d' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <div style={{ fontSize: '7px', color: '#1a4a1a', letterSpacing: '0.25em' }}>RECENT ACTIVITY</div>
-              {isSupabaseConfigured && (
-                <button
-                  onClick={() => loadSupabaseData()}
-                  style={{ background: 'transparent', border: '1px solid #1a3a1a', borderRadius: '3px', padding: '2px 8px', cursor: 'pointer', fontFamily: mono, fontSize: '6.5px', color: '#3a6a3a', letterSpacing: '0.1em' }}
-                >
-                  ↻ REFRESH
-                </button>
-              )}
+// ─────────────────────────────────────────────────────────── SECURITY
+type Sess = { id: string; device_label: string; location: string; ip: string; created_at: string; last_seen_at: string; current: boolean }
+type Ev = { type: string; location: string; ip: string; created_at: string }
+const EVENT_TEXT: Record<string, string> = {
+  login: 'Signed in', logout: 'Signed out', new_device: 'Signed in from a new device', login_failed: 'Failed sign-in attempt', mfa_failed: 'Wrong two-factor code',
+  mfa_passed: 'Two-factor passed', mfa_challenge: 'Two-factor requested', email_verified: 'Email verified', register: 'Account created', password_reset: 'Password reset',
+  reset_requested: 'Password reset requested', '2fa_enabled': 'Two-factor turned on', '2fa_disabled': 'Two-factor turned off', session_revoked: 'A session was signed out',
+  sessions_revoked_all: 'Signed out all other sessions', verify_failed: 'Wrong verification code',
+}
+
+function SecurityTab({ p, refresh }: { p: Operator; refresh: () => void }) {
+  const [sessions, setSessions] = useState<Sess[]>([])
+  const [events, setEvents] = useState<Ev[]>([])
+  const [setup, setSetup] = useState<{ qr: string; secret: string } | null>(null)
+  const [code, setCode] = useState('')
+  const [backup, setBackup] = useState<string[] | null>(null)
+  const [disable, setDisable] = useState({ open: false, password: '', code: '' })
+  const [del, setDel] = useState({ open: false, password: '' })
+  const [msg, setMsg] = useState<{ ok: boolean; t: string } | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  const load = useCallback(async () => {
+    const r = await api<{ sessions: Sess[]; events: Ev[] }>('/api/auth/sessions')
+    if (r.sessions) { setSessions(r.sessions); setEvents(r.events) }
+  }, [])
+  useEffect(() => { load() }, [load])
+
+  async function startSetup() { setMsg(null); const r = await api<{ qr: string; secret: string }>('/api/auth/2fa/setup', {}); if (r.ok === false) return setMsg({ ok: false, t: r.error || 'Failed' }); setSetup({ qr: r.qr, secret: r.secret }); setCode('') }
+  async function enable(v?: string) {
+    const c = v || code; if (c.length !== 6 || busy) return
+    setBusy(true); const r = await api<{ backupCodes: string[] }>('/api/auth/2fa/enable', { code: c }); setBusy(false)
+    if (r.ok === false) { setCode(''); return setMsg({ ok: false, t: r.error || 'Failed' }) }
+    setSetup(null); setBackup(r.backupCodes); setMsg({ ok: true, t: 'Two-factor is on. Other devices were signed out.' }); refresh(); load()
+  }
+  async function turnOff() {
+    setBusy(true); const r = await api('/api/auth/2fa/disable', { password: disable.password, code: disable.code }); setBusy(false)
+    if (r.ok === false) return setMsg({ ok: false, t: r.error || 'Failed' })
+    setDisable({ open: false, password: '', code: '' }); setMsg({ ok: true, t: 'Two-factor turned off.' }); refresh(); load()
+  }
+  async function revoke(id?: string) { await api('/api/auth/sessions', id ? { id } : { all: true }, 'DELETE'); load() }
+  async function deleteAccount() {
+    setBusy(true); const r = await api('/api/account', { password: del.password }, 'DELETE'); setBusy(false)
+    if (r.ok === false) return setMsg({ ok: false, t: r.error || 'Failed' })
+    window.location.href = '/welcome'
+  }
+  function downloadCodes() {
+    if (!backup) return
+    const blob = new Blob(['GHOSTNET backup codes for ' + p.email + '\nEach code works once. Keep them somewhere safe.\n\n' + backup.join('\n') + '\n'], { type: 'text/plain' })
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'ghostnet-backup-codes.txt'; a.click(); URL.revokeObjectURL(a.href)
+  }
+
+  return (
+    <div id="security" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {msg && <div role="status" style={{ borderLeft: '3px solid ' + (msg.ok ? '#00ff41' : '#ff4136'), padding: '10px 12px', background: msg.ok ? 'rgba(0,255,65,.06)' : 'rgba(255,65,54,.07)', fontFamily: sans, fontSize: '.88rem', color: msg.ok ? '#9fffaf' : '#ffb0a8' }}>{msg.t}</div>}
+
+      <div style={panel}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <div>
+            <div style={{ fontFamily: mono, fontSize: '.6rem', letterSpacing: '.26em', color: '#4f9f5f' }}>// TWO-FACTOR AUTHENTICATION</div>
+            <div style={{ fontFamily: mono, fontSize: '.95rem', color: p.two_factor ? '#00ff41' : '#ffb347', marginTop: '6px' }}>{p.two_factor ? '● ACTIVE' : '○ NOT SET UP'}</div>
+            <p style={{ fontFamily: sans, fontSize: '.85rem', color: '#7faf8f', margin: '6px 0 0', maxWidth: '520px', lineHeight: 1.55 }}>Adds a 6-digit code from an authenticator app (Google Authenticator, Authy, 1Password) every time you sign in.</p>
+          </div>
+          {!p.two_factor && !setup && <button style={btn('#00ff41', true)} onClick={startSetup}>SET UP 2FA</button>}
+          {p.two_factor && !disable.open && <button style={btn('#ff4136')} onClick={() => setDisable({ ...disable, open: true })}>TURN OFF</button>}
+        </div>
+
+        {setup && (
+          <div style={{ marginTop: '18px', display: 'grid', gridTemplateColumns: 'minmax(0, 220px) minmax(0, 1fr)', gap: '22px', alignItems: 'center' }} className="sec-grid">
+            <style>{`@media (max-width: 620px) { .sec-grid { grid-template-columns: minmax(0, 1fr) !important; justify-items: center } }`}</style>
+            <div style={{ background: '#e9ffe9', padding: '8px', lineHeight: 0, maxWidth: '220px' }} dangerouslySetInnerHTML={{ __html: setup.qr.replace('<svg ', '<svg style="width:100%;height:auto" ') }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
+              <p style={{ fontFamily: sans, fontSize: '.88rem', color: '#9fcfaf', margin: 0, lineHeight: 1.55 }}>1. Scan the code with your authenticator app (or type the key below).<br />2. Enter the 6-digit code it shows.</p>
+              <code style={{ fontFamily: mono, fontSize: '.8rem', color: '#00d4ff', background: 'rgba(0,212,255,.06)', padding: '8px 10px', wordBreak: 'break-all' }}>{setup.secret}</code>
+              <OtpInput value={code} onChange={setCode} onComplete={enable} disabled={busy} accent="#00d4ff" />
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button style={btn('#00ff41', true)} onClick={() => enable()} disabled={busy || code.length !== 6}>{busy ? 'CHECKING…' : 'ACTIVATE'}</button>
+                <button style={btn('#4f8f5f')} onClick={() => setSetup(null)}>CANCEL</button>
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-              {recentLabs.map((lab, i) => {
-                const mod = ALL_MODULES.find(m => m.id === lab.module_id || m.labId === lab.lab_id)
-                const label = mod?.label || lab.lab_id.replace(/-lab$/, '').replace(/-/g, ' ').toUpperCase()
-                const c = mod?.color || '#00ff41'
-                return (
-                  <div key={i} style={{ background: c + '0d', border: '1px solid ' + c + '25', borderRadius: '4px', padding: '4px 10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: c }} />
-                    <span style={{ fontSize: '7.5px', color: c }}>{label}</span>
-                    <span style={{ fontSize: '7px', color: '#ffb347' }}>+{lab.xp_earned} XP</span>
-                  </div>
-                )
-              })}
+          </div>
+        )}
+
+        {backup && (
+          <div style={{ marginTop: '18px', border: '1px dashed #ffb347', padding: '16px', background: 'rgba(255,179,71,.05)' }}>
+            <div style={{ fontFamily: mono, fontSize: '.66rem', letterSpacing: '.2em', color: '#ffb347' }}>BACKUP CODES · SHOWN ONCE</div>
+            <p style={{ fontFamily: sans, fontSize: '.85rem', color: '#d8c8a8', lineHeight: 1.55 }}>If you lose your phone, each of these lets you sign in once. Save them now; we can&apos;t show them again.</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '6px', fontFamily: mono, fontSize: '.9rem', color: '#ffe0b0' }}>{backup.map(c => <span key={c}>{c}</span>)}</div>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '12px', flexWrap: 'wrap' }}>
+              <button style={btn('#ffb347')} onClick={downloadCodes}>DOWNLOAD .TXT</button>
+              <button style={btn('#ffb347')} onClick={() => navigator.clipboard?.writeText(backup.join('\n'))}>COPY</button>
+              <button style={btn('#4f8f5f')} onClick={() => setBackup(null)}>I SAVED THEM</button>
             </div>
+          </div>
+        )}
+
+        {disable.open && (
+          <div style={{ marginTop: '18px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '12px', alignItems: 'end' }}>
+            <label><span style={label}>PASSWORD</span><input type="password" style={field} value={disable.password} onChange={e => setDisable({ ...disable, password: e.target.value })} autoComplete="current-password" /></label>
+            <label><span style={label}>AUTHENTICATOR CODE</span><input style={field} inputMode="numeric" maxLength={6} value={disable.code} onChange={e => setDisable({ ...disable, code: e.target.value.replace(/\D/g, '') })} /></label>
+            <div style={{ display: 'flex', gap: '8px' }}><button style={btn('#ff4136', true)} onClick={turnOff} disabled={busy}>CONFIRM</button><button style={btn('#4f8f5f')} onClick={() => setDisable({ open: false, password: '', code: '' })}>CANCEL</button></div>
           </div>
         )}
       </div>
 
-      {/* ── Tabs ── */}
-      <div style={{ display: 'flex', gap: '3px', marginBottom: '1.5rem', background: '#0a140a', borderRadius: '8px', padding: '4px', border: '1px solid #0d1f0d' }}>
-        {([
-          { id: 'overview',  label: '◈ OVERVIEW' },
-          { id: 'progress',  label: '▸ MODULE PROGRESS' },
-          { id: 'badges',    label: '⚡ BADGES' },
-          { id: 'history',   label: '⌂ LAB HISTORY' },
-        ] as const).map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
-            flex: 1, padding: '8px 4px', borderRadius: '5px', cursor: 'pointer',
-            fontFamily: mono, fontSize: '7.5px', letterSpacing: '0.1em', border: 'none',
-            background: activeTab === tab.id ? 'rgba(0,255,65,0.1)' : 'transparent',
-            color: activeTab === tab.id ? '#00ff41' : '#4a7a4a',
-            fontWeight: activeTab === tab.id ? 700 : 400,
-            transition: 'all 0.15s',
-          }}>
-            {tab.label}
+      <div style={panel}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '10px', flexWrap: 'wrap' }}>
+          <div style={{ fontFamily: mono, fontSize: '.6rem', letterSpacing: '.26em', color: '#4f9f5f' }}>// ACTIVE SESSIONS</div>
+          {sessions.length > 1 && <button style={btn('#ff4136')} onClick={() => revoke()}>SIGN OUT ALL OTHERS</button>}
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {sessions.map(s => (
+            <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', padding: '10px 12px', border: '1px solid ' + (s.current ? 'rgba(0,255,65,.35)' : 'rgba(0,255,65,.1)') }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontFamily: mono, fontSize: '.8rem', color: '#d8f0d8' }}>{s.device_label}{s.current && <span style={{ color: '#00ff41', fontSize: '.6rem', marginLeft: '8px' }}>● THIS DEVICE</span>}</div>
+                <div style={{ fontFamily: sans, fontSize: '.78rem', color: '#6f9f7f', marginTop: '3px' }}>{s.location} · {s.ip} · active {ago(s.last_seen_at)}</div>
+              </div>
+              {!s.current && <button style={btn('#ff4136')} onClick={() => revoke(s.id)}>SIGN OUT</button>}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={panel}>
+        <div style={{ fontFamily: mono, fontSize: '.6rem', letterSpacing: '.26em', color: '#4f9f5f', marginBottom: '12px' }}>// SECURITY EVENTS</div>
+        <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '7px' }}>
+          {events.map((e, i) => (
+            <li key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', fontFamily: sans, fontSize: '.84rem', color: /fail|wrong/i.test(EVENT_TEXT[e.type] || '') ? '#ffb0a8' : '#b8d8b8' }}>
+              <span>{EVENT_TEXT[e.type] || e.type}<span style={{ color: '#4f7f5f' }}> · {e.location}</span></span>
+              <span style={{ fontFamily: mono, fontSize: '.64rem', color: '#3f6f4f', whiteSpace: 'nowrap' }}>{ago(e.created_at)}</span>
+            </li>
+          ))}
+        </ol>
+        <p style={{ fontFamily: sans, fontSize: '.8rem', color: '#5f8f6f', margin: '14px 0 0' }}>Need to change your password? <a href="/auth?mode=forgot" style={{ color: '#00d4ff' }}>Reset it with an email code</a>; every session is signed out afterwards.</p>
+      </div>
+
+      <div style={{ ...panel, borderColor: 'rgba(255,65,54,.25)' }}>
+        <div style={{ fontFamily: mono, fontSize: '.6rem', letterSpacing: '.26em', color: '#ff6b5f' }}>// DANGER ZONE</div>
+        {!del.open ? (
+          <button style={{ ...btn('#ff4136'), marginTop: '12px' }} onClick={() => setDel({ open: true, password: '' })}>DELETE MY ACCOUNT</button>
+        ) : (
+          <div style={{ marginTop: '12px', display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'end' }}>
+            <label style={{ flex: '1 1 220px' }}><span style={label}>CONFIRM WITH PASSWORD</span><input type="password" style={field} value={del.password} onChange={e => setDel({ ...del, password: e.target.value })} /></label>
+            <button style={btn('#ff4136', true)} onClick={deleteAccount} disabled={busy || !del.password}>PERMANENTLY DELETE</button>
+            <button style={btn('#4f8f5f')} onClick={() => setDel({ open: false, password: '' })}>CANCEL</button>
+            <p style={{ flexBasis: '100%', fontFamily: sans, fontSize: '.8rem', color: '#d89f98', margin: 0 }}>This erases your profile, XP and all progress. It cannot be undone.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────── PAGE
+export default function ProfilePage() {
+  const { profile, loading, refreshProfile, setProfile } = useAuth()
+  const [tab, setTab] = useState<Tab>('progress')
+
+  useEffect(() => { if (window.location.hash === '#security') setTab('security') }, [])
+  useEffect(() => { if (!loading && !profile) window.location.href = '/auth?mode=login&from=/profile' }, [loading, profile])
+
+  if (!profile) {
+    return <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: mono, fontSize: '.7rem', letterSpacing: '.3em', color: '#2f7f4f' }}>DECRYPTING OPERATOR FILE…</div>
+  }
+
+  const p = profile
+  const rankColor = RANK_COLORS[p.ghost_rank] || '#00ff41'
+  const cur = RANK_LIST.find(r => r.title === p.ghost_rank)?.minXp ?? 0
+  const toNext = p.next_rank ? Math.round(((p.xp - cur) / (p.next_rank.minXp - cur)) * 100) : 100
+
+  return (
+    <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+      {/* Header dossier */}
+      <div style={{ ...panel, position: 'relative', overflow: 'hidden', borderColor: rankColor + '44', clipPath: 'polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%)' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 0% 0%, ' + rankColor + '18, transparent 55%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'relative', display: 'flex', gap: 'clamp(16px, 4vw, 28px)', alignItems: 'center', flexWrap: 'wrap' }}>
+          <OperatorAvatar seed={p.avatar_seed || p.username} color={p.avatar_color || rankColor} size={104} />
+          <div style={{ flex: '1 1 260px', minWidth: 0 }}>
+            <div style={{ fontFamily: mono, fontSize: '.58rem', letterSpacing: '.3em', color: rankColor }}>OPERATOR FILE · {p.ghost_rank.toUpperCase()}{p.role !== 'student' ? ' · ' + p.role.toUpperCase().replace('_', ' ') : ''}</div>
+            <h1 style={{ fontFamily: mono, fontSize: 'clamp(1.3rem, 5vw, 1.9rem)', color: '#f0fff0', margin: '6px 0 2px', letterSpacing: '.06em' }}>{p.display_name}</h1>
+            <div style={{ fontFamily: mono, fontSize: '.74rem', color: '#5f9f6f' }}>@{p.username}{p.country ? ' · ' + p.country : ''} · enlisted {new Date(p.created_at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</div>
+            {p.goal && <div style={{ fontFamily: sans, fontSize: '.85rem', color: '#9fcfaf', marginTop: '8px' }}>◆ {p.goal}</div>}
+            <div style={{ marginTop: '14px', maxWidth: '460px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: mono, fontSize: '.6rem', color: '#5f8f6f', marginBottom: '5px' }}>
+                <span style={{ color: rankColor }}>{p.xp.toLocaleString()} XP</span>
+                <span>{p.next_rank ? (p.next_rank.minXp - p.xp).toLocaleString() + ' XP TO ' + p.next_rank.title.toUpperCase() : 'MAX RANK'}</span>
+              </div>
+              <div style={{ height: '6px', background: '#0c2a12' }}><div style={{ height: '100%', width: Math.max(2, toNext) + '%', background: 'linear-gradient(90deg, ' + rankColor + ', ' + (p.next_rank?.color || rankColor) + ')', boxShadow: '0 0 10px ' + rankColor, transition: 'width .8s ease' }} /></div>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px', flex: '1 1 240px' }}>
+            {[['OVERALL', p.overall_percent + '%', '#00ff41'], ['STREAK', p.streak_days + 'd', '#ffb347'], ['LABS', p.labs_completed + '/13', '#00d4ff'], ['CHAPTERS', String(p.chapters_read), '#bf5fff']].map(([k, v, c]) => (
+              <div key={k} style={{ border: '1px solid ' + c + '30', padding: '10px 12px', background: c + '08' }}>
+                <div style={{ fontFamily: mono, fontSize: '1.15rem', color: c, fontWeight: 700 }}>{v}</div>
+                <div style={{ fontFamily: mono, fontSize: '.54rem', letterSpacing: '.22em', color: '#5f8f6f', marginTop: '3px' }}>{k}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div role="tablist" style={{ display: 'flex', gap: '4px', borderBottom: '1px solid rgba(0,255,65,.12)' }}>
+        {(['progress', 'profile', 'security'] as Tab[]).map(t => (
+          <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)} style={{ fontFamily: mono, fontSize: '.66rem', letterSpacing: '.24em', padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', color: tab === t ? '#00ff41' : '#3f7f4f', borderBottom: '2px solid ' + (tab === t ? '#00ff41' : 'transparent') }}>
+            {t === 'progress' ? 'PROGRESS' : t === 'profile' ? 'PROFILE' : 'SECURITY' + (p.two_factor ? '' : ' ⚠')}
           </button>
         ))}
       </div>
 
-      {/* ── OVERVIEW tab ── */}
-      {activeTab === 'overview' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
-
-          {/* XP breakdown */}
-          <div style={{ background: '#030a03', border: '1px solid #0d1f0d', borderRadius: '8px', padding: '1.25rem' }}>
-            <div style={{ fontSize: '7px', color: '#1a4a1a', letterSpacing: '0.25em', marginBottom: '1rem' }}>XP BREAKDOWN</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.78rem', color: '#5a8a5a' }}>Lab completions</span>
-                <span style={{ fontSize: '0.78rem', color: '#00ff41', fontWeight: 700 }}>{totalLabXp.toLocaleString()} XP</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.78rem', color: '#5a8a5a' }}>Badge rewards</span>
-                <span style={{ fontSize: '0.78rem', color: '#ffb347', fontWeight: 700 }}>{earnedBadges.reduce((s, b) => s + b.xp_reward, 0).toLocaleString()} XP</span>
-              </div>
-              <div style={{ borderTop: '1px solid #0d1f0d', paddingTop: '6px', display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.78rem', color: '#8a9a8a' }}>Total XP</span>
-                <span style={{ fontSize: '0.9rem', color: rankColor, fontWeight: 700 }}>{xp.toLocaleString()} XP</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Completion overview */}
-          <div style={{ background: '#030a03', border: '1px solid #0d1f0d', borderRadius: '8px', padding: '1.25rem' }}>
-            <div style={{ fontSize: '7px', color: '#1a4a1a', letterSpacing: '0.25em', marginBottom: '1rem' }}>COMPLETION OVERVIEW</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {[
-                { label: 'Labs completed', value: completedCount, total: 13, color: '#00ff41' },
-                { label: 'Modules started', value: modulesStarted, total: 13, color: '#00d4ff' },
-                { label: 'Badges earned', value: earnedBadges.length, total: Math.max(badges.length, 31), color: '#bf5fff' },
-              ].map(row => (
-                <div key={row.label}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
-                    <span style={{ fontSize: '0.72rem', color: '#5a8a5a' }}>{row.label}</span>
-                    <span style={{ fontSize: '0.72rem', color: row.color }}>{row.value}/{row.total}</span>
-                  </div>
-                  <div style={{ height: '4px', background: '#0a140a', borderRadius: '2px', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: Math.round((row.value / row.total) * 100) + '%', background: row.color, borderRadius: '2px', opacity: 0.8 }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Rank roadmap */}
-          <div style={{ background: '#030a03', border: '1px solid #0d1f0d', borderRadius: '8px', padding: '1.25rem' }}>
-            <div style={{ fontSize: '7px', color: '#1a4a1a', letterSpacing: '0.25em', marginBottom: '1rem' }}>RANK ROADMAP</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {RANK_NAMES.map((r, i) => {
-                const threshold = RANK_THRESHOLDS[r]
-                const rColor = RANK_VISIBLE_COLORS[r]
-                const isCurrent = r === rank
-                const isPast = xp >= threshold && !(r === rank && false)
-                const isLocked = xp < threshold
-                return (
-                  <div key={r} style={{ display: 'flex', alignItems: 'center', gap: '10px', opacity: isLocked ? 0.4 : 1 }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isPast && !isLocked ? rColor : 'transparent', border: '1px solid ' + rColor + (isLocked ? '44' : ''), boxShadow: isCurrent ? '0 0 8px ' + rColor : 'none', flexShrink: 0 }} />
-                    <div style={{ flex: 1 }}>
-                      <span style={{ fontSize: '0.78rem', color: isCurrent ? rColor : isPast ? rColor + '99' : '#3a5a3a', fontWeight: isCurrent ? 700 : 400 }}>{r.toUpperCase()}</span>
-                      {isCurrent && <span style={{ fontSize: '6.5px', color: rColor + '88', marginLeft: '6px' }}>← YOU ARE HERE</span>}
-                    </div>
-                    <span style={{ fontSize: '7px', color: '#2a5a2a' }}>{threshold.toLocaleString()} XP</span>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Quick actions */}
-          <div style={{ background: '#030a03', border: '1px solid #0d1f0d', borderRadius: '8px', padding: '1.25rem' }}>
-            <div style={{ fontSize: '7px', color: '#1a4a1a', letterSpacing: '0.25em', marginBottom: '1rem' }}>QUICK ACTIONS</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {[
-                { label: 'Continue learning', href: '/', color: '#00ff41' },
-                { label: 'View leaderboard', href: '/leaderboard', color: '#00d4ff' },
-                { label: 'Browse modules', href: '/#modules', color: '#ffb347' },
-                { label: 'Ghost AI agent', href: '/', color: '#bf5fff' },
-              ].map(action => (
-                <Link key={action.href} href={action.href} style={{
-                  textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px',
-                  padding: '8px 10px', borderRadius: '5px', border: '1px solid ' + action.color + '18',
-                  background: action.color + '06', transition: 'all 0.15s',
-                }}>
-                  <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: action.color }} />
-                  <span style={{ fontSize: '0.78rem', color: action.color, letterSpacing: '0.05em' }}>{action.label}</span>
-                  <span style={{ marginLeft: 'auto', fontSize: '8px', color: action.color + '66' }}>&#8594;</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-
-        </div>
-      )}
-
-      {/* ── MODULE PROGRESS tab ── */}
-      {activeTab === 'progress' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div style={{ fontSize: '7px', color: '#1a4a1a', letterSpacing: '0.25em', marginBottom: '0.5rem' }}>
-            {modulesStarted}/13 MODULES STARTED &nbsp;·&nbsp; {completedCount} LABS COMPLETED
-          </div>
-          {ALL_MODULES.map(mod => {
-            const modLabs = labsByModule[mod.id] || []
-            const modXp = modLabs.reduce((s, l) => s + (l.xp_earned || 0), 0)
-            const pct = Math.round((modXp / mod.xpMax) * 100)
-            const started = modLabs.length > 0
-            const done = modXp >= mod.xpMax
-            return (
-              <div key={mod.id} style={{ background: '#030a03', border: '1px solid ' + (started ? mod.color + '25' : '#0d1f0d'), borderRadius: '8px', padding: '14px 18px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                  {/* Color dot + module info */}
-                  <div style={{ width: '4px', height: '40px', background: started ? mod.color : '#1a3a1a', borderRadius: '2px', flexShrink: 0 }} />
-                  <div style={{ flex: 1, minWidth: '160px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '7px', color: '#2a5a2a' }}>MOD-{mod.num}</span>
-                      <span style={{ fontSize: '9px', color: started ? mod.color : '#3a6a3a', fontWeight: started ? 600 : 400 }}>{mod.label}</span>
-                      {done && <span style={{ fontSize: '6px', color: mod.color, background: mod.color + '18', border: '1px solid ' + mod.color + '30', padding: '1px 6px', borderRadius: '2px', letterSpacing: '0.1em' }}>COMPLETE</span>}
-                    </div>
-                    <div style={{ height: '4px', background: '#0a140a', borderRadius: '2px', overflow: 'hidden', width: '100%', border: '1px solid #0d1f0d' }}>
-                      <div style={{ height: '100%', width: pct + '%', background: mod.color, borderRadius: '2px', opacity: 0.85, transition: 'width 0.8s ease' }} />
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '3px' }}>
-                      <span style={{ fontSize: '6.5px', color: '#2a5a2a' }}>{modXp}/{mod.xpMax} XP</span>
-                      <span style={{ fontSize: '6.5px', color: started ? mod.color + '88' : '#1a3a1a' }}>{pct}%</span>
-                    </div>
-                  </div>
-                  {/* Action links */}
-                  <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
-                    <Link href={mod.href} style={{ textDecoration: 'none', fontFamily: mono, fontSize: '7px', padding: '4px 10px', borderRadius: '3px', color: '#5a8a5a', border: '1px solid #1a3a1a', letterSpacing: '0.08em' }}>
-                      CONCEPT
-                    </Link>
-                    <Link href={mod.href + '/lab'} style={{ textDecoration: 'none', fontFamily: mono, fontSize: '7px', padding: '4px 10px', borderRadius: '3px', color: mod.color, border: '1px solid ' + mod.color + '40', background: mod.color + '0a', letterSpacing: '0.08em', fontWeight: 600 }}>
-                      {started ? 'CONTINUE LAB' : 'START LAB'}
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
-
-      {/* ── BADGES tab ── */}
-      {activeTab === 'badges' && (
-        <div>
-          {badges.length === 0 ? (
-            <div style={{ background: '#030a03', border: '1px solid #0d1f0d', borderRadius: '8px', padding: '3rem', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.78rem', color: '#3a6a3a', marginBottom: '0.5rem' }}>BADGE DATA NOT LOADED</div>
-              <div style={{ fontSize: '0.7rem', color: '#2a5a2a', lineHeight: 1.6 }}>
-                Badges require the Supabase schema to be applied.<br />
-                Run <span style={{ color: '#ffb347' }}>supabase-schema.sql</span> in your Supabase SQL editor to enable the badge system.
-              </div>
-              <div style={{ marginTop: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
-                {['First Blood', 'Lab Rat', 'Operator', 'Tor Master', 'OSINT Recon', 'Cryptologist', 'Red Operator', '7-Day Streak', 'Ghost Protocol'].map(name => (
-                  <div key={name} style={{ background: '#0a140a', border: '1px solid #1a3a1a', borderRadius: '6px', padding: '10px 14px', opacity: 0.4 }}>
-                    <div style={{ fontSize: '1.2rem', marginBottom: '4px', textAlign: 'center' }}>&#9679;</div>
-                    <div style={{ fontSize: '7.5px', color: '#2a5a2a', letterSpacing: '0.05em' }}>{name}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <>
-              <div style={{ fontSize: '7px', color: '#1a4a1a', letterSpacing: '0.25em', marginBottom: '1rem' }}>
-                {earnedBadges.length}/{badges.length} EARNED &nbsp;·&nbsp; {earnedBadges.reduce((s, b) => s + b.xp_reward, 0)} BONUS XP
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '10px' }}>
-                {badges.map(badge => (
-                  <div key={badge.slug} style={{
-                    background: badge.earned ? '#030a03' : '#020602',
-                    border: '1px solid ' + (badge.earned ? badge.color + '35' : '#0a140a'),
-                    borderRadius: '8px', padding: '16px 14px',
-                    opacity: badge.earned ? 1 : 0.4,
-                    transition: 'all 0.2s',
-                    position: 'relative',
-                  }}>
-                    {badge.earned && (
-                      <div style={{ position: 'absolute', top: '8px', right: '8px', width: '6px', height: '6px', borderRadius: '50%', background: badge.color, boxShadow: '0 0 6px ' + badge.color }} />
-                    )}
-                    <div style={{ fontSize: '1.8rem', marginBottom: '8px', lineHeight: 1 }}>{badge.icon}</div>
-                    <div style={{ fontSize: '9px', color: badge.earned ? badge.color : '#2a4a2a', fontWeight: 700, marginBottom: '4px', letterSpacing: '0.05em' }}>{badge.name}</div>
-                    <div style={{ fontSize: '7px', color: '#3a6a3a', lineHeight: 1.5, marginBottom: '8px' }}>{badge.description}</div>
-                    <div style={{ fontSize: '7px', color: badge.earned ? '#ffb347' : '#1a3a1a' }}>
-                      {badge.earned
-                        ? '&#10003; +' + badge.xp_reward + ' XP earned'
-                        : '+' + badge.xp_reward + ' XP · ' + badge.requirement_type.replace(/_/g, ' ')}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* ── LAB HISTORY tab ── */}
-      {activeTab === 'history' && (
-        <div>
-          <div style={{ fontSize: '7px', color: '#1a4a1a', letterSpacing: '0.25em', marginBottom: '1rem' }}>
-            COMPLETED LAB LOG &nbsp;·&nbsp; {labStats.length} ENTRIES
-          </div>
-          {labStats.length === 0 ? (
-            <div style={{ background: '#030a03', border: '1px solid #0d1f0d', borderRadius: '8px', padding: '3rem', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.78rem', color: '#3a6a3a', marginBottom: '0.5rem' }}>NO LAB HISTORY YET</div>
-              <div style={{ fontSize: '0.72rem', color: '#2a5a2a', marginBottom: '1.5rem' }}>Complete your first lab to start tracking progress.</div>
-              <Link href="/" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '0.78rem', color: '#00ff41', padding: '10px 24px', border: '1px solid rgba(0,255,65,0.4)', borderRadius: '5px', background: 'rgba(0,255,65,0.07)' }}>
-                START A MODULE &#8594;
-              </Link>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              {[...labStats].sort((a, b) => {
-                if (!a.completed_at) return 1
-                if (!b.completed_at) return -1
-                return new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime()
-              }).map((lab, i) => {
-                const mod = ALL_MODULES.find(m => m.id === lab.module_id || m.labId === lab.lab_id)
-                const color = mod?.color || '#00ff41'
-                return (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#030a03', border: '1px solid #0d1f0d', borderRadius: '6px', padding: '10px 16px' }}>
-                    <div style={{ width: '3px', height: '28px', background: color, borderRadius: '2px', flexShrink: 0 }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '9px', color: '#c8d8c8', marginBottom: '2px' }}>{lab.lab_id.toUpperCase()}</div>
-                      <div style={{ fontSize: '7px', color: '#3a6a3a' }}>
-                        {mod?.label || lab.module_id}
-                        {lab.completed_at && <span style={{ color: '#2a5a2a' }}> &nbsp;·&nbsp; {new Date(lab.completed_at).toLocaleString()}</span>}
-                      </div>
-                    </div>
-                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <div style={{ fontSize: '10px', color: '#ffb347', fontWeight: 700 }}>+{lab.xp_earned} XP</div>
-                      {mod && (
-                        <Link href={mod.href + '/lab'} style={{ textDecoration: 'none', fontSize: '6.5px', color: color + '88', letterSpacing: '0.08em' }}>
-                          REVISIT &#8594;
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Footer ── */}
-      <div style={{ marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid #0d1f0d', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <button onClick={handleCopyUID} style={{
-            background: 'transparent', border: '1px solid #1a3a1a', borderRadius: '4px',
-            padding: '5px 12px', cursor: 'pointer', fontFamily: mono, fontSize: '7px',
-            color: copyDone ? '#00ff41' : '#3a6a3a', letterSpacing: '0.1em', transition: 'all 0.15s',
-          }}>
-            {copyDone ? '✓ COPIED' : 'COPY UID'}
-          </button>
-        </div>
-        <button onClick={signOut} style={{
-          background: 'transparent', border: '1px solid rgba(255,65,54,0.35)', borderRadius: '4px',
-          padding: '7px 18px', cursor: 'pointer', fontFamily: mono,
-          fontSize: '8px', color: '#ff4136', letterSpacing: '0.12em', transition: 'all 0.15s',
-        }}
-        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,65,54,0.08)' }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-        >
-          &#8651; SIGN OUT
-        </button>
-      </div>
-
-      {/* ── Danger Zone ─────────────────────────────────────────────────────── */}
-      <div style={{ marginTop: '3rem', borderTop: '1px solid rgba(255,65,54,0.15)', paddingTop: '2rem' }}>
-        <div style={{ fontFamily: mono, fontSize: '0.6rem', color: '#ff4136', letterSpacing: '0.25em', marginBottom: '1rem', opacity: 0.6 }}>
-          ⚠ DANGER ZONE
-        </div>
-        <div style={{ background: 'rgba(255,65,54,0.03)', border: '1px solid rgba(255,65,54,0.15)', borderRadius: '6px', padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' as const }}>
-          <div>
-            <div style={{ fontFamily: mono, fontSize: '0.75rem', color: '#ff4136', marginBottom: '3px' }}>Delete Account</div>
-            <div style={{ fontFamily: mono, fontSize: '0.65rem', color: '#4a3a3a', lineHeight: 1.5 }}>
-              Permanently deletes your account, all XP, lab history, and badges. This cannot be undone.
-            </div>
-          </div>
-          <button
-            onClick={handleDeleteAccount}
-            disabled={deleteLoading}
-            style={{
-              background: deleteConfirm ? 'rgba(255,65,54,0.15)' : 'transparent',
-              border: '1px solid rgba(255,65,54,0.5)',
-              borderRadius: '4px', padding: '8px 18px', cursor: 'pointer',
-              fontFamily: mono, fontSize: '8px', color: '#ff4136',
-              letterSpacing: '0.12em', transition: 'all 0.15s', flexShrink: 0,
-            }}
-          >
-            {deleteLoading ? 'DELETING...' : deleteConfirm ? '⚠ CONFIRM DELETE' : 'DELETE ACCOUNT'}
-          </button>
-        </div>
-        {deleteConfirm && (
-          <div style={{ fontFamily: mono, fontSize: '0.65rem', color: '#ff4136', marginTop: '6px', opacity: 0.7 }}>
-            Click again to permanently delete. This action cannot be reversed.{' '}
-            <button onClick={() => setDeleteConfirm(false)} style={{ background: 'none', border: 'none', color: '#5a8a5a', cursor: 'pointer', fontFamily: mono, fontSize: '0.65rem', textDecoration: 'underline' }}>
-              Cancel
-            </button>
-          </div>
-        )}
-      </div>
-
+      {tab === 'progress' && <ProgressTab p={p} />}
+      {tab === 'profile' && <ProfileTab p={p} onSaved={u => setProfile(u)} />}
+      {tab === 'security' && <SecurityTab p={p} refresh={refreshProfile} />}
     </div>
   )
 }
