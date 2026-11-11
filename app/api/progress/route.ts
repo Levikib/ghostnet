@@ -1,128 +1,101 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '../../../lib/supabase-server'
-import { createClient } from '../../../lib/supabase/server'
+import { NextRequest } from 'next/server'
+import { one, sql } from '../../../lib/server/db'
+import { getSessionUser } from '../../../lib/server/session'
+import { addXp, moduleProgressFor } from '../../../lib/server/profile'
+import { fail, json, readJson } from '../../../lib/server/auth'
+import { CHAPTER_XP, LAB_IDS, LAB_XP, MODULE_IDS } from '../../../lib/learning'
 
-// Valid UUID format check
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-// Valid lab_id / module_id: lowercase alphanumeric + hyphens only
-const SLUG_RE = /^[a-z0-9-]{1,64}$/
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
-function sanitiseNotes(notes: unknown): string | null {
-  if (typeof notes !== 'string') return null
-  // Strip any HTML tags, limit length
-  return notes.replace(/<[^>]*>/g, '').slice(0, 500) || null
-}
-
-// Canonical XP rewards per lab — single source of truth for server-side validation.
-// Client-submitted xp_earned is ignored; server always uses this value.
-const LAB_XP: Record<string, number> = {
-  'tor-lab':                345,
-  'osint-lab':              305,
-  'crypto-lab':             405,
-  'offensive-lab':          400,
-  'active-directory-lab':   495,
-  'web-attacks-lab':        445,
-  'malware-lab':            465,
-  'network-attacks-lab':    445,
-  'cloud-security-lab':     490,
-  'social-engineering-lab': 300,
-  'red-team-lab':           465,
-  'wireless-attacks-lab':   455,
-  'mobile-security-lab':    435,
-}
-
-// GET /api/progress?user_id=xxx  — fetch all lab progress for a user (own data only)
+// GET /api/progress -> { modules: ModuleProgress[], labs: { [labId]: { steps_done, steps_total, completed } } }
 export async function GET(req: NextRequest) {
-  const userId = req.nextUrl.searchParams.get('user_id')
-  if (!userId) return NextResponse.json({ error: 'user_id required' }, { status: 400 })
-
-  try {
-    // Verify the caller is authenticated and requesting their own data
-    const authClient = createClient()
-    const { data: { user } } = await authClient.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    if (user.id !== userId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-
-    const supabase = createServerClient()
-    const { data, error } = await supabase
-      .from('lab_progress')
-      .select('*')
-      .eq('user_id', userId)
-    if (error) throw error
-    return NextResponse.json({ progress: data })
-  } catch (e: unknown) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : 'Failed' }, { status: 500 })
-  }
+  const s = await getSessionUser(req)
+  if (!s) return fail('Sign in first.', 401)
+  const labs = await sql<{ lab_id: string; steps_done: number; steps_total: number; completed: boolean }>(
+    `SELECT lab_id, steps_done, steps_total, completed FROM lab_progress WHERE user_id = $1`, [s.id])
+  const chapters = await sql<{ module_id: string; chapters_read: number[]; last_chapter: number }>(
+    `SELECT module_id, chapters_read, last_chapter FROM module_progress WHERE user_id = $1`, [s.id])
+  return json({
+    modules: await moduleProgressFor(s.id),
+    labs: Object.fromEntries(labs.map(l => [l.lab_id, l])),
+    chapters: Object.fromEntries(chapters.map(c => [c.module_id, { read: c.chapters_read, last: c.last_chapter }])),
+  })
 }
 
-// POST /api/progress — mark a lab complete and award XP
+// POST /api/progress
+//   { action: 'chapter', module_id, chapter, total }          a concept chapter was opened
+//   { action: 'lab_step', lab_id, module_id, step, total }     steps completed so far in a lab
+//   { action: 'lab_complete', lab_id, module_id }              lab finished (XP is server-defined)
+//   Legacy body { lab_id, module_id, xp_earned } = lab_complete.
 export async function POST(req: NextRequest) {
   try {
-    // Verify the caller is authenticated
-    const authClient = createClient()
-    const { data: { user } } = await authClient.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const s = await getSessionUser(req)
+    if (!s) return fail('Sign in first.', 401)
+    const b = await readJson<Record<string, unknown>>(req)
+    const action = typeof b.action === 'string' ? b.action : 'lab_complete'
+    const moduleId = String(b.module_id || '')
+    if (!MODULE_IDS.has(moduleId)) return fail('Unknown module.')
 
-    const body = await req.json()
-    const { user_id, lab_id, module_id, xp_earned, notes } = body
-
-    if (!user_id || !lab_id || !module_id) {
-      return NextResponse.json({ error: 'user_id, lab_id, module_id required' }, { status: 400 })
+    if (action === 'chapter') {
+      const chapter = Math.floor(Number(b.chapter))
+      const total = Math.floor(Number(b.total))
+      if (!(chapter >= 0 && chapter < 40) || !(total > 0 && total <= 40)) return fail('Bad chapter.')
+      const prev = await one<{ chapters_read: number[] }>(`SELECT chapters_read FROM module_progress WHERE user_id = $1 AND module_id = $2`, [s.id, moduleId])
+      const isNew = !prev || !(prev.chapters_read || []).includes(chapter)
+      await sql(
+        `INSERT INTO module_progress (user_id, module_id, chapters_read, chapters_total, last_chapter)
+         VALUES ($1, $2, jsonb_build_array($3::int), $4, $3)
+         ON CONFLICT (user_id, module_id) DO UPDATE SET
+           chapters_read = CASE WHEN module_progress.chapters_read @> to_jsonb($3::int) THEN module_progress.chapters_read
+                                ELSE module_progress.chapters_read || to_jsonb($3::int) END,
+           chapters_total = $4, last_chapter = $3, updated_at = now()`,
+        [s.id, moduleId, chapter, total],
+      )
+      if (isNew) {
+        await addXp(s.id, CHAPTER_XP)
+        await sql(`INSERT INTO activity (user_id, kind, module_id, ref, xp) VALUES ($1, 'chapter', $2, $3, $4)`, [s.id, moduleId, String(chapter), CHAPTER_XP])
+      }
+      return json({ ok: true, xp: isNew ? CHAPTER_XP : 0 })
     }
 
-    // Validate format of all string inputs
-    if (!UUID_RE.test(user_id)) return NextResponse.json({ error: 'Invalid user_id' }, { status: 400 })
-    if (!SLUG_RE.test(lab_id)) return NextResponse.json({ error: 'Invalid lab_id' }, { status: 400 })
-    if (!SLUG_RE.test(module_id)) return NextResponse.json({ error: 'Invalid module_id' }, { status: 400 })
+    const labId = String(b.lab_id || '')
+    if (!LAB_IDS.has(labId)) return fail('Unknown lab.')
 
-    // Caller can only submit progress for themselves
-    if (user.id !== user_id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    if (action === 'lab_step') {
+      const step = Math.floor(Number(b.step))
+      const total = Math.floor(Number(b.total))
+      if (!(step >= 0 && step <= 100) || !(total > 0 && total <= 100)) return fail('Bad step.')
+      await sql(
+        `INSERT INTO lab_progress (user_id, lab_id, module_id, steps_done, steps_total, attempts)
+         VALUES ($1, $2, $3, $4, $5, 1)
+         ON CONFLICT (user_id, lab_id) DO UPDATE SET
+           steps_done = GREATEST(lab_progress.steps_done, $4), steps_total = $5, updated_at = now()`,
+        [s.id, labId, moduleId, Math.min(step, total), total],
+      )
+      return json({ ok: true })
     }
 
-    // Validate lab_id is known — server always uses its own XP value
-    const validatedXp = LAB_XP[lab_id]
-    if (validatedXp === undefined) {
-      return NextResponse.json({ error: 'Unknown lab_id' }, { status: 400 })
+    if (action === 'lab_complete') {
+      const xp = LAB_XP[labId]
+      const prev = await one<{ completed: boolean }>(`SELECT completed FROM lab_progress WHERE user_id = $1 AND lab_id = $2`, [s.id, labId])
+      if (prev?.completed) return json({ ok: true, xp: 0, already: true })
+      await sql(
+        `INSERT INTO lab_progress (user_id, lab_id, module_id, completed, xp_earned, completed_at, steps_done, steps_total, attempts)
+         VALUES ($1, $2, $3, true, $4, now(), 0, 0, 1)
+         ON CONFLICT (user_id, lab_id) DO UPDATE SET
+           completed = true, xp_earned = $4, completed_at = now(), updated_at = now(),
+           steps_done = GREATEST(lab_progress.steps_done, lab_progress.steps_total)`,
+        [s.id, labId, moduleId, xp],
+      )
+      await addXp(s.id, xp)
+      await sql(`INSERT INTO activity (user_id, kind, module_id, ref, xp) VALUES ($1, 'lab_complete', $2, $3, $4)`, [s.id, moduleId, labId, xp])
+      return json({ ok: true, xp })
     }
 
-    const supabase = createServerClient()
-
-    // Upsert lab progress
-    const { data: existing } = await supabase
-      .from('lab_progress')
-      .select('id, completed, xp_earned')
-      .eq('user_id', user_id)
-      .eq('lab_id', lab_id)
-      .single()
-
-    const alreadyCompleted = existing?.completed === true
-
-    const { error: upsertError } = await supabase
-      .from('lab_progress')
-      .upsert({
-        user_id,
-        lab_id,
-        module_id,
-        completed: true,
-        xp_earned: alreadyCompleted ? (existing?.xp_earned || 0) : validatedXp,
-        completed_at: alreadyCompleted ? undefined : new Date().toISOString(),
-        attempts: 1,
-        notes: sanitiseNotes(notes),
-      }, { onConflict: 'user_id,lab_id' })
-
-    if (upsertError) throw upsertError
-
-    // Only award XP if this is a fresh completion
-    if (!alreadyCompleted) {
-      await supabase.rpc('update_xp_and_rank', {
-        p_user_id: user_id,
-        p_xp_delta: validatedXp,
-      })
-    }
-
-    return NextResponse.json({ success: true, xp_awarded: alreadyCompleted ? 0 : validatedXp })
-  } catch (e: unknown) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : 'Failed' }, { status: 500 })
+    return fail('Unknown action.')
+  } catch (e) {
+    console.error('[progress]', e)
+    return fail('Could not save progress.', 500)
   }
 }

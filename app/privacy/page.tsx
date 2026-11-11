@@ -39,7 +39,7 @@ export default function PrivacyPage() {
       </Section>
 
       <Section title="2. What Data We Collect">
-        <p><strong style={{ color: '#c8d8c8' }}>Account data:</strong> Email address, username, and hashed password — collected when you register. Your password is never stored in plaintext; it is hashed by Supabase Auth before storage.</p>
+        <p><strong style={{ color: '#c8d8c8' }}>Account data:</strong> Email address, username, and hashed password — collected when you register. Your password is never stored in plaintext; it is hashed with scrypt (a memory-hard algorithm) before storage.</p>
         <p style={{ marginTop: '0.75rem' }}><strong style={{ color: '#c8d8c8' }}>Platform activity:</strong> Lab completion records, XP earned per lab, rank achieved, streak days, and progress notes you choose to save.</p>
         <p style={{ marginTop: '0.75rem' }}><strong style={{ color: '#c8d8c8' }}>Technical data:</strong> Session tokens stored in httpOnly cookies (not accessible to JavaScript). Browser localStorage is used for offline progress caching — this data never leaves your device unless you are authenticated.</p>
         <p style={{ marginTop: '0.75rem' }}><strong style={{ color: '#c8d8c8' }}>AI interactions:</strong> Messages sent to the GHOST AI Agent are forwarded to Groq&apos;s API for processing. We do not persistently store your AI conversation history on our servers; history is stored in your browser&apos;s localStorage only.</p>
@@ -67,7 +67,8 @@ export default function PrivacyPage() {
       </Section>
 
       <Section title="5. Data Sharing">
-        <p><strong style={{ color: '#c8d8c8' }}>Supabase:</strong> Our database and authentication provider. Data is stored on Supabase-managed infrastructure. See <a href="https://supabase.com/privacy" style={{ color: '#00d4ff' }} target="_blank" rel="noopener noreferrer">supabase.com/privacy</a>.</p>
+        <p><strong style={{ color: '#c8d8c8' }}>Neon:</strong> Our PostgreSQL database host, where your account and progress are stored (EU region). Passwords are stored only as scrypt hashes and authenticator secrets are encrypted (AES-256-GCM). See <a href="https://neon.tech/privacy-policy" style={{ color: '#00d4ff' }} target="_blank" rel="noopener noreferrer">neon.tech/privacy-policy</a>.</p>
+        <p><strong style={{ color: '#c8d8c8' }}>Google (Gmail):</strong> Sends our verification codes, password-reset codes and security alerts. See <a href="https://policies.google.com/privacy" style={{ color: '#00d4ff' }} target="_blank" rel="noopener noreferrer">policies.google.com/privacy</a>.</p>
         <p style={{ marginTop: '0.75rem' }}><strong style={{ color: '#c8d8c8' }}>Groq:</strong> AI inference provider for the GHOST Agent. Messages you send to the agent are processed by Groq. See <a href="https://groq.com/privacy-policy" style={{ color: '#00d4ff' }} target="_blank" rel="noopener noreferrer">groq.com/privacy-policy</a>.</p>
         <p style={{ marginTop: '0.75rem' }}>No other third parties receive your personal data.</p>
       </Section>
@@ -93,13 +94,14 @@ export default function PrivacyPage() {
       </Section>
 
       <Section title="9. Cookies">
-        <p>We use a single session cookie set by Supabase Auth. It is:</p>
+        <p>We use a single session cookie (gn_session) that holds a random token; the database stores only its SHA-256 hash. It is:</p>
         <ul style={{ paddingLeft: '1.25rem', marginTop: '0.5rem' }}>
           <li>httpOnly — not accessible to JavaScript</li>
           <li>Secure — only sent over HTTPS in production</li>
           <li>SameSite: Lax — CSRF protection</li>
-          <li>Expires after 20 minutes of inactivity (sliding timeout)</li>
+          <li>Expires after 14 days of inactivity and 30 days at most; signing out, a password reset or &quot;sign out all sessions&quot; revokes it immediately</li>
         </ul>
+        <p style={{ marginTop: '0.75rem' }}>A second, non-secret cookie (gn_auth=1) only tells the page that someone is signed in; it grants no access.</p>
         <p style={{ marginTop: '0.75rem' }}>No advertising, analytics, or tracking cookies are used.</p>
       </Section>
 

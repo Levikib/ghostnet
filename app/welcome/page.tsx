@@ -1,7 +1,9 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '../../lib/supabase/client'
+import { looksSignedIn } from '../../lib/client/api'
+import PortalBreach from './PortalBreach'
+import Briefing from './Briefing'
 
 const mono = 'JetBrains Mono, monospace'
 
@@ -90,7 +92,9 @@ function RainColumn({ x, delay }: { x: number; delay: number }) {
 
 export default function WelcomePage() {
   const router = useRouter()
-  const [phase, setPhase] = useState<'boot' | 'logo' | 'tagline' | 'ready'>('boot')
+  const [phase, setPhase] = useState<'boot' | 'logo' | 'tagline' | 'ready' | 'briefing' | 'portal'>('boot')
+  const [reduced, setReduced] = useState(false)
+  useEffect(() => { setReduced(window.matchMedia('(prefers-reduced-motion: reduce)').matches) }, [])
   const [bootLines, setBootLines] = useState<string[]>([])
   const [showCursor, setShowCursor] = useState(true)
   const [rainCols] = useState(() =>
@@ -100,15 +104,12 @@ export default function WelcomePage() {
     }))
   )
 
-  // If already authenticated with an active session, skip the splash entirely
+  // Already signed in: skip the splash and go where they were heading.
   useEffect(() => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    if (!supabaseUrl || !supabaseKey || supabaseUrl === 'your_supabase_url_here') return
-    const supabase = createClient()
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) router.replace('/')
-    })
+    if (looksSignedIn()) {
+      const from = new URLSearchParams(window.location.search).get('from')
+      router.replace(from && from.startsWith('/') && !from.startsWith('//') ? from : '/')
+    }
   }, [router])
 
   const line1 = useScramble('GHOSTNET', 1200, 35)
@@ -151,15 +152,33 @@ export default function WelcomePage() {
   }, [])
 
   useEffect(() => {
-    if (line1.done) setPhase('logo')
+    if (line1.done) setPhase(p => (p === 'boot' ? 'logo' : p))
   }, [line1.done])
 
   useEffect(() => {
-    if (line3.done) setTimeout(() => setPhase('ready'), 600)
+    if (line3.done) setTimeout(() => setPhase(p => (p === 'briefing' || p === 'portal' ? p : 'ready')), 600)
   }, [line3.done])
 
+  function authTarget(mode: 'register' | 'login') {
+    const from = new URLSearchParams(window.location.search).get('from')
+    return '/auth?mode=' + mode + (from && from.startsWith('/') && !from.startsWith('//') ? '&from=' + encodeURIComponent(from) : '')
+  }
+
   function handleEnter() {
-    router.push('/auth')
+    let briefed = false
+    try { briefed = localStorage.getItem('gn_briefed') === '1' } catch {}
+    setPhase(briefed ? 'portal' : 'briefing')
+  }
+
+  function onBriefed() {
+    try { localStorage.setItem('gn_briefed', '1') } catch {}
+    setPhase('portal')
+  }
+
+  function onBreached() {
+    let returning = false
+    try { returning = localStorage.getItem('gn_operator') === '1' } catch {}
+    router.push(authTarget(returning ? 'login' : 'register'))
   }
 
   return (
@@ -263,7 +282,18 @@ export default function WelcomePage() {
         )}
 
         {/* Main logo — shown after boot */}
-        {phase !== 'boot' && (
+        {phase === 'briefing' && <Briefing onDone={onBriefed} onSkip={onBriefed} />}
+
+        {phase === 'portal' && (
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', animation: 'fadeSlideUp .5s ease both' }}>
+            <div style={{ fontFamily: mono, fontSize: '0.62rem', letterSpacing: '0.4em', color: '#ff4136', marginBottom: '0.6rem' }}>// BREACH PROTOCOL ARMED</div>
+            <div style={{ fontFamily: mono, fontSize: 'clamp(1.1rem, 4vw, 1.6rem)', letterSpacing: '0.2em', color: '#e8ffe8', marginBottom: '1.2rem', textAlign: 'center' }}>BREAK INTO THE NETWORK</div>
+            <PortalBreach onBreached={onBreached} reduced={reduced} />
+            <a href={'/auth?mode=login'} onClick={e => { e.preventDefault(); router.push(authTarget('login')) }} style={{ marginTop: '1.4rem', fontFamily: mono, fontSize: '0.65rem', letterSpacing: '0.2em', color: '#00d4ff', textDecoration: 'none', borderBottom: '1px dashed rgba(0,212,255,0.4)', paddingBottom: '2px' }}>ALREADY AN OPERATOR? SIGN IN</a>
+          </div>
+        )}
+
+        {phase !== 'boot' && phase !== 'briefing' && phase !== 'portal' && (
           <>
             {/* Corner brackets */}
             <div style={{ position: 'relative', marginBottom: '0.5rem' }}>
@@ -379,7 +409,7 @@ export default function WelcomePage() {
                 marginBottom: '2.5rem',
               }}
             >
-              ACCESS THE NETWORK
+              INITIATE BREACH PROTOCOL
             </button>
 
             {/* Bottom status */}

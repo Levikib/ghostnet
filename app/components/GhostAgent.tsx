@@ -543,7 +543,7 @@ export default function GhostAgent() {
 
   const moduleCtx = getPageContext(pathname)
 
-  // Derive username: prefer Supabase profile, fall back to auth user metadata
+  // Username from the signed-in operator profile
   const username = profile?.username || undefined
 
   function readProgress() {

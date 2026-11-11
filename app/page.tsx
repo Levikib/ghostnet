@@ -1,7 +1,9 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { RANK_LIST } from '../lib/supabase'
+import { RANK_LIST, RANK_COLORS } from '../lib/supabase'
+import { useAuth } from './components/AuthProvider'
+import OperatorAvatar from './components/OperatorAvatar'
 
 const MODULES = [
   {
@@ -230,10 +232,35 @@ export default function Dashboard() {
     return () => window.removeEventListener('ghostnet_progress_updated', onUpdate)
   }, [])
 
+  const { profile } = useAuth()
+  useEffect(() => {
+    if (!profile) return
+    setLiveStats({ xp: profile.xp, completedLabs: profile.labs_completed, rank: profile.ghost_rank, rankColor: RANK_COLORS[profile.ghost_rank] })
+  }, [profile])
+  const resume = profile ? (profile.modules.filter(m => m.percent > 0 && m.percent < 100).sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''))[0]
+    || profile.modules.find(m => profile.interests.includes(m.id) && m.percent < 100) || profile.modules.find(m => m.percent < 100)) : null
+
   const picked = MODULES.find(m => m.href === selectedModule)
 
   return (
     <div>
+      {profile && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', padding: '16px 18px', marginBottom: '2rem', border: '1px solid ' + RANK_COLORS[profile.ghost_rank] + '40', background: 'linear-gradient(120deg, ' + RANK_COLORS[profile.ghost_rank] + '10, rgba(0,6,1,.6))' }}>
+          <OperatorAvatar seed={profile.avatar_seed || profile.username} color={profile.avatar_color} size={56} />
+          <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', letterSpacing: '0.3em', color: RANK_COLORS[profile.ghost_rank] }}>WELCOME BACK · {profile.ghost_rank.toUpperCase()}</div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '1.05rem', color: '#eaffea', marginTop: '4px' }}>{profile.display_name}</div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem', color: '#5f8f6f', marginTop: '3px' }}>{profile.xp.toLocaleString()} XP · {profile.overall_percent}% of the network · {profile.streak_days}-day streak</div>
+          </div>
+          {resume && (
+            <Link href={'/modules/' + resume.id} style={{ textDecoration: 'none', padding: '10px 14px', border: '1px solid ' + resume.color, color: resume.color, fontFamily: 'JetBrains Mono, monospace', fontSize: '0.7rem', letterSpacing: '0.12em' }}>
+              {resume.percent ? 'CONTINUE' : 'START'} MOD-{resume.code} · {resume.percent}% ▸
+            </Link>
+          )}
+          <Link href="/profile" style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.66rem', color: '#00d4ff', letterSpacing: '0.15em' }}>VIEW PROGRESS</Link>
+        </div>
+      )}
+
       {/* ── HERO ─────────────────────────────────────────────── */}
       <div style={{ marginBottom: '3rem' }}>
         <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#1a4a1a', letterSpacing: '0.3em', marginBottom: '1rem' }}>

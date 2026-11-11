@@ -1,50 +1,33 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '../../../lib/supabase/server'
-import { createServerClient } from '../../../lib/supabase-server'
+import { NextRequest } from 'next/server'
+import { sql } from '../../../lib/server/db'
+import { getSessionUser } from '../../../lib/server/session'
+import { fail, json } from '../../../lib/server/auth'
 
-// GET /api/admin — returns { isAdmin: bool } for the current session user.
-// Admin email list lives in ADMIN_EMAILS (server-only, never NEXT_PUBLIC_).
-// Falls back to NEXT_PUBLIC_ADMIN_EMAIL for backwards compatibility with existing deployments.
-export async function GET() {
-  try {
-    const authClient = createClient()
-    const { data: { user } } = await authClient.auth.getUser()
-    if (!user) return NextResponse.json({ isAdmin: false }, { status: 401 })
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
-    const adminEnv = process.env.ADMIN_EMAILS || process.env.NEXT_PUBLIC_ADMIN_EMAIL || ''
-    const adminEmails = adminEnv.split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
-    const isAdmin = adminEmails.includes((user.email || '').toLowerCase())
-
-    return NextResponse.json({ isAdmin })
-  } catch {
-    return NextResponse.json({ isAdmin: false }, { status: 500 })
-  }
+/** Admins: role admin/super_admin, or an email listed in ADMIN_EMAILS (server-only env). */
+async function adminFrom(req: NextRequest) {
+  const s = await getSessionUser(req)
+  if (!s) return null
+  const list = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+  const isAdmin = s.role === 'admin' || s.role === 'super_admin' || list.includes(s.email.toLowerCase())
+  return isAdmin ? s : null
 }
 
-// GET /api/admin/users — full user list for admin panel
-export async function POST() {
-  try {
-    // Verify admin status server-side before returning any data
-    const authClient = createClient()
-    const { data: { user } } = await authClient.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+// GET /api/admin -> { isAdmin }
+export async function GET(req: NextRequest) {
+  return json({ isAdmin: !!(await adminFrom(req)) })
+}
 
-    const adminEnv = process.env.ADMIN_EMAILS || process.env.NEXT_PUBLIC_ADMIN_EMAIL || ''
-    const adminEmails = adminEnv.split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
-    if (!adminEmails.includes((user.email || '').toLowerCase())) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
-    // Use service role only after admin is verified server-side
-    const supabase = createServerClient()
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select('id, username, email, ghost_rank, xp, streak_days, last_active, created_at')
-      .order('xp', { ascending: false })
-    if (error) throw error
-
-    return NextResponse.json({ users: data })
-  } catch (e: unknown) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : 'Failed' }, { status: 500 })
-  }
+// POST /api/admin -> operator list with progress (admin only)
+export async function POST(req: NextRequest) {
+  const a = await adminFrom(req)
+  if (!a) return fail('Forbidden', 403)
+  const users = await sql(
+    `SELECT u.id, u.username, u.email, u.role, u.xp, u.streak_days, u.created_at, u.last_login_at, u.email_verified_at IS NOT NULL AS verified,
+            u.totp_enabled_at IS NOT NULL AS two_factor,
+            (SELECT count(*)::int FROM lab_progress l WHERE l.user_id = u.id AND l.completed) AS labs_completed
+       FROM users u ORDER BY u.created_at DESC LIMIT 500`)
+  return json({ users })
 }

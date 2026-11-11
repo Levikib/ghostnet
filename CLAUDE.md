@@ -3,8 +3,17 @@
 ## Stack
 Next.js 14 (App Router), TypeScript strict mode (`ignoreBuildErrors: false`), Tailwind, JetBrains Mono font, terminal/hacker aesthetic.
 Babel compiler (NOT SWC) — .babelrc exists, do not remove it.
-Supabase — auth, postgres, realtime. Client: lib/supabase/client.ts (browser), lib/supabase/server.ts (API routes only).
+Database: Neon Postgres via SQL-over-HTTP (lib/server/db.ts, no driver). Schema self-heals in lib/server/schema.ts (idempotent statements; add new columns at the end).
+Auth: GHOSTNET's own engine (lib/server/*): scrypt passwords, email OTP verification, DB sessions (httpOnly `gn_session`, hashed), optional TOTP 2FA + backup codes, new-device alerts, rate limits, audit log. Supabase is no longer used.
+Email: Gmail SMTP via lib/server/mailer.ts (SMTP_USER, SMTP_PASS app password). Env: DATABASE_URL, AUTH_SECRET, SMTP_USER, SMTP_PASS, MAIL_FROM_NAME, ADMIN_EMAILS.
 Groq API — llama-3.3-70b-versatile, 4096 max tokens, via /api/ghost route.
+
+## Auth & LMS rules
+- Server code that touches the DB lives in lib/server/* and route handlers with `export const runtime = 'nodejs'`. Always use `sql()` / `one()` with $n params.
+- Every API route authenticates itself with `getSessionUser(req)`; middleware only redirects pages without a session cookie to /welcome.
+- Client: `useAuth()` gives `profile` (the full operator incl. per-module progress). Progress sync goes through lib/client/progress.ts (syncChapter, syncLabStep, syncLabComplete).
+- Course catalogue, lab XP and the progress formula (60% chapters + 40% lab) live in lib/learning.ts. Never hardcode lab XP elsewhere.
+- Flow: /welcome (boot, briefing, hold-to-breach portal) -> /auth (sign in / enlist / verify / 2FA / reset) -> /onboarding (sigil, clearance, focus) -> dashboard.
 
 ## Critical Rules
 - NEVER use template literals with bash variables like ${VAR} inside JSX/TSX — use string concatenation or replace with placeholder text like ADDR_HERE

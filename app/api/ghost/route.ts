@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '../../../lib/supabase/server'
+import { getSessionUser } from '../../../lib/server/session'
+
+export const runtime = 'nodejs'
 
 // Per-session in-memory rate limit: max 60 requests per rolling hour per user/IP.
 // Simple map — resets on server restart. Sufficient for the Groq free tier (14,400/day).
@@ -23,8 +25,7 @@ function checkRateLimit(identity: string): boolean {
 export async function POST(req: NextRequest) {
   try {
     // Require authentication — Ghost Agent is for authenticated operators only
-    const authClient = createClient()
-    const { data: { user } } = await authClient.auth.getUser()
+    const user = await getSessionUser(req)
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }

@@ -50,7 +50,7 @@ const securityHeaders = [
   // - Styles: self + inline (Tailwind generates inline, Google Fonts CDN)
   // - Fonts: Google Fonts CDN
   // - Images: self + data: (Next.js image optimization uses data URIs)
-  // - Connect: self (API routes) + Supabase + Groq
+  // - Connect: self (API routes) + Groq + public CVE / blockchain APIs
   // - Frame: none — we never embed iframes
   {
     key: 'Content-Security-Policy',
@@ -60,7 +60,7 @@ const securityHeaders = [
       `style-src ${SELF} ${UNSAFE_INLINE} ${GOOGLE_FONTS}`,
       `font-src ${SELF} ${GOOGLE_FONTS}`,
       `img-src ${SELF} data: https:`,
-      `connect-src ${SELF} https://*.supabase.co wss://*.supabase.co https://api.groq.com https://services.nvd.nist.gov https://api.blockcypher.com`,
+      `connect-src ${SELF} https://api.groq.com https://services.nvd.nist.gov https://api.blockcypher.com`,
       `frame-src ${NONE}`,
       `frame-ancestors ${NONE}`,
       `object-src ${NONE}`,

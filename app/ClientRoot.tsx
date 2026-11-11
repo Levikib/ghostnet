@@ -7,32 +7,17 @@ import ProgressTracker from './components/ProgressTracker'
 import CheatSheet from './components/CheatSheet'
 import CVEFeed from './components/CVEFeed'
 import ErrorBoundary from './components/ErrorBoundary'
-import { AuthProvider } from './components/AuthProvider'
-import { createClient } from '../lib/supabase/client'
+import { AuthProvider, useAuth } from './components/AuthProvider'
 
 const MobileMenuContext = createContext(false)
 
 function NavAuth() {
-  const [email, setEmail] = useState<string | null>(null)
-  const router = useRouter()
+  const { profile, signOut } = useAuth()
+  const email = profile ? profile.username : null
   const mono = 'JetBrains Mono, monospace'
 
-  useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data }) => {
-      setEmail(data.user?.user_metadata?.username || data.user?.email || null)
-    })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      setEmail(session?.user?.user_metadata?.username || session?.user?.email || null)
-    })
-    return () => subscription.unsubscribe()
-  }, [])
-
   async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    setEmail(null)
-    router.push('/welcome')
+    await signOut()
   }
 
   if (email) {
@@ -99,12 +84,8 @@ function Nav({ onMobileMenuChange }: { onMobileMenuChange: (open: boolean) => vo
   const toolsRef = useRef<HTMLDivElement>(null)
   const mobileRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user))
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setAuthed(!!session))
-    return () => subscription.unsubscribe()
-  }, [])
+  const { profile, signOut: signOutNav } = useAuth()
+  useEffect(() => { setAuthed(!!profile) }, [profile])
 
   const TOOLS = [
     ...TOOLS_BASE,
@@ -307,7 +288,7 @@ function Nav({ onMobileMenuChange }: { onMobileMenuChange: (open: boolean) => vo
                   <Link href="/profile" style={{ textDecoration: 'none', flex: 1, display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '5px', background: 'rgba(0,255,65,0.05)', border: '1px solid rgba(0,255,65,0.2)' }}>
                     <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#00ff41', letterSpacing: '0.08em' }}>◈ MY PROFILE</span>
                   </Link>
-                  <button onClick={async () => { const s = createClient(); await s.auth.signOut(); router.push('/welcome') }}
+                  <button onClick={async () => { await signOutNav() }}
                     style={{ padding: '10px 14px', borderRadius: '5px', background: 'rgba(255,65,54,0.06)', border: '1px solid rgba(255,65,54,0.3)', cursor: 'pointer', fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: '#ff4136', letterSpacing: '0.1em' }}>
                     LOGOUT
                   </button>
