@@ -43,7 +43,7 @@ export const LAB_XP: Record<string, number> = {
 /** XP for reading: awarded once per chapter the first time it is opened. */
 export const CHAPTER_XP = 5
 
-/** Steps in each guided lab (kept in step with app/modules/*/lab/page.tsx). */
+// Steps in each guided lab (kept in step with each module's lab page).
 export const LAB_STEPS: Record<string, number> = {
   'tor-lab': 17, 'osint-lab': 16, 'crypto-lab': 20, 'offensive-lab': 20, 'active-directory-lab': 22, 'web-attacks-lab': 21, 'malware-lab': 22,
   'network-attacks-lab': 21, 'cloud-security-lab': 18, 'social-engineering-lab': 16, 'red-team-lab': 18, 'wireless-attacks-lab': 18, 'mobile-security-lab': 18,
