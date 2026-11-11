@@ -340,6 +340,32 @@ ParentCommandLine:  C:/Windows/Explorer.EXE`}
           Note the OriginalFileName field. It comes from the PE version resource, so it still says PowerShell.EXE if an attacker copies powershell.exe to C:/Users/Public/notepad.exe. Detections keyed on OriginalFileName survive that renaming trick; detections keyed only on Image do not.
         </P>
 
+        <H3>Turning Auditing On Properly</H3>
+        <P>
+          Many of the events above simply do not exist on a default Windows install. Configure Advanced Audit Policy through Group Policy (Computer Configuration, Windows Settings, Security Settings, Advanced Audit Policy Configuration) rather than the legacy basic categories, and verify the effective result on a real host with auditpol. Also raise the Security log maximum size well above the default, or a busy domain controller will overwrite the evidence you need within hours.
+        </P>
+        <Pre label="VERIFYING AUDIT POLICY ON A HOST">
+{`C:/> auditpol /get /category:"Logon/Logoff","Detailed Tracking","Account Management"
+
+Logon/Logoff
+  Logon                                   Success and Failure
+  Special Logon                           Success
+Detailed Tracking
+  Process Creation                        Success
+Account Management
+  User Account Management                 Success and Failure
+  Security Group Management               Success
+
+# Plus, via GPO:
+#  Administrative Templates > System > Audit Process Creation >
+#     "Include command line in process creation events" = Enabled
+#  Administrative Templates > Windows Components > Windows PowerShell >
+#     "Turn on PowerShell Script Block Logging" = Enabled`}
+        </Pre>
+        <P>
+          Microsoft&apos;s published audit policy recommendations and the community Windows logging cheat sheets are good baselines. Whatever you choose, document it, because during an incident the first question about a missing event is always whether it was never generated or was generated and lost.
+        </P>
+
         <H3>Linux: auth.log, syslog, journald and auditd</H3>
         <P>
           On Debian and Ubuntu, SSH and sudo activity goes to /var/log/auth.log; on RHEL, Rocky and Alma it is /var/log/secure. Be aware that minimal modern installs (Debian 12 and later, for example) may not install rsyslog at all, in which case those files do not exist and you must read the systemd journal with journalctl or forward it. For process-level visibility, the Linux Audit framework (auditd) can record every execve system call, giving you the Linux equivalent of 4688.
@@ -367,7 +393,7 @@ $ journalctl -u ssh --since "2026-11-03 22:00"`}
 203.0.113.50 - - [03/Nov/2026:23:12:01 +0000] "POST /uploads/img/thumb.php HTTP/1.1" 200 312 "-" "Mozilla/5.0"
 
 # Zeek dns.log (selected fields: ts, id.orig_h, query, qtype, answers)
-1762204664.118  10.20.30.42  cdn-telemetry.example  A  192.0.2.66
+1793740665.204  10.20.30.42  cdn-telemetry.example  A  192.0.2.66
 
 # Proxy log
 2026-11-03T21:17:46Z user=m.hale src=10.20.30.42 method=GET url=https://cdn-telemetry.example/s/upd.ps1 status=200 bytes=4821 ua="Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1"`}
@@ -979,9 +1005,9 @@ alert tcp any any -> $HOME_NET 22 (msg:"GHOSTNET - Possible SSH brute force";
         />
         <Pre label="ZEEK conn.log ENTRIES (TSV, SELECTED FIELDS)">
 {`#fields ts               uid                 id.orig_h    id.orig_p id.resp_h   id.resp_p proto service duration orig_bytes resp_bytes conn_state
-1762204664.31  CwQ1sU3yE9aWb7xLk  10.20.30.42  50211     192.0.2.66  443       tcp   ssl     0.412    318        1460       SF
-1762204724.88  C8pJvR1nT0eXq2Mzd  10.20.30.42  50219     192.0.2.66  443       tcp   ssl     0.398    322        1460       SF
-1762204785.02  CkL7tH5aZ2fYw9Pqe  10.20.30.42  50227     192.0.2.66  443       tcp   ssl     0.405    318        1460       SF
+1793740665.61  CwQ1sU3yE9aWb7xLk  10.20.30.42  50211     192.0.2.66  443       tcp   ssl     0.412    318        1460       SF
+1793740724.88  C8pJvR1nT0eXq2Mzd  10.20.30.42  50219     192.0.2.66  443       tcp   ssl     0.398    322        1460       SF
+1793740785.02  CkL7tH5aZ2fYw9Pqe  10.20.30.42  50227     192.0.2.66  443       tcp   ssl     0.405    318        1460       SF
 
 $ zeek-cut ts id.orig_h id.resp_h query < dns.log | grep cdn-telemetry.example`}
         </Pre>
@@ -995,7 +1021,7 @@ $ zeek-cut ts id.orig_h id.resp_h query < dns.log | grep cdn-telemetry.example`}
         </P>
         <Pre label="VPC FLOW LOG RECORD (DEFAULT FORMAT)">
 {`version account-id   interface-id          srcaddr      dstaddr       srcport dstport protocol packets bytes    start      end        action log-status
-2       111122223333 eni-0a1b2c3d4e5f6a7b8 10.0.4.17    198.51.100.9  49822   443     6        8211    48211044 1762210000 1762210060 ACCEPT OK`}
+2       111122223333 eni-0a1b2c3d4e5f6a7b8 10.0.4.17    198.51.100.9  49822   443     6        8211    48211044 1793746000 1793746060 ACCEPT OK`}
         </Pre>
         <P>
           Nearly 48 MB outbound in one minute from an application server to an unfamiliar address is the shape exfiltration takes in flow data. Flow-based detections focus on volume anomalies, new external destinations, unusual ports, and internal hosts suddenly talking to many peers (scanning or worm-like spread).
@@ -1451,7 +1477,169 @@ $ vol -f WS-FIN-042.mem windows.malfind --pid 8012`}
       </div>
     ),
   },
-// __MORE_CHAPTERS__
+  {
+    id: 'threat-intel-putting-it-together',
+    title: 'Threat Intelligence and Putting It Together',
+    difficulty: 'INTERMEDIATE',
+    readTime: '18 min',
+    labLink: '/modules/blue-team/lab',
+    takeaways: [
+      'IOCs (hashes, IPs, domains) are cheap for attackers to change and expire quickly; TTPs (how the attacker operates) are expensive to change and make the most durable detections.',
+      'The Pyramid of Pain ranks indicator types by how much it hurts the adversary when you detect them, from hash values at the bottom to TTPs at the top.',
+      'STIX 2.1 is the language for describing threat intelligence and TAXII 2.1 is the protocol for exchanging it; MISP is the most widely used open-source platform for storing and sharing it.',
+      'An incident report must serve two audiences: a short executive summary of impact and decisions, and a precise technical body with timeline, root cause, IOCs, TTPs and recommendations.',
+      'Purple teaming closes the loop: emulate a technique, check whether it was logged, detected and responded to, fix the gap, and repeat.',
+    ],
+    content: (
+      <div>
+        <H3>What Threat Intelligence Is (and Is Not)</H3>
+        <P>
+          Threat intelligence is analysed information about adversaries that helps a specific organisation make better decisions. The emphasis on &quot;analysed&quot; and &quot;specific&quot; matters. A raw feed of 400,000 IP addresses is data, not intelligence. A one-page assessment that says &quot;a financially motivated group is phishing East African logistics firms with invoice-themed LNK files, here is how their loader behaves, and here are three detections to deploy this week&quot; is intelligence.
+        </P>
+        <Table
+          headers={['Level', 'Audience', 'Example']}
+          rows={[
+            ['Strategic', 'Executives, board', 'Ransomware against our sector rose sharply this year; recommended investment in backup resilience'],
+            ['Operational', 'IR leads, SOC managers', 'Campaign details: who is targeted, timing, objectives, infrastructure patterns'],
+            ['Tactical', 'Detection engineers, hunters', 'TTPs mapped to ATT&CK, behaviour of the loader, Sigma and Suricata rules'],
+            ['Technical', 'Automated controls', 'IOCs: hashes, domains, IPs, URLs with confidence and expiry'],
+          ]}
+        />
+
+        <H3>IOCs vs TTPs</H3>
+        <P>
+          Indicators of Compromise (IOCs) are observable artefacts associated with malicious activity: file hashes, IP addresses, domains, URLs, email sender addresses, mutex names. They are precise, easy to automate, and useful for quick sweeps and blocking. They are also fragile. An attacker can recompile malware to get a new hash in seconds and rotate domains and IPs for a few dollars, and shared infrastructure (CDNs, cloud hosting) means blocking an IP can hit legitimate traffic.
+        </P>
+        <P>
+          Tactics, Techniques and Procedures (TTPs) describe how an adversary operates: initial access through LNK files in ZIP attachments, execution through hidden encoded PowerShell, persistence through a service in ProgramData, credential access through password spraying, and so on. Changing TTPs requires the attacker to retool, retrain and accept new risks. That is why detections built on TTPs, like the Sigma rule in chapter 4, remain useful long after the original campaign&apos;s IOCs have expired.
+        </P>
+
+        <H3>The Pyramid of Pain</H3>
+        <P>
+          David Bianco&apos;s Pyramid of Pain (2013) is the classic model. Each level up is harder for the attacker to change, so detecting and denying it causes them more pain.
+        </P>
+        <Pre label="THE PYRAMID OF PAIN (TOP = MOST PAIN FOR THE ADVERSARY)">
+{`                 +-----------+
+                 |   TTPs    |   TOUGH        - must change how they operate
+               +---------------+
+               |     Tools     |   CHALLENGING  - must find, buy or build new tools
+           +-----------------------+
+           | Network/Host Artifacts|   ANNOYING     - URI patterns, service names, UA strings
+         +---------------------------+
+         |       Domain Names        |   SIMPLE       - register a new domain
+       +-------------------------------+
+       |         IP Addresses          |   EASY         - move to new hosting
+     +-----------------------------------+
+     |           Hash Values             |   TRIVIAL      - recompile or pad the file
+     +-----------------------------------+`}
+        </Pre>
+        <P>
+          Notice where the lab&apos;s artefacts sit. The updsvc.exe hash and the 192.0.2.66 address are near the bottom: block them, but expect them to change. The service name UpdSvc in ProgramData and the PowerShell user agent fetching a .ps1 are host and network artefacts in the middle. The behaviour, hidden encoded PowerShell launched from a shortcut and followed by service creation, is a TTP at the top, and it is what the Sigma rule in chapter 4 targets.
+        </P>
+
+        <H3>STIX, TAXII and MISP</H3>
+        <P>
+          STIX 2.1 (Structured Threat Information Expression) is an OASIS standard JSON format for describing threat intelligence as objects and relationships: indicators, malware, threat actors, campaigns, attack patterns (which reference ATT&amp;CK), observed data, sightings and more. TAXII 2.1 is the companion HTTPS protocol for publishing and consuming collections of STIX objects. Together they let a SIEM, TIP or EDR pull intelligence from a sharing community automatically.
+        </P>
+        <Pre label="STIX 2.1 INDICATOR AND RELATIONSHIP (ABRIDGED)">
+{`{
+  "type": "indicator",
+  "spec_version": "2.1",
+  "id": "indicator--6c1a6b0e-2d4f-4b8e-9a51-7f0d3c2e9b14",
+  "created": "2026-11-04T09:12:00.000Z",
+  "modified": "2026-11-04T09:12:00.000Z",
+  "name": "GreyFinch C2 domain",
+  "pattern": "[domain-name:value = 'cdn-telemetry.example']",
+  "pattern_type": "stix",
+  "valid_from": "2026-11-04T09:12:00Z",
+  "valid_until": "2027-02-04T00:00:00Z",
+  "confidence": 85,
+  "labels": ["malicious-activity"]
+}
+{
+  "type": "relationship",
+  "relationship_type": "indicates",
+  "source_ref": "indicator--6c1a6b0e-2d4f-4b8e-9a51-7f0d3c2e9b14",
+  "target_ref": "malware--0b3e9c55-1f6d-4a8e-b2c7-9d4e1a6f3c20"
+}`}
+        </Pre>
+        <P>
+          MISP (Malware Information Sharing Platform) is the most widely used open-source threat intelligence platform. It stores events (an incident or campaign) containing attributes (individual indicators) and objects, supports tagging with taxonomies such as TLP (Traffic Light Protocol, now version 2.0 with TLP:CLEAR, GREEN, AMBER, AMBER+STRICT and RED) and galaxies (actor and ATT&amp;CK clusters), correlates new indicators against everything already stored, and synchronises with other MISP instances in sharing communities such as national CERTs and sector ISACs. It also exposes STIX and TAXII interfaces and a REST API that SIEMs and SOAR tools query during enrichment.
+        </P>
+        <Pre label="QUERYING MISP DURING TRIAGE (PyMISP)">
+{`from pymisp import PyMISP
+misp = PyMISP("https://misp.corp.example", API_KEY, ssl=True)
+hits = misp.search(controller="attributes", value="cdn-telemetry.example", include_context=True)
+for a in hits["Attribute"]:
+    print(a["Event"]["info"], a["type"], a["category"], a.get("Tag", []))
+
+# GreyFinch - invoice LNK campaign (Nov 2026)  domain  Network activity  [tlp:amber, misp-galaxy:mitre-attack-pattern="T1204.002"]`}
+        </Pre>
+        <P>
+          Always attach context to indicators: first and last seen dates, confidence, source, and an expiry. Stale indicators are a major source of false positives; an IP used for C2 six months ago may now host an innocent website.
+        </P>
+
+        <H3>Writing an Incident Report</H3>
+        <P>
+          The final report is what remains of an incident when everyone has gone back to normal work. It informs executives, satisfies regulators and insurers, and drives the improvement backlog. Write for two audiences: a one-page executive summary in plain language, and a technical body detailed enough for another responder to reproduce your conclusions.
+        </P>
+        <Pre label="INCIDENT REPORT STRUCTURE">
+{`IR-2026-118  |  TLP:AMBER  |  Final  |  2026-11-12
+
+1. Executive summary
+   - What happened, in three sentences. Business impact. Is it over?
+   - Key decisions taken and decisions still needed.
+2. Scope and impact
+   - Hosts, accounts and data affected; data exfiltration assessment (confirmed / not / unknown)
+3. Timeline (UTC)
+   - First malicious event, detection, containment, eradication, recovery milestones
+4. Technical analysis
+   - Initial access, execution, persistence, credential access, lateral movement, C2, actions on objectives
+   - Each stage mapped to ATT&CK, with evidence references (E001, E002 ...)
+5. Root cause and contributing factors
+   - e.g. LNK in ZIP not blocked; svc_backup password weak and not in a privileged tier; no MFA on bastion
+6. Indicators of compromise (appendix, also shared as STIX / MISP event)
+7. Metrics: time to detect, time to contain, time to recover
+8. Recommendations - owner, priority, due date for each
+9. Lessons learned (blameless): what went well, what did not, what we will change`}
+        </Pre>
+        <Note type="tip">
+          State your confidence. &quot;We assess with high confidence that no data left the network, based on complete proxy and flow logs for the period&quot; is far more useful than &quot;no exfiltration occurred&quot;, and it is honest about what the evidence can support.
+        </Note>
+
+        <H3>Purple Teaming with GHOSTNET</H3>
+        <P>
+          Purple teaming means red and blue working together, in the open, to improve detection and response. Instead of a red team running a covert engagement and handing over a report months later, the two teams sit together: the red side executes a technique, the blue side checks whether it was logged, whether a detection fired, and whether the response would have worked; then they fix gaps and run it again. Tools such as Atomic Red Team (small, mapped tests per ATT&amp;CK technique), MITRE Caldera (automated adversary emulation) and published adversary emulation plans make this repeatable.
+        </P>
+        <P>
+          GHOSTNET&apos;s offensive modules are your red-side syllabus. Pair each one with the defensive question it raises:
+        </P>
+        <Table
+          headers={['Offensive module', 'Technique to emulate', 'Blue-side check']}
+          rows={[
+            ['MOD-05 Active Directory', 'Kerberoasting, DCSync', '4769 with RC4 (0x17) bursts; 4662 replication rights from a non-DC'],
+            ['MOD-10 Social Engineering', 'Phishing with LNK/HTML smuggling payloads', 'Mail gateway verdicts, Office/explorer child process detections'],
+            ['MOD-11 Red Team Operations', 'C2 beaconing, EDR evasion', 'Beacon hunting (chapter 5), sensor tamper alerts (chapter 7)'],
+            ['MOD-07 Malware Analysis', 'Persistence via services and run keys', '7045 / Sysmon 13 rules; YARA on dropped binaries'],
+            ['MOD-08 Network Attacks', 'LLMNR poisoning, scanning', 'Zeek and Suricata alerts; denied east-west connection bursts'],
+            ['MOD-09 Cloud Security', 'Access key abuse, logging disabled', 'CloudTrail CreateAccessKey and StopLogging detections'],
+          ]}
+        />
+        <Pre label="A PURPLE TEAM TEST CARD">
+{`Test:        T1059.001 - encoded hidden PowerShell from explorer.exe
+Execute:     Invoke-AtomicTest T1059.001 -ShowDetailsBrief, then run the encoded-command test (or a scripted LNK in a lab VM)
+Expected:    Sysmon 1 + 4688 logged | Sigma rule fires (high) | EDR alert | SOAR enriches
+Observed:    Logged YES | Sigma YES (4 min latency) | EDR YES | SOAR enrichment FAILED (API key expired)
+Action:      Rotate SOAR key; add data-health check for enrichment failures; retest 2026-11-18`}
+        </Pre>
+
+        <H3>Putting It All Together</H3>
+        <P>
+          Step back and the chapters form a single loop. You collect the right logs (chapter 2) into a SIEM that parses and correlates them (chapter 3). Detection engineering turns attacker behaviour into tested rules (chapter 4), and hunting finds what the rules miss (chapter 5). Network and endpoint controls both prevent attacks and generate telemetry (chapters 6 and 7). When something gets through, the IR process contains and removes it (chapter 8), forensics explains exactly what happened (chapter 9), and intelligence plus purple teaming feed those lessons back into better logging, rules and hardening (chapter 10). Run that loop continuously and every intrusion, real or emulated, makes the next one harder. Now go and work a night shift: the lab drops you into exactly this intrusion, one alert at a time.
+        </P>
+      </div>
+    ),
+  },
 ]
 
 export default function BlueTeamPage() {
