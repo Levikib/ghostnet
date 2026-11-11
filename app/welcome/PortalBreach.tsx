@@ -23,6 +23,12 @@ export default function PortalBreach({ onBreached, reduced }: { onBreached: () =
   const lastStage = useRef(0)
   const raf = useRef<number | null>(null)
   const last = useRef<number>(0)
+  // The parent re-renders often (blinking cursor); keep the loop independent of its callbacks.
+  const onBreachedRef = useRef(onBreached)
+  onBreachedRef.current = onBreached
+  const reducedRef = useRef(reduced)
+  reducedRef.current = reduced
+  const breachedRef = useRef(false)
 
   const stage = Math.min(4, Math.floor(progress * 4 + 0.0001))
 
@@ -33,7 +39,8 @@ export default function PortalBreach({ onBreached, reduced }: { onBreached: () =
   }), [])
 
   const tick = useCallback((t: number) => {
-    const dt = last.current ? t - last.current : 16
+    const reduced = reducedRef.current
+    const dt = Math.min(64, last.current ? t - last.current : 16)
     last.current = t
     let p = progRef.current
     p = holdRef.current ? p + dt / (reduced ? HOLD_MS * 0.5 : HOLD_MS) : p - dt / (HOLD_MS * 0.7)
@@ -47,37 +54,39 @@ export default function PortalBreach({ onBreached, reduced }: { onBreached: () =
       holdRef.current = false
       setHolding(false)
       setBreached(true)
+      breachedRef.current = true
       raf.current = null
-      setTimeout(onBreached, reduced ? 500 : 1700)
+      setTimeout(() => onBreachedRef.current(), reduced ? 500 : 1700)
       return
     }
     if (p > 0 || holdRef.current) raf.current = requestAnimationFrame(tick)
     else { raf.current = null; last.current = 0 }
-  }, [onBreached, reduced])
+  }, [])
 
   const start = useCallback(() => {
-    if (breached) return
+    if (breachedRef.current) return
     holdRef.current = true
     setHolding(true)
     if (!raf.current) { last.current = 0; raf.current = requestAnimationFrame(tick) }
-  }, [breached, tick])
+  }, [tick])
 
   const stop = useCallback(() => {
     holdRef.current = false
     setHolding(false)
-    if (!raf.current && progRef.current > 0 && !breached) { last.current = 0; raf.current = requestAnimationFrame(tick) }
-  }, [breached, tick])
+    if (!raf.current && progRef.current > 0 && !breachedRef.current) { last.current = 0; raf.current = requestAnimationFrame(tick) }
+  }, [tick])
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); start() } }
     const up = (e: KeyboardEvent) => { if (e.key === ' ' || e.key === 'Enter') stop() }
     window.addEventListener('keydown', down)
     window.addEventListener('keyup', up)
-    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); if (raf.current) cancelAnimationFrame(raf.current) }
+    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up) }
   }, [start, stop])
+  useEffect(() => () => { if (raf.current) cancelAnimationFrame(raf.current); raf.current = null }, [])
 
   const C = 2 * Math.PI * 194
-  const statusText = breached ? 'ACCESS GRANTED' : holding ? (stage < 4 ? 'CRACKING ' + RINGS[3 - Math.min(3, stage)].label + '...' : 'BREACHING...') : progress > 0 ? 'RINGS RE-SEALING' : 'HOLD THE CORE TO BREACH'
+  const statusText = breached ? 'ACCESS GRANTED' : holding ? (stage < 4 ? 'CRACKING ' + RINGS[Math.min(3, stage)].label + '...' : 'BREACHING...') : progress > 0 ? 'RINGS RE-SEALING' : 'HOLD THE CORE TO BREACH'
 
   return (
     <div className={'pb-wrap' + (breached && !reduced ? ' pb-shake' : '')} style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
