@@ -1,196 +1,89 @@
 'use client'
 import React, { useState, useRef, useEffect, createContext, useContext } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import GhostAgent from './components/GhostAgent'
 import ProgressTracker from './components/ProgressTracker'
 import CheatSheet from './components/CheatSheet'
 import CVEFeed from './components/CVEFeed'
 import ErrorBoundary from './components/ErrorBoundary'
 import { AuthProvider, useAuth } from './components/AuthProvider'
+import { CATALOG } from '../lib/learning'
+import { accentText } from './components/gx/Gx'
 
 const MobileMenuContext = createContext(false)
 
-function NavAuth() {
-  const { profile, signOut } = useAuth()
-  const email = profile ? profile.username : null
-  const mono = 'JetBrains Mono, monospace'
-
-  async function handleLogout() {
-    await signOut()
-  }
-
-  if (email) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-        <Link href="/profile" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '7.5px', color: '#00ff41', letterSpacing: '0.08em', maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', padding: '2px 8px', borderRadius: '3px', border: '1px solid rgba(0,255,65,0.25)', background: 'rgba(0,255,65,0.05)' }}>
-          ◈ {email.toUpperCase()}
-        </Link>
-        <button
-          onClick={handleLogout}
-          style={{ background: 'transparent', border: '1px solid rgba(255,65,54,0.4)', borderRadius: '3px', padding: '2px 8px', cursor: 'pointer', fontFamily: mono, fontSize: '7px', color: '#ff4136', letterSpacing: '0.1em', transition: 'all 0.15s' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,65,54,0.1)'; (e.currentTarget as HTMLElement).style.borderColor = '#ff4136' }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,65,54,0.4)' }}
-        >
-          LOGOUT
-        </button>
-      </div>
-    )
-  }
-
-  return (
-    <Link href="/auth" style={{ textDecoration: 'none', fontFamily: mono, fontSize: '7.5px', letterSpacing: '0.1em', padding: '3px 10px', borderRadius: '3px', color: '#00ff41', border: '1px solid rgba(0,255,65,0.3)', background: 'rgba(0,255,65,0.05)', flexShrink: 0, transition: 'all 0.15s' }}>
-      LOGIN
-    </Link>
-  )
-}
-
-const ALL_MODULES = [
-  { href: '/modules/tor',                label: 'Tor & Dark Web',          color: '#00ff41', code: '01' },
-  { href: '/modules/osint',              label: 'OSINT & Surveillance',     color: '#00d4ff', code: '02' },
-  { href: '/modules/crypto',             label: 'Crypto & Blockchain',      color: '#ffb347', code: '03' },
-  { href: '/modules/offensive',          label: 'Offensive Security',       color: '#bf5fff', code: '04' },
-  { href: '/modules/active-directory',   label: 'Active Directory',         color: '#ff4136', code: '05' },
-  { href: '/modules/web-attacks',        label: 'Web Attacks Advanced',     color: '#00d4ff', code: '06' },
-  { href: '/modules/malware',            label: 'Malware Analysis',         color: '#00ff41', code: '07' },
-  { href: '/modules/network-attacks',    label: 'Network Attacks',          color: '#00ffff', code: '08' },
-  { href: '/modules/cloud-security',     label: 'Cloud Security',           color: '#ff9500', code: '09' },
-  { href: '/modules/social-engineering', label: 'Social Engineering',       color: '#ff6ec7', code: '10' },
-  { href: '/modules/red-team',           label: 'Red Team Ops',             color: '#ff3333', code: '11' },
-  { href: '/modules/wireless-attacks',   label: 'Wireless Attacks',         color: '#aaff00', code: '12' },
-  { href: '/modules/mobile-security',    label: 'Mobile Security',          color: '#7c4dff', code: '13' },
-]
-
 const TOOLS_BASE = [
-  { href: '/intel',         label: 'THREAT INTEL',     desc: 'Live CVE feed & advisories',      color: '#ff4136' },
-  { href: '/tools',         label: 'TOOL REFERENCE',   desc: '200+ commands & cheatsheets',     color: '#00ff41' },
-  { href: '/terminal',      label: 'RESEARCH TERMINAL',desc: 'Interactive command runner',       color: '#00d4ff' },
-  { href: '/payload',       label: 'PAYLOAD GENERATOR',desc: '40+ attack payloads',             color: '#bf5fff' },
-  { href: '/crypto-tracer', label: 'BLOCKCHAIN TRACER', desc: 'Trace transactions on-chain',    color: '#ffb347' },
-  { href: '/ctf',             label: 'CTF TOOLKIT',        desc: 'Capture-the-flag resources',      color: '#00ffff' },
-  { href: '/report-generator', label: 'REPORT GENERATOR', desc: 'AI pentest report builder',       color: '#00ff41' },
-  { href: '/attack-path',    label: 'ATTACK PATH',        desc: 'MITRE ATT&CK kill chain builder', color: '#ff4136' },
-  { href: '/shodan',         label: 'SHODAN BUILDER',     desc: 'Shodan query constructor',        color: '#00d4ff' },
+  { href: '/intel', label: 'Threat intel', desc: 'Recent CVEs and advisories', color: '#ff6b5e' },
+  { href: '/tools', label: 'Command reference', desc: '180+ commands by category', color: '#00ff41' },
+  { href: '/terminal', label: 'Research terminal', desc: 'Practice shell with cheat sheets', color: '#00d4ff' },
+  { href: '/payload', label: 'Payload generator', desc: '40+ payload templates for labs', color: '#cf8bff' },
+  { href: '/ctf', label: 'CTF toolkit', desc: 'Capture-the-flag techniques', color: '#00ffff' },
+  { href: '/attack-path', label: 'Attack path builder', desc: 'MITRE ATT&CK kill chains + AI narrative', color: '#ff6b5e' },
+  { href: '/report-generator', label: 'Report generator', desc: 'AI-assisted pentest reports', color: '#00ff41' },
+  { href: '/shodan', label: 'Shodan query builder', desc: 'Build search queries', color: '#00d4ff' },
+  { href: '/crypto-tracer', label: 'Blockchain tracer', desc: 'Demo of transaction tracing', color: '#ffb347' },
 ]
 
 function Nav({ onMobileMenuChange }: { onMobileMenuChange: (open: boolean) => void }) {
   const path = usePathname()
-  const router = useRouter()
-  const [modulesOpen, setModulesOpen] = useState(false)
-  const [toolsOpen, setToolsOpen] = useState(false)
+  const [open, setOpen] = useState<'modules' | 'tools' | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [authed, setAuthed] = useState(false)
-  const modulesRef = useRef<HTMLDivElement>(null)
-  const toolsRef = useRef<HTMLDivElement>(null)
-  const mobileRef = useRef<HTMLDivElement>(null)
+  const barRef = useRef<HTMLDivElement>(null)
+  const { profile, signOut } = useAuth()
 
-  const { profile, signOut: signOutNav } = useAuth()
-  useEffect(() => { setAuthed(!!profile) }, [profile])
+  function setMobile(v: boolean) { setMobileOpen(v); onMobileMenuChange(v) }
 
-  const TOOLS = [
-    ...TOOLS_BASE,
-    authed
-      ? { href: '/profile', label: 'PROFILE', desc: 'View your rank, XP and lab history', color: '#00ff41' }
-      : { href: '/auth',    label: 'ACCOUNT', desc: 'Login or create your account',       color: '#00ff41' },
-  ]
-
-  function setMobileOpenAndNotify(open: boolean) {
-    setMobileOpen(open)
-    onMobileMenuChange(open)
-  }
-
-  const activeModule = ALL_MODULES.find(m => path.startsWith(m.href))
-  const isLab = path.includes('/lab')
-  const isDash = path === '/'
+  const activeModule = CATALOG.find(m => path === '/modules/' + m.id || path.startsWith('/modules/' + m.id + '/'))
+  const isLab = path.endsWith('/lab')
+  const progressFor = (id: string) => profile?.modules.find(m => m.id === id)?.percent ?? 0
+  const tools = [...TOOLS_BASE, profile
+    ? { href: '/profile', label: 'Profile', desc: 'Rank, progress and security', color: '#00ff41' }
+    : { href: '/auth', label: 'Account', desc: 'Sign in or enlist', color: '#00ff41' }]
 
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (modulesRef.current && !modulesRef.current.contains(e.target as Node)) setModulesOpen(false)
-      if (toolsRef.current && !toolsRef.current.contains(e.target as Node)) setToolsOpen(false)
-      if (mobileRef.current && !mobileRef.current.contains(e.target as Node)) setMobileOpenAndNotify(false)
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [])
+    function onDown(e: MouseEvent) { if (barRef.current && !barRef.current.contains(e.target as Node)) setOpen(null) }
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') { setOpen(null); if (mobileOpen) setMobile(false) } }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mobileOpen])
 
-  // Close mobile menu on navigation
-  useEffect(() => { setMobileOpenAndNotify(false); setModulesOpen(false); setToolsOpen(false) }, [path])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { setMobile(false); setOpen(null) }, [path])
+
+  const rank = profile ? profile.ghost_rank : null
 
   return (
-    <nav style={{ background: '#030803', borderBottom: '1px solid #0d1f0d', position: 'sticky', top: 0, zIndex: 100 }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 1rem', display: 'flex', alignItems: 'center', gap: '4px', height: '54px' }}>
-
-        {/* LOGO */}
-        <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px', marginRight: '8px', flexShrink: 0 }}>
-          <div style={{ width: '32px', height: '32px', border: '1px solid #00ff41', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 14px rgba(0,255,65,0.25)', background: 'rgba(0,255,65,0.05)' }}>
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', color: '#00ff41', fontWeight: 700 }}>GN</span>
-          </div>
-          <div className="nav-logo-text">
-            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '12px', color: '#00ff41', fontWeight: 700, letterSpacing: '0.12em', lineHeight: 1 }}>GHOSTNET</div>
-            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#3a6a3a', letterSpacing: '0.18em', lineHeight: 1, marginTop: '3px' }}>SECURITY RESEARCH PLATFORM</div>
-          </div>
+    <nav className="gn-nav" aria-label="Main">
+      <div ref={barRef} className="gn-nav-bar">
+        <Link href="/" className="gn-brand" aria-label="GHOSTNET command centre">
+          <span className="gn-mark">GN</span>
+          <span className="gn-brand-text">GHOSTNET</span>
         </Link>
 
-        {/* DESKTOP NAV — hidden on mobile */}
-        <div className="nav-desktop" style={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1 }}>
-          {/* SEPARATOR */}
-          <div style={{ width: '1px', height: '22px', background: '#0d1f0d', flexShrink: 0, marginRight: '4px' }} />
-
-          {/* DASHBOARD */}
-          <Link href="/" style={{
-            textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '8px',
-            letterSpacing: '0.12em', padding: '5px 11px', borderRadius: '4px', flexShrink: 0,
-            color: isDash ? '#00ff41' : '#4a9a4a',
-            background: isDash ? 'rgba(0,255,65,0.07)' : 'transparent',
-            border: isDash ? '1px solid rgba(0,255,65,0.25)' : '1px solid transparent',
-            transition: 'all 0.15s',
-          }}>
-            ⌂ DASHBOARD
-          </Link>
-
-          {/* LEADERBOARD */}
-          <Link href="/leaderboard" style={{
-            textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '8px',
-            letterSpacing: '0.12em', padding: '5px 11px', borderRadius: '4px', flexShrink: 0,
-            color: '#00d4ff',
-            background: 'transparent',
-            border: '1px solid transparent',
-            transition: 'all 0.15s',
-          }}>
-            ◈ BOARD
-          </Link>
-
-          {/* MODULES DROPDOWN */}
-          <div ref={modulesRef} style={{ position: 'relative', flexShrink: 0 }}>
-            <button onClick={() => { setModulesOpen(o => !o); setToolsOpen(false) }} style={{
-              background: modulesOpen || !!activeModule ? 'rgba(0,255,65,0.07)' : 'transparent',
-              border: modulesOpen || !!activeModule ? '1px solid rgba(0,255,65,0.22)' : '1px solid transparent',
-              borderRadius: '4px', cursor: 'pointer', padding: '5px 11px',
-              fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', letterSpacing: '0.12em',
-              color: modulesOpen || !!activeModule ? '#00ff41' : '#4a9a4a',
-              display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.15s',
-            }}>
-              ◈ MODULES
-              <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,255,65,0.12)', border: '1px solid rgba(0,255,65,0.2)', borderRadius: '3px', padding: '1px 5px', fontSize: '7px', color: '#00ff41', fontWeight: 700 }}>13</span>
-              <span style={{ fontSize: '5px', opacity: 0.5, display: 'inline-block', transform: modulesOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▼</span>
+        <div className="gn-nav-links">
+          <Link href="/" className="gn-link" aria-current={path === '/' ? 'page' : undefined}>Command centre</Link>
+          <div style={{ position: 'relative' }}>
+            <button className="gn-link" aria-expanded={open === 'modules'} aria-haspopup="true" onClick={() => setOpen(o => (o === 'modules' ? null : 'modules'))} data-active={!!activeModule}>
+              Modules <span aria-hidden="true" className="gn-caret">▾</span>
             </button>
-
-            {modulesOpen && (
-              <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, width: 'min(560px, 95vw)', background: '#040d04', border: '1px solid #1a3a1a', borderRadius: '8px', zIndex: 200, boxShadow: '0 20px 50px rgba(0,0,0,0.85)', padding: '14px', overflow: 'hidden' }}>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#1a4a1a', letterSpacing: '0.28em', marginBottom: '10px' }}>
-                  ALL 13 MODULES — CLICK CONCEPT TO LEARN · LAB TO PRACTICE
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px' }}>
-                  {ALL_MODULES.map(m => {
-                    const active = path.startsWith(m.href)
+            {open === 'modules' && (
+              <div className="gn-pop gn-pop-wide" role="menu">
+                <div className="gn-pop-head">13 MODULES · CHAPTERS + GUIDED LAB</div>
+                <div className="gn-mod-grid">
+                  {CATALOG.map(m => {
+                    const p = progressFor(m.id)
+                    const here = activeModule?.id === m.id
                     return (
-                      <div key={m.href} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 8px', borderRadius: '5px', border: active ? `1px solid ${m.color}25` : '1px solid #0a170a', background: active ? `${m.color}07` : '#030a03' }}>
-                        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#3a6a3a', flexShrink: 0, minWidth: '16px' }}>{m.code}</span>
-                        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7.5px', color: m.color, flex: 1, letterSpacing: '0.04em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.label}</span>
-                        <div style={{ display: 'flex', gap: '3px', flexShrink: 0 }}>
-                          <Link href={m.href} onClick={() => setModulesOpen(false)} style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '6.5px', padding: '2px 6px', borderRadius: '2px', letterSpacing: '0.08em', color: !isLab && active ? m.color : '#5a8a5a', background: !isLab && active ? `${m.color}12` : 'transparent', border: `1px solid ${!isLab && active ? `${m.color}28` : '#1a3a1a'}` }}>CONCEPT</Link>
-                          <Link href={`${m.href}/lab`} onClick={() => setModulesOpen(false)} style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '6.5px', padding: '2px 6px', borderRadius: '2px', letterSpacing: '0.08em', color: isLab && active ? m.color : '#5a8a5a', background: isLab && active ? `${m.color}12` : 'transparent', border: `1px solid ${isLab && active ? `${m.color}28` : '#1a3a1a'}` }}>LAB</Link>
-                        </div>
+                      <div key={m.id} className="gn-mod" data-here={here} style={{ ['--acc' as string]: accentText(m.color) } as React.CSSProperties}>
+                        <Link href={'/modules/' + m.id} role="menuitem" className="gn-mod-main">
+                          <span className="gn-mod-code">{m.code}</span>
+                          <span className="gn-mod-title">{m.title}</span>
+                          <span className="gn-mod-pct">{p > 0 ? p + '%' : ''}</span>
+                        </Link>
+                        <Link href={'/modules/' + m.id + '/lab'} role="menuitem" className="gn-mod-lab" aria-label={m.title + ' lab'}>LAB</Link>
                       </div>
                     )
                   })}
@@ -198,153 +91,134 @@ function Nav({ onMobileMenuChange }: { onMobileMenuChange: (open: boolean) => vo
               </div>
             )}
           </div>
-
-          {/* TOOLS DROPDOWN */}
-          <div ref={toolsRef} style={{ position: 'relative', flexShrink: 0 }}>
-            <button onClick={() => { setToolsOpen(o => !o); setModulesOpen(false) }} style={{
-              background: toolsOpen ? 'rgba(0,255,65,0.07)' : 'transparent',
-              border: toolsOpen ? '1px solid rgba(0,255,65,0.22)' : '1px solid transparent',
-              borderRadius: '4px', cursor: 'pointer', padding: '5px 11px',
-              fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', letterSpacing: '0.12em',
-              color: toolsOpen ? '#00ff41' : '#4a9a4a',
-              display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.15s',
-            }}>
-              ⚡ TOOLS
-              <span style={{ fontSize: '5px', opacity: 0.5, display: 'inline-block', transform: toolsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▼</span>
+          <div style={{ position: 'relative' }}>
+            <button className="gn-link" aria-expanded={open === 'tools'} aria-haspopup="true" onClick={() => setOpen(o => (o === 'tools' ? null : 'tools'))}>
+              Tools <span aria-hidden="true" className="gn-caret">▾</span>
             </button>
-
-            {toolsOpen && (
-              <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, width: '300px', background: '#040d04', border: '1px solid #1a3a1a', borderRadius: '8px', zIndex: 200, boxShadow: '0 20px 50px rgba(0,0,0,0.85)', padding: '12px' }}>
-                <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#1a4a1a', letterSpacing: '0.28em', marginBottom: '8px' }}>INTERACTIVE TOOLS</div>
-                {TOOLS.map(t => (
-                  <Link key={t.href} href={t.href} onClick={() => setToolsOpen(false)} style={{
-                    textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px',
-                    padding: '8px 10px', borderRadius: '5px', marginBottom: '2px',
-                    background: path === t.href ? `${t.color}08` : 'transparent',
-                    border: path === t.href ? `1px solid ${t.color}20` : '1px solid transparent',
-                    transition: 'background 0.1s',
-                  }}>
-                    <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: t.color, boxShadow: `0 0 5px ${t.color}`, flexShrink: 0 }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: t.color, letterSpacing: '0.08em', fontWeight: 600 }}>{t.label}</div>
-                      <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#4a7a4a', marginTop: '1px' }}>{t.desc}</div>
-                    </div>
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#4a7a4a' }}>→</span>
+            {open === 'tools' && (
+              <div className="gn-pop" role="menu">
+                {tools.map(t => (
+                  <Link key={t.href} href={t.href} role="menuitem" className="gn-tool" aria-current={path === t.href ? 'page' : undefined}>
+                    <span className="gn-tool-dot" style={{ background: t.color }} aria-hidden="true" />
+                    <span><span className="gn-tool-label">{t.label}</span><span className="gn-tool-desc">{t.desc}</span></span>
                   </Link>
                 ))}
               </div>
             )}
           </div>
+          <Link href="/leaderboard" className="gn-link" aria-current={path === '/leaderboard' ? 'page' : undefined}>Leaderboard</Link>
 
-          {/* ACTIVE MODULE PILL — breadcrumb when inside a module */}
           {activeModule && (
-            <>
-              <div style={{ width: '1px', height: '20px', background: '#0d1f0d', margin: '0 6px', flexShrink: 0 }} />
-              <div className="nav-breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#1a3a1a' }}>MOD-{activeModule.code}</span>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: activeModule.color, letterSpacing: '0.04em', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{activeModule.label.toUpperCase()}</span>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#1a3a1a' }}>›</span>
-                <Link href={activeModule.href} style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', padding: '2px 8px', borderRadius: '3px', color: !isLab ? activeModule.color : '#5a8a5a', background: !isLab ? `${activeModule.color}10` : 'transparent', border: `1px solid ${!isLab ? `${activeModule.color}28` : '#1a3a1a'}`, letterSpacing: '0.08em' }}>CONCEPT</Link>
-                <Link href={`${activeModule.href}/lab`} style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', padding: '2px 8px', borderRadius: '3px', color: isLab ? activeModule.color : '#5a8a5a', background: isLab ? `${activeModule.color}10` : 'transparent', border: `1px solid ${isLab ? `${activeModule.color}28` : '#1a3a1a'}`, letterSpacing: '0.08em' }}>LAB</Link>
-              </div>
-            </>
-          )}
-
-          <div style={{ flex: 1 }} />
-
-          {/* GHOST STATUS + USER */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#00ff41', boxShadow: '0 0 8px rgba(0,255,65,0.8)' }} />
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7.5px', color: '#3a8a3a', letterSpacing: '0.1em' }}>GHOST ONLINE</span>
+            <div className="gn-crumb" style={{ ['--acc' as string]: accentText(activeModule.color) } as React.CSSProperties}>
+              <span className="gn-crumb-code">MOD-{activeModule.code}</span>
+              <Link href={'/modules/' + activeModule.id} data-on={!isLab}>Chapters</Link>
+              <Link href={'/modules/' + activeModule.id + '/lab'} data-on={isLab}>Lab</Link>
             </div>
-            <NavAuth />
-          </div>
+          )}
         </div>
 
-        {/* MOBILE HAMBURGER — shown only on mobile */}
-        <div className="nav-mobile" style={{ display: 'none', marginLeft: 'auto', alignItems: 'center', gap: '8px' }} ref={mobileRef}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#00ff41', boxShadow: '0 0 6px rgba(0,255,65,0.8)' }} />
-            <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#1a5a1a' }}>ONLINE</span>
-          </div>
-          <button
-            onClick={() => setMobileOpenAndNotify(!mobileOpen)}
-            style={{ background: mobileOpen ? 'rgba(0,255,65,0.1)' : 'transparent', border: '1px solid rgba(0,255,65,0.25)', borderRadius: '5px', padding: '7px 10px', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center', justifyContent: 'center' }}
-            aria-label="Toggle navigation"
-          >
-            <span style={{ display: 'block', width: '16px', height: '1px', background: '#00ff41', transition: 'transform 0.2s', transform: mobileOpen ? 'translateY(5px) rotate(45deg)' : 'none' }} />
-            <span style={{ display: 'block', width: '16px', height: '1px', background: '#00ff41', opacity: mobileOpen ? 0 : 1, transition: 'opacity 0.2s' }} />
-            <span style={{ display: 'block', width: '16px', height: '1px', background: '#00ff41', transition: 'transform 0.2s', transform: mobileOpen ? 'translateY(-5px) rotate(-45deg)' : 'none' }} />
-          </button>
-
-          {/* MOBILE MENU PANEL */}
-          {mobileOpen && (
-            <div style={{ position: 'fixed', top: '54px', left: 0, right: 0, bottom: 0, background: '#030803', zIndex: 9999, overflowY: 'auto', padding: '1rem 1rem 5rem', borderTop: '1px solid #0d1f0d' }}>
-
-              {/* Auth row at top of mobile menu */}
-              {authed ? (
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                  <Link href="/profile" style={{ textDecoration: 'none', flex: 1, display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '5px', background: 'rgba(0,255,65,0.05)', border: '1px solid rgba(0,255,65,0.2)' }}>
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#00ff41', letterSpacing: '0.08em' }}>◈ MY PROFILE</span>
-                  </Link>
-                  <button onClick={async () => { await signOutNav() }}
-                    style={{ padding: '10px 14px', borderRadius: '5px', background: 'rgba(255,65,54,0.06)', border: '1px solid rgba(255,65,54,0.3)', cursor: 'pointer', fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: '#ff4136', letterSpacing: '0.1em' }}>
-                    LOGOUT
-                  </button>
-                </div>
-              ) : (
-                <Link href="/auth" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', borderRadius: '5px', marginBottom: '12px', background: 'rgba(0,255,65,0.05)', border: '1px solid rgba(0,255,65,0.2)' }}>
-                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: '#00ff41', letterSpacing: '0.08em' }}>→ LOGIN / CREATE ACCOUNT</span>
-                </Link>
-              )}
-
-              <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', borderRadius: '6px', marginBottom: '6px', background: isDash ? 'rgba(0,255,65,0.07)' : 'transparent', border: isDash ? '1px solid rgba(0,255,65,0.2)' : '1px solid #0d1f0d' }}>
-                <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '10px', color: '#00ff41', letterSpacing: '0.1em' }}>⌂ DASHBOARD</span>
+        <div className="gn-nav-right">
+          {profile ? (
+            <>
+              <Link href="/profile" className="gn-me" aria-label="Your profile">
+                <span className="gn-me-name">{profile.username}</span>
+                <span className="gn-me-xp">{rank ? rank.toUpperCase() + ' · ' : ''}{profile.xp.toLocaleString()} XP</span>
               </Link>
-
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#1a4a1a', letterSpacing: '0.28em', padding: '12px 12px 6px', marginTop: '8px' }}>◈ MODULES</div>
-              {ALL_MODULES.map(m => {
-                const active = path.startsWith(m.href)
-                return (
-                  <div key={m.href} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', borderRadius: '5px', marginBottom: '3px', border: active ? `1px solid ${m.color}22` : '1px solid #0a170a', background: active ? `${m.color}06` : 'transparent' }}>
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#1a3a1a', minWidth: '18px' }}>{m.code}</span>
-                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: m.color, flex: 1 }}>{m.label}</span>
-                    <Link href={m.href} style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', padding: '3px 8px', borderRadius: '3px', color: !isLab && active ? m.color : '#253525', border: `1px solid ${!isLab && active ? `${m.color}30` : '#0d1d0d'}` }}>CONCEPT</Link>
-                    <Link href={`${m.href}/lab`} style={{ textDecoration: 'none', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', padding: '3px 8px', borderRadius: '3px', color: isLab && active ? m.color : '#253525', border: `1px solid ${isLab && active ? `${m.color}30` : '#0d1d0d'}` }}>LAB</Link>
-                  </div>
-                )
-              })}
-
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#1a4a1a', letterSpacing: '0.28em', padding: '12px 12px 6px', marginTop: '8px' }}>⚡ TOOLS</div>
-              {TOOLS.map(t => (
-                <Link key={t.href} href={t.href} style={{
-                  textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px',
-                  padding: '10px 12px', borderRadius: '5px', marginBottom: '3px',
-                  background: path === t.href ? `${t.color}08` : 'transparent',
-                  border: path === t.href ? `1px solid ${t.color}22` : '1px solid #0a170a',
-                }}>
-                  <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: t.color, flexShrink: 0 }} />
-                  <div>
-                    <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '9px', color: t.color, letterSpacing: '0.08em', fontWeight: 600 }}>{t.label}</div>
-                    <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#1a3a1a', marginTop: '2px' }}>{t.desc}</div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+              <button className="gn-out" onClick={() => signOut()}>Sign out</button>
+            </>
+          ) : (
+            <Link href="/auth" className="gn-out">Sign in</Link>
           )}
+          <button className="gn-burger" aria-label={mobileOpen ? 'Close menu' : 'Open menu'} aria-expanded={mobileOpen} onClick={() => setMobile(!mobileOpen)}>
+            <span data-open={mobileOpen} />
+          </button>
         </div>
       </div>
 
+      {mobileOpen && (
+        <div className="gn-mobile">
+          {profile && (
+            <Link href="/profile" className="gn-mobile-me">
+              <span className="gn-me-name">{profile.username}</span>
+              <span className="gn-me-xp">{(rank || '').toUpperCase()} · {profile.xp.toLocaleString()} XP</span>
+            </Link>
+          )}
+          <Link href="/" className="gn-mobile-link">Command centre</Link>
+          <Link href="/leaderboard" className="gn-mobile-link">Leaderboard</Link>
+          <div className="gn-pop-head" style={{ marginTop: '18px' }}>MODULES</div>
+          {CATALOG.map(m => (
+            <div key={m.id} className="gn-mod" style={{ ['--acc' as string]: accentText(m.color) } as React.CSSProperties}>
+              <Link href={'/modules/' + m.id} className="gn-mod-main">
+                <span className="gn-mod-code">{m.code}</span>
+                <span className="gn-mod-title">{m.title}</span>
+                <span className="gn-mod-pct">{progressFor(m.id) > 0 ? progressFor(m.id) + '%' : ''}</span>
+              </Link>
+              <Link href={'/modules/' + m.id + '/lab'} className="gn-mod-lab">LAB</Link>
+            </div>
+          ))}
+          <div className="gn-pop-head" style={{ marginTop: '18px' }}>TOOLS</div>
+          {tools.map(t => (
+            <Link key={t.href} href={t.href} className="gn-tool">
+              <span className="gn-tool-dot" style={{ background: t.color }} aria-hidden="true" />
+              <span><span className="gn-tool-label">{t.label}</span><span className="gn-tool-desc">{t.desc}</span></span>
+            </Link>
+          ))}
+          {profile && <button className="gn-out" style={{ marginTop: '18px', width: '100%' }} onClick={() => signOut()}>Sign out</button>}
+        </div>
+      )}
+
       <style>{`
-        @keyframes glow{0%,100%{opacity:1}50%{opacity:0.5}}
-        @media(max-width:768px){
-          .nav-desktop{display:none!important}
-          .nav-mobile{display:flex!important}
-        }
-        @media(max-width:480px){
-          .nav-logo-text{display:none}
-        }
+        .gn-nav { position: sticky; top: 0; z-index: 100; background: rgba(4,7,10,.86); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(232,243,246,.07); }
+        .gn-nav-bar { max-width: 1400px; margin: 0 auto; height: 60px; display: flex; align-items: center; gap: 18px; padding: 0 clamp(16px, 3vw, 24px); }
+        .gn-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; flex: none; }
+        .gn-mark { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 800; color: #04070a; background: #e8f3f6; padding: 5px 6px; clip-path: polygon(0 0, 100% 0, 100% 70%, 70% 100%, 0 100%); }
+        .gn-brand-text { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; letter-spacing: .28em; color: #e8f3f6; }
+        .gn-nav-links { display: flex; align-items: center; gap: 4px; flex: 1; min-width: 0; }
+        .gn-link { font-family: 'DM Sans', system-ui, sans-serif; font-size: 14px; font-weight: 500; color: #93a8b4; background: none; border: 0; padding: 8px 12px; border-radius: 10px; cursor: pointer; text-decoration: none; white-space: nowrap; transition: color .15s, background .15s; }
+        .gn-link:hover, .gn-link[aria-expanded="true"] { color: #e8f3f6; background: rgba(232,243,246,.05); }
+        .gn-link[aria-current="page"], .gn-link[data-active="true"] { color: #e8f3f6; box-shadow: inset 0 -2px 0 #00d4ff; border-radius: 10px 10px 0 0; }
+        .gn-link:focus-visible, .gn-out:focus-visible, .gn-burger:focus-visible, .gn-me:focus-visible { outline: 2px solid #00d4ff; outline-offset: 2px; }
+        .gn-caret { font-size: 10px; margin-left: 2px; opacity: .7; }
+        .gn-pop { position: absolute; top: calc(100% + 10px); left: 0; z-index: 200; width: 320px; padding: 10px; border-radius: 18px; background: linear-gradient(160deg,#17242e,#0f1820); border: 1px solid rgba(232,243,246,.07);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 24px 60px rgba(0,0,0,.7); }
+        .gn-pop-wide { width: min(640px, 92vw); }
+        .gn-pop-head { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 600; letter-spacing: .22em; color: #7d93a0; padding: 6px 8px 10px; }
+        .gn-mod-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; }
+        .gn-mod { display: flex; align-items: center; gap: 6px; border-radius: 12px; padding: 2px; }
+        .gn-mod[data-here="true"] { background: rgba(232,243,246,.05); }
+        .gn-mod-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; text-decoration: none; transition: background .15s; }
+        .gn-mod-main:hover { background: rgba(232,243,246,.06); }
+        .gn-mod-code { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--acc); width: 20px; flex: none; }
+        .gn-mod-title { font-family: 'DM Sans', system-ui, sans-serif; font-size: 14px; color: #e8f3f6; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+        .gn-mod-pct { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: #00ff41; flex: none; }
+        .gn-mod-lab { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: .14em; color: #93a8b4; text-decoration: none; padding: 6px 8px; border-radius: 8px; border: 1px solid rgba(232,243,246,.1); flex: none; }
+        .gn-mod-lab:hover { color: var(--acc); border-color: var(--acc); }
+        .gn-tool { display: flex; gap: 12px; align-items: flex-start; padding: 10px; border-radius: 12px; text-decoration: none; transition: background .15s; }
+        .gn-tool:hover, .gn-tool[aria-current="page"] { background: rgba(232,243,246,.06); }
+        .gn-tool-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex: none; }
+        .gn-tool-label { display: block; font-family: 'DM Sans', system-ui, sans-serif; font-size: 14px; font-weight: 600; color: #e8f3f6; }
+        .gn-tool-desc { display: block; font-family: 'DM Sans', system-ui, sans-serif; font-size: 12.5px; color: #7d93a0; margin-top: 2px; }
+        .gn-crumb { display: flex; align-items: center; gap: 4px; margin-left: 10px; padding: 4px; border-radius: 12px; background: rgba(232,243,246,.04); border: 1px solid rgba(232,243,246,.07); }
+        .gn-crumb-code { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--acc); padding: 0 8px; letter-spacing: .1em; }
+        .gn-crumb a { font-family: 'DM Sans', system-ui, sans-serif; font-size: 13px; color: #93a8b4; text-decoration: none; padding: 5px 10px; border-radius: 9px; }
+        .gn-crumb a[data-on="true"] { color: #04070a; background: var(--acc); font-weight: 600; }
+        .gn-nav-right { display: flex; align-items: center; gap: 10px; flex: none; }
+        .gn-me { display: flex; flex-direction: column; align-items: flex-end; text-decoration: none; padding: 4px 10px; border-radius: 10px; }
+        .gn-me:hover { background: rgba(232,243,246,.05); }
+        .gn-me-name { font-family: 'DM Sans', system-ui, sans-serif; font-size: 14px; font-weight: 600; color: #e8f3f6; }
+        .gn-me-xp { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: #00d4ff; letter-spacing: .08em; }
+        .gn-out { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #93a8b4; background: none; border: 1px solid #5b6f7b; padding: 9px 12px; cursor: pointer; text-decoration: none; transition: color .15s, border-color .15s; }
+        .gn-out:hover { color: #e8f3f6; border-color: #00d4ff; }
+        .gn-burger { display: none; width: 42px; height: 42px; border-radius: 12px; background: rgba(232,243,246,.05); border: 1px solid rgba(232,243,246,.1); cursor: pointer; place-items: center; }
+        .gn-burger span, .gn-burger span::before, .gn-burger span::after { display: block; width: 18px; height: 2px; background: #e8f3f6; border-radius: 2px; position: relative; transition: transform .2s; content: ''; }
+        .gn-burger span::before { position: absolute; top: -6px; } .gn-burger span::after { position: absolute; top: 6px; }
+        .gn-burger span[data-open="true"] { background: transparent; }
+        .gn-burger span[data-open="true"]::before { transform: translateY(6px) rotate(45deg); } .gn-burger span[data-open="true"]::after { transform: translateY(-6px) rotate(-45deg); }
+        .gn-mobile { position: fixed; top: 61px; left: 0; right: 0; bottom: 0; z-index: 9999; overflow-y: auto; padding: 16px 16px 48px; background: #04070a; }
+        .gn-mobile-me { display: flex; flex-direction: column; text-decoration: none; padding: 14px; border-radius: 16px; margin-bottom: 10px; background: linear-gradient(160deg,#1c2a35,#0f1820); }
+        .gn-mobile-link { display: block; font-family: 'DM Sans', system-ui, sans-serif; font-size: 16px; font-weight: 500; color: #e8f3f6; text-decoration: none; padding: 12px 10px; border-bottom: 1px solid rgba(232,243,246,.06); }
+        @media (max-width: 1080px) { .gn-crumb { display: none } }
+        @media (max-width: 860px) { .gn-nav-links, .gn-me, .gn-nav-right > .gn-out { display: none } .gn-burger { display: grid } .gn-nav-bar { justify-content: space-between } }
       `}</style>
     </nav>
   )
@@ -390,9 +264,9 @@ function AppShell({ children }: { children: React.ReactNode }) {
       <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '2.5rem 1.5rem', minHeight: 'calc(100vh - 80px)' }}>
         <ErrorBoundary label="Page">{children}</ErrorBoundary>
       </main>
-      <footer style={{ borderTop: '1px solid #0a180a', padding: '1.25rem', textAlign: 'center' }}>
-        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '8px', color: '#3a6a3a', letterSpacing: '0.25em' }}>
-          GHOSTNET // SECURITY RESEARCH PLATFORM // FOR EDUCATIONAL AND AUTHORISED USE ONLY
+      <footer style={{ borderTop: '1px solid rgba(232,243,246,.06)', padding: '20px 16px', textAlign: 'center' }}>
+        <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', color: '#7d93a0', letterSpacing: '.18em' }}>
+          GHOSTNET · FOR EDUCATION AND AUTHORISED TESTING ONLY · <a href="/privacy" style={{ color: '#93a8b4' }}>PRIVACY</a> · <a href="/terms" style={{ color: '#93a8b4' }}>TERMS</a>
         </span>
       </footer>
       {!mobileMenuOpen && (
