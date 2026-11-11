@@ -43,6 +43,12 @@ export const LAB_XP: Record<string, number> = {
 /** XP for reading: awarded once per chapter the first time it is opened. */
 export const CHAPTER_XP = 5
 
+// Steps in each guided lab (kept in step with each module's lab page).
+export const LAB_STEPS: Record<string, number> = {
+  'tor-lab': 17, 'osint-lab': 16, 'crypto-lab': 20, 'offensive-lab': 20, 'active-directory-lab': 22, 'web-attacks-lab': 21, 'malware-lab': 22,
+  'network-attacks-lab': 21, 'cloud-security-lab': 18, 'social-engineering-lab': 16, 'red-team-lab': 18, 'wireless-attacks-lab': 18, 'mobile-security-lab': 18,
+}
+
 export type CatalogModule = {
   id: string
   code: string
@@ -51,6 +57,30 @@ export type CatalogModule = {
   labId: string
   labXp: number
   chapters: number
+  level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
+  blurb: string
+}
+
+// Real chapter counts in each module's codex (kept in step with app/modules/*/page.tsx).
+const CHAPTER_COUNTS: Record<string, number> = {
+  tor: 8, osint: 10, crypto: 9, offensive: 8, 'active-directory': 8, 'web-attacks': 10, malware: 7,
+  'network-attacks': 8, 'cloud-security': 8, 'social-engineering': 9, 'red-team': 9, 'wireless-attacks': 9, 'mobile-security': 9,
+}
+
+const META: Record<string, { level: CatalogModule['level']; blurb: string }> = {
+  tor: { level: 'BEGINNER', blurb: 'Onion routing, hidden services and the OPSEC that keeps you anonymous.' },
+  osint: { level: 'BEGINNER', blurb: 'What the public internet reveals about people, companies and infrastructure.' },
+  crypto: { level: 'INTERMEDIATE', blurb: 'How encryption, hashing, PKI and TLS work, and how they break.' },
+  offensive: { level: 'ADVANCED', blurb: 'Exploit development: buffer overflows, mitigations, ROP, heap and fuzzing.' },
+  'active-directory': { level: 'ADVANCED', blurb: 'How Windows domains fall: Kerberos, relays, DCSync and forged tickets.' },
+  'web-attacks': { level: 'INTERMEDIATE', blurb: 'Injection, XSS, SSRF and broken auth, and the fixes behind each.' },
+  malware: { level: 'INTERMEDIATE', blurb: 'Triage, static and dynamic analysis, persistence and YARA rules.' },
+  'network-attacks': { level: 'INTERMEDIATE', blurb: 'Scanning, sniffing and man-in-the-middle, and how defenders spot them.' },
+  'cloud-security': { level: 'INTERMEDIATE', blurb: 'IAM, exposed storage, metadata attacks and cloud logging.' },
+  'social-engineering': { level: 'BEGINNER', blurb: 'Phishing, pretexting and vishing, and how people learn to resist them.' },
+  'red-team': { level: 'ADVANCED', blurb: 'Planning and running adversary emulation: C2, OPSEC and reporting.' },
+  'wireless-attacks': { level: 'INTERMEDIATE', blurb: 'WPA handshakes, evil twins, Bluetooth and radio attacks.' },
+  'mobile-security': { level: 'INTERMEDIATE', blurb: 'Android and iOS app security: storage, APIs and OWASP MASVS.' },
 }
 
 export const CATALOG: CatalogModule[] = MODULES.map(m => ({
@@ -60,7 +90,9 @@ export const CATALOG: CatalogModule[] = MODULES.map(m => ({
   color: MODULE_COLORS[m.slug] || '#00ff41',
   labId: m.slug + '-lab',
   labXp: LAB_XP[m.slug + '-lab'] || 0,
-  chapters: m.topics.length,
+  chapters: CHAPTER_COUNTS[m.slug] || m.topics.length,
+  level: META[m.slug]?.level || 'INTERMEDIATE',
+  blurb: META[m.slug]?.blurb || '',
 }))
 
 export const MODULE_IDS = new Set(CATALOG.map(m => m.id))

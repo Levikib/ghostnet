@@ -342,7 +342,7 @@ export default function CloudSecurityLab() {
               disabled={!guidedDone}
               style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.9rem', fontWeight: 700, letterSpacing: '0.15em', padding: '14px 40px', border: '1px solid ' + (guidedDone ? 'rgba(255,149,0,0.6)' : '#3a2000'), borderRadius: '6px', background: guidedDone ? 'rgba(255,149,0,0.12)' : 'transparent', color: guidedDone ? accent : '#3a2000', cursor: guidedDone ? 'pointer' : 'not-allowed', boxShadow: guidedDone ? '0 0 24px rgba(255,149,0,0.18)' : 'none', transition: 'all 0.2s' }}
             >
-              {guidedDone ? '&#9658; LAUNCH FREE LAB ENVIRONMENT' : '&#128274; COMPLETE GUIDED PHASE FIRST'}
+              {guidedDone ? '▸ LAUNCH FREE LAB ENVIRONMENT' : 'COMPLETE THE GUIDED PHASE FIRST'}
             </button>
             {!guidedDone && <div style={{ marginTop: '1rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#3a2000' }}>Complete all 18 guided steps above to unlock the free lab environment</div>}
           </div>

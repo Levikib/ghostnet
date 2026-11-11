@@ -106,7 +106,7 @@ export default function ReportGenerator() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          systemPrompt: 'You are a senior penetration tester writing professional security assessment reports. Write concise, accurate, technically precise content. Use plain professional language — no marketing fluff. Do not add preamble, do not explain what you are about to write, do not add a closing sentence. Output only the requested content.',
+          mode: 'report',
           messages: [{ role: 'user', content: prompt }],
         }),
       })

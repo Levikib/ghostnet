@@ -33,6 +33,8 @@ export type Operator = {
   labs_completed: number
   chapters_read: number
   recent: { kind: string; module_id: string | null; ref: string | null; xp: number; created_at: string }[]
+  active_days?: string[]
+  today?: { chapters: number; lab_steps: number; labs: number; xp: number }
 }
 
 interface AuthContextType {

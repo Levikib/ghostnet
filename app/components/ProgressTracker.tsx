@@ -226,7 +226,7 @@ export default function ProgressTracker() {
                     const done = progress.completedLabs.includes(lab.id)
                     return (
                       <div key={lab.id}
-                        onClick={() => !done && markComplete(lab.id, lab.xp)}
+                        onClick={() => { if (!done) window.location.href = '/modules/' + lab.id.replace(/-lab$/, '') + '/lab' }}
                         title={done ? 'Completed' : 'Click to mark complete'}
                         style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '4px 5px', borderRadius: '3px', cursor: done ? 'default' : 'pointer', marginBottom: '2px', background: done ? 'rgba(0,255,65,0.04)' : 'transparent', border: '1px solid ' + (done ? 'rgba(0,255,65,0.15)' : 'transparent') }}>
                         <div style={{ width: '10px', height: '10px', borderRadius: '2px', border: '1px solid ' + (done ? color : '#1a2e1e'), background: done ? color + '22' : 'transparent', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

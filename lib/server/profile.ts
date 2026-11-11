@@ -30,6 +30,10 @@ export type ProfilePayload = {
   labs_completed: number
   chapters_read: number
   recent: { kind: string; module_id: string | null; ref: string | null; xp: number; created_at: string }[]
+  /** UTC dates (YYYY-MM-DD) with any learning activity in the last 28 days. */
+  active_days: string[]
+  /** Today's learning, for daily missions. */
+  today: { chapters: number; lab_steps: number; labs: number; xp: number }
 }
 
 type U = {
@@ -73,6 +77,12 @@ export async function buildProfile(userId: string): Promise<ProfilePayload | nul
   const modules = await moduleProgressFor(userId)
   const recent = await sql<{ kind: string; module_id: string | null; ref: string | null; xp: number; created_at: string }>(
     `SELECT kind, module_id, ref, xp, created_at FROM activity WHERE user_id = $1 ORDER BY created_at DESC LIMIT 20`, [userId])
+  const days = await sql<{ d: string }>(
+    `SELECT DISTINCT to_char(created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD') AS d FROM activity WHERE user_id = $1 AND created_at > now() - interval '28 days' ORDER BY d`, [userId])
+  const td = await one<{ chapters: number; lab_steps: number; labs: number; xp: number }>(
+    `SELECT count(*) FILTER (WHERE kind = 'chapter')::int AS chapters, count(*) FILTER (WHERE kind = 'lab_step')::int AS lab_steps,
+            count(*) FILTER (WHERE kind = 'lab_complete')::int AS labs, coalesce(sum(xp), 0)::int AS xp
+       FROM activity WHERE user_id = $1 AND created_at >= date_trunc('day', now() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`, [userId])
   // Streak is "consecutive days active, up to today or yesterday".
   const today = new Date().toISOString().slice(0, 10)
   const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
@@ -89,6 +99,8 @@ export async function buildProfile(userId: string): Promise<ProfilePayload | nul
     labs_completed: modules.filter(m => m.labCompleted).length,
     chapters_read: modules.reduce((a, m) => a + m.chaptersRead, 0),
     recent,
+    active_days: days.map(r => r.d),
+    today: td || { chapters: 0, lab_steps: 0, labs: 0, xp: 0 },
   }
 }
 
