@@ -1,0 +1,34 @@
+# GHOSTNET
+
+> Hands-on cybersecurity training platform: 13 modules, each with concept chapters and a guided lab, XP ranks, and an AI guide. Built for beginners through advanced security researchers. Content is for education and authorised testing only.
+
+Site: https://ghostnet-nine.vercel.app
+Founder: Levis Kibirie (https://levis.makejahomes.co.ke)
+
+## Modules (public concept pages)
+
+- [MOD-01 Tor & Dark Web](https://ghostnet-nine.vercel.app/modules/tor): How Tor Works, Tor Browser & Configuration, Bridges & Censorship Circumvention, Hidden Services (.onion), Operational Security for Tor Users, Running Tor Relays & Exit Nodes, Dark Web Research & Threat Intelligence, Tor Attacks & Limitations
+- [MOD-02 OSINT & Surveillance](https://ghostnet-nine.vercel.app/modules/osint): OSINT Fundamentals & Intelligence Cycle, Domain & Infrastructure Reconnaissance, Shodan, Censys & Internet Scanning, Google Dorking & Web OSINT, People & Social Media OSINT (SOCMINT), Geospatial & Image OSINT, Maltego & Link Analysis, Dark Web & Breach Data OSINT
+- [MOD-03 Cryptography](https://ghostnet-nine.vercel.app/modules/crypto): Cryptography Fundamentals, Symmetric Encryption, Asymmetric Encryption & Key Exchange, Hash Functions & MACs, Password Hashing & Key Derivation, Digital Signatures & PKI, TLS & Network Cryptography, Cryptographic Attacks
+- [MOD-04 Offensive Security & Exploit Development](https://ghostnet-nine.vercel.app/modules/offensive): Vulnerability Research Methodology, Exploitation Fundamentals, Stack Buffer Overflows, Modern Exploit Mitigations and Bypasses, Return-Oriented Programming, Heap Exploitation, Web and Network Exploitation, Fuzzing and Vulnerability Discovery
+- [MOD-05 Active Directory Attacks](https://ghostnet-nine.vercel.app/modules/active-directory): Active Directory Architecture, Enumeration: BloodHound & LDAP, Kerberoasting & AS-REP Roasting, Pass-the-Hash & Pass-the-Ticket, DCSync & Credential Dumping, Golden & Silver Tickets, LLMNR Poisoning & SMB Relay, Lateral Movement & Persistence
+- [MOD-06 Advanced Web Attacks](https://ghostnet-nine.vercel.app/modules/web-attacks): Web Application Testing Methodology, SQL Injection - Complete Guide, XSS - All Variants and Exploitation, CSRF, SSRF and Request Forgery, Authentication and Session Attacks, Injection Attacks Beyond SQL, File Inclusion, Upload and Path Traversal, Deserialization, Prototype Pollution and Advanced
+- [MOD-07 Malware Analysis](https://ghostnet-nine.vercel.app/modules/malware): Analysis Methodology & Lab Setup, Static Analysis: Strings & Imports, Dynamic Analysis with Procmon & Wireshark, Ghidra & Reverse Engineering, YARA Rules & Threat Detection, Ransomware Anatomy, Evasion Techniques & Memory Forensics
+- [MOD-08 Network Attacks](https://ghostnet-nine.vercel.app/modules/network-attacks): Network Fundamentals for Attackers, Reconnaissance and Scanning, Wireshark and Packet Analysis, MITM and Layer 2 Attacks, Protocol-Specific Attacks, Firewall and IDS Evasion, Denial of Service - Understanding and Defense, Network Pivoting and Tunneling
+- [MOD-09 Cloud Security](https://ghostnet-nine.vercel.app/modules/cloud-security): Cloud Security Fundamentals, AWS Security and Attacks, Azure Security and Attacks, GCP Security and Attacks, Container and Kubernetes Security, Serverless and IaC Security, Cloud Lateral Movement and Privilege Escalation, Cloud Detection and Incident Response
+- [MOD-10 Social Engineering](https://ghostnet-nine.vercel.app/modules/social-engineering): Psychology of Manipulation, Phishing - Complete Methodology, Vishing and Phone-Based Attacks, Physical Social Engineering, OSINT for Social Engineering, Digital Social Engineering Tools, Smishing and Mobile Social Engineering, AI-Enhanced Social Engineering
+- [MOD-11 Red Team Operations](https://ghostnet-nine.vercel.app/modules/red-team): Red Team vs Pentest vs Bug Bounty, Campaign Planning & Rules of Engagement, Initial Access Techniques, C2 Frameworks & Infrastructure, AV / EDR Evasion, Internal Recon & Lateral Movement, Persistence & Privilege Escalation, Exfiltration & Avoiding Detection
+- [MOD-12 Wireless Attacks](https://ghostnet-nine.vercel.app/modules/wireless-attacks): Wireless Fundamentals & Standards, WPA2 Attacks - Complete Guide, WPA3 & Advanced Protocol Attacks, WPA Enterprise & 802.1X Attacks, Rogue AP & MITM Attacks, Bluetooth & BLE Attacks, RFID, NFC & Physical Layer Attacks, SDR & RF Signal Analysis
+- [MOD-13 Mobile Security](https://ghostnet-nine.vercel.app/modules/mobile-security): Mobile Security Fundamentals, Android Static Analysis, Android Dynamic Analysis & Runtime Manipulation, Android Vulnerability Classes, iOS Static Analysis, iOS Dynamic Analysis & Runtime Manipulation, Mobile Malware & Spyware Analysis, Mobile Network Attacks
+
+## Tools (free account required)
+
+- Threat intel: live CVE feed and advisories
+- Tool reference: 200+ commands and cheat sheets
+- Research terminal, payload generator, blockchain tracer, CTF toolkit, AI pentest report generator, MITRE ATT&CK attack-path builder, Shodan query builder
+
+## How it works
+
+- Concept pages are free to read without an account.
+- Labs track XP and progress and need a free account.
+- Ranks: Ghost, Specter, Phantom, Wraith, Legend (5,450 XP available across 13 labs).

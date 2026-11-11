@@ -11,6 +11,13 @@ const PUBLIC_PATHS = [
   '/api/auth/callback',
   '/privacy',
   '/terms',
+  // SEO / AEO files must be reachable by crawlers without a session
+  '/robots.txt',
+  '/sitemap.xml',
+  '/llms.txt',
+  '/opengraph-image',
+  '/twitter-image',
+  '/icon.svg',
 ]
 
 // Module CONCEPT pages (read-only learning content) are public.
