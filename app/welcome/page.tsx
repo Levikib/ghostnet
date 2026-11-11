@@ -49,7 +49,7 @@ export default function WelcomePage() {
     }
     try {
       setReturning(localStorage.getItem('gn_operator') === '1')
-      setBriefed(localStorage.getItem('gn_briefed') === '1')
+      setBriefed(localStorage.getItem('gn_briefed_v2') === '1')
     } catch {}
   }, [router])
 
@@ -68,7 +68,7 @@ export default function WelcomePage() {
   }
 
   function begin() { go(briefed ? 'breach' : 'profile') }
-  function briefingDone() { try { localStorage.setItem('gn_briefed', '1') } catch {} ; setBriefed(true); go('breach') }
+  function briefingDone() { try { localStorage.setItem('gn_briefed_v2', '1') } catch {} ; setBriefed(true); go('breach') }
   function onBreached() { router.push(authTarget(returning ? 'login' : 'register')) }
   function signIn(e: React.MouseEvent) { e.preventDefault(); router.push(authTarget('login')) }
 
