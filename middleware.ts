@@ -26,7 +26,8 @@ const PUBLIC_MODULE_CONCEPT = /^\/modules\/[^/]+\/?$/
 
 // ── Static asset prefixes — always pass through ───────────────────────────────
 // /api/ is NOT here — every API route enforces its own auth
-const ASSET_PREFIXES = ['/_next', '/favicon']
+// /.well-known/ files (agent and security manifests) must never be swapped for the splash page.
+const ASSET_PREFIXES = ['/_next', '/favicon', '/.well-known/']
 
 // ── Allowed origins for CSRF checks ──────────────────────────────────────────
 // Add your production domain here. Localhost allowed in dev.
