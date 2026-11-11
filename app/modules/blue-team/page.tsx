@@ -1159,6 +1159,298 @@ Source              : EncryptedPassword
       </div>
     ),
   },
+  {
+    id: 'incident-response-lifecycle',
+    title: 'The Incident Response Lifecycle',
+    difficulty: 'INTERMEDIATE',
+    readTime: '18 min',
+    labLink: '/modules/blue-team/lab',
+    takeaways: [
+      'NIST SP 800-61 Revision 3 (April 2025) frames incident response through the CSF 2.0 functions; SANS PICERL (Preparation, Identification, Containment, Eradication, Recovery, Lessons learned) remains the practical working model.',
+      'Triage answers three questions fast: is it real, how bad is it, and how far has it spread? Severity drives who gets woken up and which playbook runs.',
+      'Containment is a trade-off between stopping harm and tipping off the attacker; scope first where you safely can, then contain everything at once.',
+      'Eradication must remove every foothold (accounts, persistence, implants, stolen credentials), or recovery simply hands the environment back to the attacker.',
+      'Chain of custody and careful notes make evidence usable later; communication must run out of band if the attacker may be reading email or chat.',
+    ],
+    content: (
+      <div>
+        <H3>Frameworks: NIST 800-61r3 and PICERL</H3>
+        <P>
+          Incident response (IR) is the structured process an organisation follows from the moment a possible security incident is noticed until it is fully resolved and lessons are applied. For nearly two decades the reference was NIST SP 800-61 with its four-phase lifecycle: Preparation; Detection and Analysis; Containment, Eradication and Recovery; and Post-Incident Activity. In April 2025 NIST published Revision 3, which re-frames incident response as part of overall cybersecurity risk management using the six Cybersecurity Framework 2.0 functions: Govern, Identify, Protect, Detect, Respond and Recover. Preparation is now spread across Govern, Identify and Protect, and improvement is treated as continuous rather than as a final phase.
+        </P>
+        <P>
+          On the ground, most responders still think in the SANS PICERL steps because they map neatly to what you actually do during an incident. The two models are compatible: PICERL describes the response workflow, and 800-61r3 describes how that workflow fits into the organisation&apos;s wider risk programme.
+        </P>
+        <Table
+          headers={['PICERL phase', 'Key activities', 'CSF 2.0 function (800-61r3)']}
+          rows={[
+            ['Preparation', 'IR plan, roles, playbooks, tooling, logging, contact lists, exercises, retainers', 'Govern, Identify, Protect'],
+            ['Identification', 'Detect, triage, validate, declare incident, assign severity, begin scoping', 'Detect'],
+            ['Containment', 'Stop the spread: isolate hosts, disable accounts, block indicators', 'Respond'],
+            ['Eradication', 'Remove malware, persistence, attacker accounts; reset credentials; fix root cause', 'Respond'],
+            ['Recovery', 'Restore systems from known-good sources, monitor closely, return to service', 'Recover'],
+            ['Lessons learned', 'Blameless review, detection and control improvements, update playbooks', 'Identify (Improvement), continuous'],
+          ]}
+        />
+
+        <H3>Preparation: The Phase That Decides Everything</H3>
+        <P>
+          Incidents are won or lost before they start. The questions you do not want to answer for the first time at 03:00 are: who has authority to take the payment system offline? What is the out-of-band phone bridge if email is compromised? Where are the offline backups and has anyone tested restoring them? Which external IR firm is on retainer, and what is the number? Preparation also means the technical groundwork from earlier chapters: logs retained long enough, EDR deployed everywhere, accurate asset inventory, and tabletop exercises in which leadership has practised making decisions under uncertainty.
+        </P>
+
+        <H3>Playbooks</H3>
+        <P>
+          A playbook is a pre-agreed set of steps for a specific incident type: phishing, ransomware, business email compromise, compromised cloud credentials, insider data theft. Playbooks encode decisions in advance, which reduces panic and inconsistency. SOAR platforms automate the mechanical parts (enrichment, ticket creation, blocking an indicator) while leaving judgement calls to humans.
+        </P>
+        <Pre label="PLAYBOOK EXCERPT: SUSPECTED PHISHING WITH PAYLOAD EXECUTION">
+{`TRIGGER: user report or EDR alert linking an email attachment to process execution
+
+1. Validate   - pull the message (headers, sender, attachments, URLs); detonate in sandbox
+2. Scope mail - search all mailboxes for same sender / subject / attachment hash
+              - purge matching messages (record count and recipients)
+3. Scope exec - EDR: which recipients opened it? prevalence of child processes / hashes
+4. Contain    - isolate hosts with confirmed execution (EDR network containment)
+              - revoke sessions + reset passwords for affected users; review MFA methods
+              - block sender domain, URLs, C2 domains/IPs at mail gateway, proxy, DNS, firewall
+5. Escalate   - if lateral movement or privileged accounts are involved -> MAJOR INCIDENT
+6. Evidence   - collect memory + triage package BEFORE reimaging (see chapter 9)
+7. Eradicate  - reimage hosts; remove persistence; confirm no new beacons for 72h
+8. Notify     - IR lead decides on legal / privacy / regulator notification
+9. Close      - timeline, root cause, detections added, lessons learned`}
+        </Pre>
+
+        <H3>Triage and Severity</H3>
+        <P>
+          Triage is rapid assessment. Within minutes you want a working answer to three questions: is this real (true positive), how bad is it (impact and privileges involved), and how far has it spread (one host, one user, or many)? Severity levels should be defined in the IR plan with concrete criteria so the call does not depend on who is on shift.
+        </P>
+        <Table
+          headers={['Severity', 'Example criteria', 'Response expectation']}
+          rows={[
+            ['SEV-1 / Critical', 'Active ransomware, domain admin compromise, confirmed data exfiltration of regulated data', 'Immediate, 24x7, IR lead + executives + legal'],
+            ['SEV-2 / High', 'Confirmed hands-on-keyboard intrusion on multiple hosts, compromised privileged account', 'Within 1 hour, dedicated responders'],
+            ['SEV-3 / Medium', 'Single host malware executed and contained, credential phish with no evidence of use', 'Same business day'],
+            ['SEV-4 / Low', 'Blocked malware, policy violations, unsuccessful attacks', 'Normal queue'],
+          ]}
+        />
+
+        <H3>Containment: Choices and Trade-offs</H3>
+        <P>
+          Containment stops the attacker causing further harm. It sounds obvious to isolate every affected host the moment you see it, but experienced responders weigh that against scoping. If you isolate one workstation while the attacker already has three other footholds and a domain admin password, you have told them you are onto them, and they may accelerate: deploying ransomware early, destroying evidence, or switching to infrastructure you do not yet know about. In those cases the team may monitor for a short, deliberate period to identify all footholds, then contain everything simultaneously.
+        </P>
+        <Note type="danger">
+          Monitoring instead of containing is a risk decision, not an analyst preference. It must be approved by the IR lead and time-boxed. If the attacker is actively encrypting, exfiltrating regulated data or touching safety systems, contain immediately.
+        </Note>
+        <Table
+          headers={['Containment action', 'Speed', 'Side effects']}
+          rows={[
+            ['EDR network isolation', 'Seconds', 'Host keeps talking only to the EDR cloud; remote evidence collection still works'],
+            ['Disable account + revoke sessions/tokens', 'Minutes', 'Must also revoke refresh tokens and cloud sessions, not just reset the password'],
+            ['Block IOC at DNS/proxy/firewall', 'Minutes', 'Attacker may have backup C2; blocking can tip them off'],
+            ['Reset krbtgt twice (domain compromise)', 'Hours, planned', 'Invalidates golden tickets; must respect replication time between resets'],
+            ['Pull network cable / power off', 'Immediate', 'Power off destroys volatile memory evidence; prefer isolation'],
+            ['Segment or shut down a whole network zone', 'Variable', 'Business impact; requires executive decision'],
+          ]}
+        />
+
+        <H3>Eradication and Recovery</H3>
+        <P>
+          Eradication removes every trace of attacker access: implants, persistence (services, scheduled tasks, run keys, WMI subscriptions, web shells), rogue accounts, malicious OAuth app grants and mailbox rules, and above all stolen credentials. Any credential that touched a compromised host should be considered exposed. In a domain compromise that may mean resetting service account passwords, rotating secrets in automation, and resetting the krbtgt account twice. The root cause must also be fixed; reimaging a phished workstation without addressing why the payload could execute invites a repeat.
+        </P>
+        <P>
+          Recovery restores systems from known-good sources (gold images, verified backups taken before the intrusion began) and returns them to service in stages, with heightened monitoring for re-infection. This is where accurate scoping pays off: restoring from a backup taken after the attacker planted persistence just restores the attacker.
+        </P>
+
+        <H3>Chain of Custody and Note-Taking</H3>
+        <P>
+          Any incident may end up in court, in front of a regulator, or in an insurance claim. Evidence is only useful if you can show where it came from and that it has not been altered. Chain of custody is the documented, unbroken record of who collected each item, when, how, where it has been stored, and every person who handled it. Hashing evidence at acquisition and verifying the hash on every transfer proves integrity.
+        </P>
+        <Pre label="CHAIN OF CUSTODY RECORD">
+{`Evidence ID:    IR-2026-118-E003
+Description:    Memory image, WS-FIN-042 (Dell Latitude, asset tag 08841)
+Acquired by:    J. Ndungu (IR) using WinPmem via EDR live response
+Acquired at:    2026-11-03 23:02 UTC
+SHA-256:        4b1e0c7a9d...(64 hex)...f2
+Storage:        Evidence vault share /ir/2026-118/ (write-once), copy on encrypted drive locker B2
+Transfers:      2026-11-04 08:15 UTC  J. Ndungu -> A. Kariuki (forensics)  hash verified OK`}
+        </Pre>
+        <P>
+          Keep a running incident log from the first minute: timestamp (UTC), who, what was observed, what action was taken and why. These notes become the timeline in the final report and protect responders when decisions are reviewed later.
+        </P>
+
+        <H3>Communication</H3>
+        <P>
+          Assume the attacker can read your email and chat if they have domain or tenant admin rights. Move incident communications to an out-of-band channel prepared in advance (a separate tenant, a secure messaging app on personal devices, a phone bridge). Keep the circle need-to-know, use incident code names, and route all external statements through communications and legal.
+        </P>
+        <Table
+          headers={['Audience', 'What they need', 'Typical owner']}
+          rows={[
+            ['Executives', 'Business impact, decisions required, next update time', 'IR lead / CISO'],
+            ['Legal and privacy', 'Facts for notification decisions; privilege considerations', 'IR lead'],
+            ['Regulators', 'Timely notice: e.g. GDPR 72 hours; NIS2 early warning within 24 hours and notification within 72 hours; SEC Form 8-K within four business days of determining materiality', 'Legal / DPO'],
+            ['Cyber insurer', 'Early notice; often mandates approved IR firms', 'Risk / legal'],
+            ['Staff and customers', 'Clear, honest, actionable guidance', 'Communications'],
+            ['Law enforcement', 'Indicators, impact, evidence on request', 'Legal'],
+          ]}
+        />
+        <Note type="tip">
+          Agree a fixed update rhythm (for example every two hours during a SEV-1) and stick to it even when there is nothing new. Predictable updates reduce the pressure on responders from people asking for status.
+        </Note>
+      </div>
+    ),
+  },
+  {
+    id: 'digital-forensics',
+    title: 'Digital Forensics Essentials',
+    difficulty: 'INTERMEDIATE',
+    readTime: '19 min',
+    labLink: '/modules/blue-team/lab',
+    takeaways: [
+      'Collect evidence in order of volatility (RFC 3227): memory and live network state first, disk next, logs and backups last. Never power off a live suspect host before capturing memory unless it is actively causing harm.',
+      'Hash every acquisition and work on copies; a forensic image you cannot prove is unaltered has little value.',
+      'Volatility 3 recovers processes, network connections, command lines and injected code from memory; compare pslist with psscan and look for odd parents, paths and connections.',
+      'KAPE and Velociraptor collect targeted triage artefacts in minutes, which is usually more valuable early in an incident than a full disk image.',
+      'Know what each Windows artefact actually proves: Prefetch strongly indicates execution, Shimcache and Amcache mainly show presence, LNK files and jump lists show files a user opened.',
+      'Timelines turn thousands of artefacts into a story; normalise to UTC and corroborate each key event with at least two independent sources.',
+    ],
+    content: (
+      <div>
+        <H3>Forensics in Incident Response</H3>
+        <P>
+          Digital forensics answers the detailed questions that alerts and logs leave open. What exactly did the malware do on this host? Did the attacker access the HR share? When did they first arrive? Was data staged for exfiltration? In an incident context, speed matters more than courtroom completeness, so responders favour fast, targeted collection (triage) over imaging every disk, while still following practices that keep evidence defensible: documented acquisition, hashing, and chain of custody from chapter 8.
+        </P>
+
+        <H3>Order of Volatility</H3>
+        <P>
+          RFC 3227 sets out the principle: collect the most volatile evidence first, because it disappears soonest. Memory changes every millisecond and is lost entirely at power-off; a disk survives a reboot; an archived log may survive for years.
+        </P>
+        <Table
+          headers={['Order', 'Evidence', 'Lifetime', 'How to collect']}
+          rows={[
+            ['1', 'CPU registers, cache', 'Nanoseconds', 'Not practical in IR'],
+            ['2', 'RAM: processes, network connections, keys, injected code', 'Lost at shutdown', 'WinPmem, DumpIt, Magnet RAM Capture, EDR live response; LiME or AVML on Linux'],
+            ['3', 'Live network state, ARP and routing caches, logged-on sessions', 'Seconds to minutes', 'netstat, EDR, live response scripts'],
+            ['4', 'Temporary file systems, swap, pagefile, hiberfil', 'Until overwritten', 'Triage collection'],
+            ['5', 'Disk', 'Until overwritten or wiped', 'Triage (KAPE, Velociraptor) or full image (FTK Imager, ewfacquire, dc3dd)'],
+            ['6', 'Remote logs, SIEM, monitoring data', 'Retention period', 'SIEM export, cloud log export'],
+            ['7', 'Backups, archival media', 'Long term', 'Restore to an isolated system'],
+          ]}
+        />
+        <Note type="warn">
+          Every action on a live system changes it. Running tools writes to memory and disk, so use trusted tools from external media or your EDR, record exactly what you ran and when, and prefer one well-documented collection over repeated ad-hoc commands.
+        </Note>
+
+        <H3>Memory Capture and Disk Images</H3>
+        <P>
+          Memory acquisition tools write a raw image of physical RAM to a file, typically the size of installed memory. On a 32 GB laptop that is a 32 GB file, so plan for external storage or network streaming. Many EDR platforms can trigger a memory capture remotely, which is often the fastest option for an isolated host. For disks, a full forensic image (E01 format records hashes and case metadata; raw dd images are simpler) captures every sector, including unallocated space where deleted files linger. With modern full-disk encryption, capture the image while the system is running and unlocked, or make sure you have the BitLocker recovery key, otherwise the image is unreadable.
+        </P>
+        <Pre label="ACQUISITION AND VERIFICATION">
+{`# Windows memory capture (run from trusted external media, admin shell)
+E:/tools> winpmem_mini_x64.exe E:/evidence/WS-FIN-042.mem
+
+# Linux memory capture with AVML
+$ sudo ./avml /mnt/evidence/srv-web01.lime
+
+# Full disk image with ewfacquire (E01, embedded MD5/SHA1)
+$ sudo ewfacquire -t /mnt/evidence/ws-fin-042 -c fast -D "IR-2026-118 WS-FIN-042" /dev/sdb
+
+# Hash and record immediately
+$ sha256sum /mnt/evidence/WS-FIN-042.mem | tee -a /mnt/evidence/hashes.txt
+4b1e0c7a9d...f2  /mnt/evidence/WS-FIN-042.mem`}
+        </Pre>
+
+        <H3>Volatility 3 Basics</H3>
+        <P>
+          Volatility is the standard open-source memory analysis framework. Volatility 3 is a complete rewrite in Python 3 that replaced the old profile system with symbol tables, which it can download automatically from Microsoft&apos;s symbol server for Windows images (or load from offline symbol packs). It reached feature parity with Volatility 2 in 2025, and Volatility 2 is no longer maintained. Plugins are named by operating system: windows.pslist, linux.pslist, mac.pslist.
+        </P>
+        <Table
+          headers={['Plugin', 'What it shows', 'Why it matters']}
+          rows={[
+            ['windows.info', 'OS version, build, kernel base, capture time', 'Confirms the image is readable and which system it is'],
+            ['windows.pslist', 'Processes from the active process linked list', 'Fast overview; misses unlinked (hidden) processes'],
+            ['windows.psscan', 'Processes found by scanning memory for process structures', 'Finds hidden and recently exited processes; diff against pslist'],
+            ['windows.pstree', 'Parent-child process tree', 'Spot odd parents, e.g. explorer.exe spawning hidden PowerShell'],
+            ['windows.cmdline', 'Command line of each process', 'Recovers encoded PowerShell, paths, arguments'],
+            ['windows.netscan', 'TCP/UDP endpoints and listeners with owning PID', 'Links C2 connections to processes'],
+            ['windows.malfind', 'Memory regions that are executable, private and look injected', 'Process injection, shellcode, reflective DLLs'],
+            ['windows.svcscan', 'Services from the service control manager', 'Malicious services and their binary paths'],
+            ['windows.dlllist / windows.handles', 'Loaded modules and open handles per process', 'Side-loaded DLLs, handles to lsass.exe'],
+            ['windows.dumpfiles', 'Extracts cached files from memory', 'Recover the malware binary for hashing and analysis'],
+          ]}
+        />
+        <Pre label="VOLATILITY 3 SESSION">
+{`$ vol -f WS-FIN-042.mem windows.pslist
+PID   PPID  ImageFileName    Offset(V)       Threads Handles SessionId Wow64 CreateTime
+4     0     System           0xa48c1c086040  198     -       N/A       False 2026-11-03 07:58:12
+...
+4120  4092  explorer.exe     0xa48c22b1e080  82      -       1         False 2026-11-03 08:04:51
+7312  4120  powershell.exe   0xa48c25c3a300  14      -       1         False 2026-11-03 21:17:44
+8012  688   updsvc.exe       0xa48c26a17080  6       -       0         False 2026-11-03 21:19:03
+
+$ vol -f WS-FIN-042.mem windows.netscan | grep -E "7312|8012"
+Offset          Proto  LocalAddr    LocalPort ForeignAddr  ForeignPort State        PID   Owner
+0xa48c2611b010  TCPv4  10.20.30.42  50227     192.0.2.66   443         ESTABLISHED  8012  updsvc.exe
+0xa48c25f0e4a0  TCPv4  10.20.30.42  50133     192.0.2.66   443         CLOSED       7312  powershell.e
+
+$ vol -f WS-FIN-042.mem windows.malfind --pid 8012`}
+        </Pre>
+        <P>
+          Read the output like an analyst. PID 688 is services.exe on this system, so updsvc.exe is running as a service. It is the process holding the established connection to the C2 address. The PowerShell process that started the chain is still present, with a closed connection to the same IP. Running windows.cmdline next would recover the full encoded command, and windows.dumpfiles could extract the updsvc.exe image for hashing and malware analysis (see the Malware Analysis module).
+        </P>
+
+        <H3>Triage Collection with KAPE and Velociraptor</H3>
+        <P>
+          A full disk image of a 1 TB laptop can take hours to acquire and days to process. Triage collection grabs the few gigabytes of artefacts that answer most questions: registry hives, event logs, Prefetch, Amcache, the MFT and USN journal, browser databases, LNK files and jump lists, scheduled tasks, and SRUM. KAPE (Kroll Artifact Parser and Extractor) does this with Targets (what to collect) and Modules (what to run on it, for example Eric Zimmerman&apos;s parsers). Velociraptor does the same and more at fleet scale, using VQL queries pushed to agents, which makes it ideal for scoping: &quot;which of our 5,000 hosts have a service called UpdSvc?&quot;
+        </P>
+        <Pre label="KAPE TRIAGE + PARSING">
+{`kape.exe --tsource C: --tdest E:/kape/tout --target !SANS_Triage --vhdx WS-FIN-042 ^
+         --mdest E:/kape/mout --module !EZParser
+
+# Outputs: CSVs from PECmd (Prefetch), AmcacheParser, AppCompatCacheParser (Shimcache),
+# LECmd (LNK), JLECmd (jump lists), EvtxECmd (event logs), MFTECmd ($MFT, $J), RECmd (registry)`}
+        </Pre>
+
+        <H3>Windows Artefacts and What They Prove</H3>
+        <P>
+          A common mistake is treating every artefact as proof of execution. Each one has specific semantics, and the courts and your colleagues will expect you to know them. Paths below are written with forward slashes.
+        </P>
+        <Table
+          headers={['Artefact', 'Location', 'What it tells you', 'Caveats']}
+          rows={[
+            ['Prefetch', 'C:/Windows/Prefetch/*.pf', 'Program executed: run count, up to 8 last run times, files and directories referenced', 'Often disabled on servers; limited number of entries kept'],
+            ['Amcache', 'C:/Windows/AppCompat/Programs/Amcache.hve', 'File path, SHA-1 hash, size, publisher of programs present', 'Indicates presence, not reliably execution; great for recovering a hash of a deleted file'],
+            ['Shimcache (AppCompatCache)', 'SYSTEM hive: CurrentControlSet/Control/Session Manager/AppCompatCache', 'File paths and last-modified times seen by the compatibility engine', 'No execution flag on Windows 10/11; written at shutdown, so live systems lag'],
+            ['LNK files', 'C:/Users/<user>/AppData/Roaming/Microsoft/Windows/Recent/', 'Files a user opened: target path, target timestamps, volume serial, device name', 'Also created when malicious LNKs are opened from ZIPs'],
+            ['Jump lists', '.../Recent/AutomaticDestinations/', 'Per-application recently opened files', 'App ID mapping needed'],
+            ['Browser history', 'Chrome/Edge: .../User Data/Default/History (SQLite); Firefox: places.sqlite', 'URLs visited, downloads, timestamps', 'Chromium uses microseconds since 1601; Firefox microseconds since 1970'],
+            ['SRUM', 'C:/Windows/System32/sru/SRUDB.dat', 'Per-application network bytes and resource use over ~30-60 days', 'Hourly granularity'],
+            ['$MFT and $UsnJrnl:$J', 'NTFS metadata', 'File creation, rename, deletion history', 'Compare $STANDARD_INFORMATION and $FILE_NAME times to spot timestomping'],
+            ['Event logs', 'C:/Windows/System32/winevt/Logs/*.evtx', 'Logons, services, tasks, PowerShell, Defender', 'May be cleared (look for 1102 and gaps)'],
+          ]}
+        />
+
+        <H3>Building a Timeline</H3>
+        <P>
+          A timeline merges artefacts from many sources into one chronological view. You can build a targeted one by hand in a spreadsheet from the parsed CSVs, or a super-timeline with Plaso (log2timeline.py to extract, psort.py to sort and filter) and review it in Timeline Explorer. Normalise everything to UTC, focus on a window around known malicious events (a pivot point), and corroborate each important event with a second, independent source.
+        </P>
+        <Pre label="TARGETED TIMELINE - WS-FIN-042 (UTC)">
+{`2026-11-03 21:02:10  Mail gateway   m.hale receives "Q4 invoice overdue" with Invoice_Q4.zip
+2026-11-03 21:17:39  LNK (LECmd)    Invoice_Q4.pdf.lnk opened from Temp ZIP extraction folder
+2026-11-03 21:17:44  Sysmon 1/4688  powershell.exe -nop -w hidden -enc ... (parent explorer.exe)
+2026-11-03 21:17:46  Proxy          GET https://cdn-telemetry.example/s/upd.ps1  (PowerShell UA)
+2026-11-03 21:18:58  $MFT / Sysmon 11  C:/ProgramData/UpdSvc/updsvc.exe created
+2026-11-03 21:19:02  System 7045    Service "UpdSvc" installed, auto start
+2026-11-03 21:19:03  Prefetch       UPDSVC.EXE-1F3A2B4C.pf first run
+2026-11-03 21:19:05  Zeek conn      Beaconing to 192.0.2.66:443 every ~60s begins
+2026-11-03 21:40:12  DC01 4625 x126 Password spray from 10.20.30.42 (63 accounts)
+2026-11-03 21:43:51  DC01 4624      svc_backup logon type 3 from 10.20.30.42
+2026-11-03 22:31:09  bastion01      Accepted password for svc_backup from 10.20.30.42`}
+        </Pre>
+        <Note type="tip">
+          Write the timeline as you go, not at the end. Each confirmed entry generates new pivots: a new account, a new host, a new hash. That iterative loop of pivot, confirm, record is what scoping actually is.
+        </Note>
+      </div>
+    ),
+  },
 // __MORE_CHAPTERS__
 ]
 

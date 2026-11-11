@@ -617,7 +617,7 @@ $ jq -r '.[].severity' alerts.json | sort | uniq -c
      12 medium`}
         </Pre>
         <Note type="tip">
-          Combine the tools freely. A real triage command might be: journalctl -u ssh --since "1 hour ago" -o cat | grep "Failed password" | awk '{print $(NF-3)}' | sort | uniq -c | sort -nr | head - one line that answers who is brute-forcing this box right now.
+          Combine the tools freely. A real triage command chains journalctl -u ssh --since &quot;1 hour ago&quot; -o cat into the same grep, awk, sort and uniq stages shown above - one line that answers who is brute-forcing this box right now.
         </Note>
       </div>
     ),
@@ -661,7 +661,7 @@ $ jq -r '.[].severity' alerts.json | sort | uniq -c
           headers={['Type', 'Example', 'Security use']}
           rows={[
             ['str', '"Failed password"', 'Log lines, usernames, URLs - human-readable text'],
-            ['bytes', "b'\\x4d\\x5a'  (shown as b'MZ')", 'Network packets, file contents, hashes, anything binary'],
+            ['bytes', "b'MZ' (the two bytes 0x4D 0x5A)", 'Network packets, file contents, hashes, anything binary'],
             ['int / float', '4625, 0.75', 'Ports, event IDs, counts, thresholds, scores'],
             ['bool', 'True / False', 'Flags such as is_malicious'],
             ['list', '["22", "80", "443"]', 'Ordered collections: hosts to check, lines to process'],
@@ -799,7 +799,7 @@ if __name__ == "__main__":
 $ source .venv/bin/activate          # activate (Windows: .venv/Scripts/activate)
 (.venv) $ pip install requests       # installs into .venv only
 (.venv) $ pip freeze > requirements.txt
-(.venv) $ cat requirements.txt
+(.venv) $ cat requirements.txt                # your versions will differ
 certifi==2025.8.3
 charset-normalizer==3.4.3
 idna==3.10
@@ -838,7 +838,7 @@ $ python3 -m venv .venv && source .venv/bin/activate && pip install -r requireme
       'Always set timeouts on sockets and on requests calls - without one, a single unresponsive host can hang your script forever.',
       'requests with r.raise_for_status() and r.json() covers most API work; send an honest User-Agent and read API keys from environment variables.',
       'Respect rate limits: sleep between calls, honour HTTP 429 and Retry-After, and cache results instead of re-querying.',
-      'Only probe systems you own or have written permission to test. Unauthorised scanning can break laws such as the US CFAA, the UK Computer Misuse Act or Kenya\'s Computer Misuse and Cybercrimes Act.',
+      "Only probe systems you own or have written permission to test. Unauthorised scanning can break laws such as the US CFAA, the UK Computer Misuse Act or Kenya's Computer Misuse and Cybercrimes Act.",
     ],
     content: (
       <div>
@@ -949,7 +949,7 @@ print(cve["descriptions"][0]["value"][:90])
 
 # output:
 # CVE-2021-44228 10.0
-# Apache Log4j2 2.0-beta9 through 2.15.0 (excluding security releases 2.12.2, 2.12.3, and 2.3.1) JNDI`}
+# Apache Log4j2 2.0-beta9 through 2.15.0 (excluding security releases 2.12.2, 2.12.3, and 2.`}
         </Pre>
 
         <H3>Parsing a Real Feed: CISA KEV</H3>
@@ -1011,7 +1011,7 @@ for cve_id in ["CVE-2024-3400", "CVE-2023-4966", "CVE-2021-44228"]:
           headers={['Target', 'OK to probe?']}
           rows={[
             ['Your own VMs, home lab, localhost', 'Yes'],
-            ['Your employer\'s systems', 'Only within your role or with written authorisation'],
+            ["Your employer's systems", 'Only within your role or with written authorisation'],
             ['Bug bounty targets', 'Only assets listed in scope, following program rules on rate and tooling'],
             ['scanme.nmap.org', 'Light scanning is explicitly permitted by the Nmap project - no brute force, no floods'],
             ['Anything else', 'No'],
@@ -1075,7 +1075,7 @@ if m:
 
         <H3>Why Regex Alone Is Not Enough</H3>
         <P>
-          A pattern like [0-9]{'{'}1,3{'}'}(?:[.][0-9]{'{'}1,3{'}'}){'{'}3{'}'} matches 203.0.113.45 - but also 999.999.999.999 and the version string 1.2.3.4 inside v1.2.3.4. The fix is two-stage: regex finds candidates, a real parser validates them. Python&apos;s ipaddress module knows what a valid address is and can tell you whether it is private, loopback or reserved, which is exactly what you need to drop noise from IOC lists.
+          The loose IPv4 pattern from Chapter 3 matches 203.0.113.45 - but also 999.999.999.999 and the version string 1.2.3.4 inside v1.2.3.4. The fix is two-stage: regex finds candidates, a real parser validates them. Python&apos;s ipaddress module knows what a valid address is and can tell you whether it is private, loopback or reserved, which is exactly what you need to drop noise from IOC lists.
         </P>
         <Pre label="VALIDATE WITH ipaddress">
 {`import ipaddress
@@ -1208,7 +1208,7 @@ b'hello-->?'`}
 import re
 import sys
 
-IP_RE = re.compile(r"(?<![0-9.])[0-9]{1,3}(?:[.][0-9]{1,3}){3}(?![0-9.])")
+IP_RE = re.compile(r"(?<![0-9A-Za-z.])[0-9]{1,3}(?:[.][0-9]{1,3}){3}(?![0-9.])")   # not inside v1.2.3.4
 SHA256_RE = re.compile(r"(?<![a-fA-F0-9])[a-fA-F0-9]{64}(?![a-fA-F0-9])")
 DOMAIN_RE = re.compile(r"(?<![A-Za-z0-9.-])(?:[A-Za-z0-9-]{1,63}[.])+[A-Za-z]{2,24}(?![A-Za-z0-9-])")
 
@@ -1239,8 +1239,8 @@ if __name__ == "__main__":
 {`$ cat report.txt | python3 iocx.py
 ipv4,45.142.212.61
 sha256,24196f8a6feeb465c790774d3f85b53a2cdf84ed1e0044c420086c4310c3f56e
-domains,update-check.example
-domains,cdn-sync.example`}
+domains,cdn-sync.example
+domains,update-check.example`}
         </Pre>
         <P>
           Expect false positives in the domain list (filenames like report.pdf look like domains) - review output before you block anything. Mature teams pair a script like this with an allow-list of their own domains and a check against a threat-intel platform.
@@ -1257,8 +1257,8 @@ domains,cdn-sync.example`}
     readTime: '22 min',
     labLink: '/modules/scripting/lab',
     takeaways: [
-      'Never scrape Nmap\'s human-readable output; use -oX (XML) and parse it with xml.etree.ElementTree, or defusedxml for files you did not produce.',
-      'Diffing today\'s scan against yesterday\'s turns a scanner into a change detector - new open ports are exactly what defenders want to hear about.',
+      "Never scrape Nmap's human-readable output; use -oX (XML) and parse it with xml.etree.ElementTree, or defusedxml for files you did not produce.",
+      "Diffing today's scan against yesterday's turns a scanner into a change detector - new open ports are exactly what defenders want to hear about.",
       'cron runs jobs on a schedule with a minimal environment: use absolute paths, redirect output to a log, and wrap jobs in flock to prevent overlapping runs.',
       'A log watcher that follows a file and alerts on thresholds is a mini-SIEM; add cooldowns so one attack does not produce a thousand alerts.',
       'Every tool that touches the network should read a scope file and refuse anything outside it, with a dry-run mode for new targets.',
@@ -1379,7 +1379,7 @@ for addr, port, name in sorted(before - after):
             ['cron runs with a tiny PATH and no venv activation', 'Use absolute paths, and call the venv interpreter directly (.venv/bin/python)'],
             ['Output is mailed locally or lost', 'Redirect: >> /var/log/job.log 2>&1'],
             ['A slow run overlaps the next one', 'Wrap with flock -n LOCKFILE so a second copy exits immediately'],
-            ['Times are in the server\'s timezone', 'Check timedatectl; many teams run servers in UTC'],
+            ["Times are in the server's timezone", 'Check timedatectl; many teams run servers in UTC'],
             ['The % character is special in crontab', 'Escape it or move the command into a script'],
           ]}
         />
@@ -1713,14 +1713,16 @@ if __name__ == "__main__":
         </Pre>
         <Pre label="USING IT">
 {`$ python3 parse_auth.py --help
-usage: parse_auth [-h] [--log LOG] [--threshold THRESHOLD] [--json] [-v] [--version]
+usage: parse_auth [-h] [--log LOG] [--threshold THRESHOLD] [--json] [-v]
+                  [--version]
 
 parse_auth - summarise failed SSH logins from an auth log.
 
 options:
   -h, --help            show this help message and exit
   --log LOG             log file to read (default: /var/log/auth.log)
-  --threshold THRESHOLD report IPs with at least N failures
+  --threshold THRESHOLD
+                        report IPs with at least N failures
   --json                emit JSON instead of a table
   -v, --verbose         debug logging to stderr
   --version             show program's version number and exit
@@ -1728,7 +1730,7 @@ options:
 $ python3 parse_auth.py --log auth.log --threshold 50
    4127  203.0.113.45
     902  198.51.100.200
-    61  192.0.2.99
+     61  192.0.2.99
 $ echo $?
 1`}
         </Pre>
@@ -1813,14 +1815,19 @@ $ parse-auth --log auth.log --json | jq '.[0]'
         <H3>Git Basics for Tool Authors</H3>
         <Pre label="FIRST COMMIT">
 {`$ git init
-$ printf '.venv/\n__pycache__/\n*.log\n.env\n' > .gitignore    # see note below
+$ cat > .gitignore <<'EOF'
+.venv/
+__pycache__/
+*.log
+.env
+EOF
 $ git add parse_auth.py tests/ pyproject.toml README.md .gitignore
 $ git commit -m "parse_auth 1.0.0: failed SSH login summariser"
 $ git log --oneline
 3f2c9a1 parse_auth 1.0.0: failed SSH login summariser`}
         </Pre>
         <P>
-          The printf line writes four lines into .gitignore (printf turns the two-character sequence backslash-n into a newline). Ignoring .venv, logs and .env files matters: the most common way security tools leak credentials is a developer committing an API key or a sample log full of real IPs and usernames. Scanners like gitleaks or trufflehog can check your history before you publish. If a secret is ever pushed, rotate it immediately - deleting the commit does not un-leak it.
+          The heredoc (everything between the two EOF markers) writes four lines into .gitignore. Ignoring .venv, logs and .env files matters: the most common way security tools leak credentials is a developer committing an API key or a sample log full of real IPs and usernames. Scanners like gitleaks or trufflehog can check your history before you publish. If a secret is ever pushed, rotate it immediately - deleting the commit does not un-leak it.
         </P>
 
         <H3>Writing a README People Can Use</H3>
