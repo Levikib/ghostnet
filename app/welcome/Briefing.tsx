@@ -40,16 +40,16 @@ export default function Briefing({ onDone, onSkip, instant }: { onDone: () => vo
         <Typed text={INTRO} speed={12} typos={false} instant={instant || step > 0} onDone={() => step === 0 && setTimeout(next, 250)} />
       </p>
 
-      <div style={{ display: 'grid', gap: '10px' }}>
+      <div style={{ display: 'grid', gap: '8px' }}>
         {OBJECTIVES.map((o, i) => {
           const n = i + 1
           if (step < n) return null
           return (
-            <Frame key={o.code} color={o.color} className="hx-in bf-row" style={{ padding: '14px 16px' }}>
+            <Frame key={o.code} color={o.color} className="hx-in bf-row" style={{ padding: '11px 14px' }}>
               <div style={{ fontFamily: mono, fontSize: '1.3rem', fontWeight: 700, color: o.color, lineHeight: 1 }}>{o.code}</div>
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontFamily: mono, fontSize: '.72rem', letterSpacing: '.3em', color: o.color, fontWeight: 700 }}>{o.title}</div>
-                <div style={{ fontFamily: sans, fontSize: '.9rem', color: '#c9d9df', lineHeight: 1.55, marginTop: '4px' }}>
+                <div style={{ fontFamily: sans, fontSize: '.86rem', color: '#c9d9df', lineHeight: 1.5, marginTop: '3px' }}>
                   <Typed text={o.text} speed={9} typos={false} instant={instant || step > n} onDone={() => step === n && setTimeout(next, 160)} />
                 </div>
               </div>

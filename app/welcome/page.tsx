@@ -156,10 +156,11 @@ export default function WelcomePage() {
 
       <style>{`
         .wl-root { position: fixed; inset: 0; z-index: 9999; background: #04070a; color: #e8f3f6; overflow-x: hidden; overflow-y: auto; }
-        .wl-hud { position: sticky; top: 0; z-index: 20; display: flex; justify-content: space-between; align-items: center; padding: 16px clamp(16px, 4vw, 32px); background: linear-gradient(#04070a, rgba(4,7,10,0)); }
+        .wl-hud { position: sticky; top: 0; z-index: 20; display: flex; justify-content: space-between; align-items: center; padding: 16px clamp(16px, 4vw, 32px); background: rgba(4,7,10,.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid rgba(232,243,246,.05); }
         .wl-mark { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 800; color: #04070a; background: #e8f3f6; padding: 5px 6px; clip-path: polygon(0 0, 100% 0, 100% 70%, 70% 100%, 0 100%); }
-        .wl-main { position: relative; z-index: 10; min-height: calc(100% - 120px); display: flex; align-items: center; justify-content: center; padding: 12px 16px 80px; box-sizing: border-box; }
-        .wl-rail { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; justify-content: center; gap: clamp(12px, 4vw, 34px); padding: 14px 16px; font-family: 'JetBrains Mono', monospace; font-size: .56rem; letter-spacing: .24em; background: linear-gradient(rgba(4,7,10,0), #04070a 60%); }
+        .wl-main { position: relative; z-index: 10; min-height: calc(100% - 120px); display: flex; align-items: center; justify-content: center; padding: 18px 16px 110px; box-sizing: border-box; }
+        .wl-main::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(4,7,10,.82), rgba(4,7,10,.35) 70%, transparent); }
+        .wl-rail { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; justify-content: center; gap: clamp(12px, 4vw, 34px); padding: 14px 16px; font-family: 'JetBrains Mono', monospace; font-size: .56rem; letter-spacing: .24em; background: rgba(4,7,10,.9); border-top: 1px solid rgba(232,243,246,.05); }
         .wl-rail span { transition: color .3s; white-space: nowrap; }
         .wl-crt { position: fixed; inset: 0; z-index: 60; pointer-events: none; background: #e8f3f6; animation: wlCrt .7s cubic-bezier(.7,0,.3,1) both; }
         @keyframes wlCrt { 0% { opacity: 1; transform: scale(1, .004) } 35% { opacity: 1; transform: scale(1, .004) } 60% { opacity: .9; transform: scale(1, 1) } 100% { opacity: 0; transform: scale(1, 1) } }

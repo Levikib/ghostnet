@@ -238,7 +238,7 @@ export function HackStyles() {
       .hx-frame-label { position: absolute; top: -9px; left: 16px; padding: 0 8px; background: #04070a; font-family: 'JetBrains Mono', monospace; font-size: .56rem; letter-spacing: .28em; color: var(--hx-c); }
 
       .hx-in { animation: hxIn .45s cubic-bezier(.2,.8,.2,1) both; }
-      @keyframes hxIn { 0% { opacity: 0; transform: translateY(10px); clip-path: inset(0 0 100% 0) } 100% { opacity: 1; transform: none; clip-path: inset(0 0 0 0) } }
+      @keyframes hxIn { 0% { opacity: 0; transform: translateY(10px); clip-path: inset(-40px -40px 100% -40px) } 100% { opacity: 1; transform: none; clip-path: inset(-40px -40px -40px -40px) } }
       .hx-tag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: .56rem; letter-spacing: .2em; padding: 3px 7px; border: 1px solid currentColor; }
 
       .hx-btn { position: relative; font-family: 'JetBrains Mono', monospace; font-size: .76rem; font-weight: 700; letter-spacing: .3em; padding: 15px 22px; cursor: pointer; color: #04070a; background: #e8f3f6; border: none;

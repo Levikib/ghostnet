@@ -100,7 +100,7 @@ function Inner() {
       {cut > 0 && <div key={cut} className="hx-burst" aria-hidden="true" />}
 
       <div style={{ position: 'relative', zIndex: 10, maxWidth: '780px', margin: '0 auto', padding: '30px 16px 60px' }}>
-        <div style={{ marginBottom: '22px' }}>
+        <div style={{ marginBottom: '34px' }}>
           <div style={{ fontFamily: mono, fontSize: '.6rem', letterSpacing: '.4em', color: C.cyan }}>// OPERATOR INITIATION</div>
           <h1 style={{ fontFamily: mono, fontSize: 'clamp(1.25rem, 5vw, 1.85rem)', color: C.white, margin: '10px 0 0', letterSpacing: '.08em' }}>
             <Decode key={done ? 'd' : 'w'} text={done ? 'INITIATION COMPLETE' : 'WELCOME TO THE NETWORK, ' + profile.username.toUpperCase()} duration={800} instant={reduced} />

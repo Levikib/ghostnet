@@ -173,13 +173,13 @@ function AuthInner() {
       return
     }
     go('verify')
-    setNotice('Access code sent to ' + email.trim() + '. Check your inbox (and spam folder).')
     setCooldown(30)
   }
 
   async function submitVerify(v?: string) {
     const c = v || code
     if (busy || c.length !== 6) return
+    setNotice(null)
     setDec({ code: c, status: 'run' })
     const r = await runSequence<{ next?: string }>(SEQ.verify, api('/api/auth/verify', { email: email.trim(), code: c }))
     if (r.ok === false) {
@@ -253,7 +253,7 @@ function AuthInner() {
     granted: ['SESSION ESTABLISHED', 'ACCESS GRANTED'],
   }
 
-  const idStatus: IdStatus = mode === 'granted' ? 'active' : busy ? 'working' : scan === 'denied' ? 'denied' : mode === 'verify' ? 'unverified' : mode === 'mfa' ? 'second-factor' : mode === 'register' || email || username ? 'building' : 'locked'
+  const idStatus: IdStatus = mode === 'granted' || dec?.status === 'ok' ? 'active' : dec?.status === 'fail' ? 'denied' : busy ? 'working' : scan === 'denied' ? 'denied' : mode === 'verify' ? 'unverified' : mode === 'mfa' ? 'second-factor' : mode === 'register' || email || username ? 'building' : 'locked'
   const keyLabel = !password ? undefined : mode === 'register' || mode === 'reset' ? pw.label + ' · ' + password.length + ' CHARS' : 'SUPPLIED · ' + password.length + ' CHARS'
   const keyColor = !password ? undefined : mode === 'register' || mode === 'reset' ? pw.color : C.white
   const subjectLabel = mode === 'register' ? 'NEW OPERATOR' : mode === 'verify' ? 'CHECK YOUR INBOX' : mode === 'mfa' ? 'OPEN YOUR AUTHENTICATOR' : 'SUBJECT'
@@ -285,7 +285,7 @@ function AuthInner() {
       <div className="au-shell">
         {/* LEFT: identity record */}
         <div className="au-left">
-          <IdentityProfile callsign={mode === 'register' || mode === 'granted' ? (username || welcomeName) : ''} email={email} keyLabel={keyLabel} keyColor={keyColor} status={idStatus} trace={seq} label={subjectLabel} />
+          <IdentityProfile callsign={mode === 'login' || mode === 'forgot' || mode === 'reset' || mode === 'mfa' ? '' : (username || welcomeName)} email={email} keyLabel={keyLabel} keyColor={keyColor} status={idStatus} trace={seq} label={subjectLabel} />
           {HELP[mode] && (
             <p className="au-help" style={{ fontFamily: sans, fontSize: '.8rem', lineHeight: 1.6, color: C.dim, margin: '14px 2px 0' }}>
               <span style={{ fontFamily: mono, fontSize: '.58rem', letterSpacing: '.2em', color: C.cyan, marginRight: '8px' }}>INTEL</span>{HELP[mode]}
@@ -395,7 +395,7 @@ function AuthInner() {
                 {dec ? <CodeDecrypt code={dec.code} status={dec.status} label="ACCESS CODE" /> : (
                   <>
                     <p style={{ fontFamily: sans, fontSize: '0.9rem', color: '#b9cbd2', margin: 0, lineHeight: 1.6 }}>
-                      <Typed text={'Code dispatched to ' + email + '. Enter the 6 digits to unlock your identity.'} speed={14} typos={false} cursor={false} />
+                      <Typed text={'Enter the 6 digits we sent to ' + email + '. Not there in a minute? Check spam.'} speed={14} typos={false} cursor={false} />
                     </p>
                     <OtpInput value={code} onChange={v => { setCode(v); setError(null) }} onComplete={submitVerify} disabled={busy} error={!!error} accent={C.cyan} />
                     <button className="hx-btn" onClick={() => submitVerify()} disabled={busy || code.length !== 6}>UNLOCK IDENTITY ▸</button>
