@@ -247,7 +247,7 @@ function AuthInner() {
         .au-vignette { position: fixed; inset: 0; background: radial-gradient(ellipse at 50% 40%, transparent 30%, #000 85%); pointer-events: none; }
         .au-scan { position: fixed; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,0.12) 0 1px, transparent 1px 3px); pointer-events: none; }
         .au-shell { position: relative; min-height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: clamp(24px, 5vw, 70px); max-width: 1100px; margin: 0 auto; padding: 40px 24px; box-sizing: border-box; }
-        @media (max-width: 860px) { .au-shell { grid-template-columns: minmax(0, 1fr); padding: 28px 16px 40px; gap: 18px } .au-left { order: 0; max-width: 220px; margin: 0 auto } .au-left-meta { display: none } }
+        @media (max-width: 860px) { .au-shell { grid-template-columns: minmax(0, 1fr); padding: 28px 16px 40px; gap: 18px } .au-left { order: 0; max-width: 220px; margin: 0 auto } .au-left-meta { display: none !important } }
         .au-card { position: relative; background: linear-gradient(160deg, rgba(4,18,7,0.94), rgba(1,7,2,0.96)); border: 1px solid rgba(0,255,65,0.2); padding: clamp(22px, 5vw, 36px);
           clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px)); box-shadow: 0 0 80px rgba(0,255,65,0.06); }
         .au-card::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(115deg, transparent 40%, rgba(0,255,65,0.05) 50%, transparent 60%); background-size: 300% 100%; animation: auSheen 6s linear infinite; }
