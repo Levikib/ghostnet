@@ -1,7 +1,11 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react'
 import { fetchServerProgress, syncChapter } from '../../lib/client/progress'
-import { setGhostContext } from '../../lib/client/ghostContext'
+import { openGhost, setGhostContext } from '../../lib/client/ghostContext'
+import { GxStyles, T, accentText } from './gx/Gx'
+
+const READ_SIZES = { S: 16, M: 17, L: 19, XL: 21 } as const
+type ReadSize = keyof typeof READ_SIZES
 
 const mono = 'JetBrains Mono, monospace'
 
@@ -32,7 +36,10 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
   const [current, setCurrent] = useState(0)
   const [resumed, setResumed] = useState(false)
   const [resumeFrom, setResumeFrom] = useState<number | null>(null)
-  const [visited, setVisited] = useState<Set<number>>(new Set([0]))
+  const [visited, setVisited] = useState<Set<number>>(new Set())
+  const [size, setSizeState] = useState<ReadSize>('M')
+  useEffect(() => { try { const v = localStorage.getItem('gn_read_size') as ReadSize | null; if (v && v in READ_SIZES) setSizeState(v) } catch {} }, [])
+  const setSize = (v: ReadSize) => { setSizeState(v); try { localStorage.setItem('gn_read_size', v) } catch {} }
 
   useEffect(() => {
     const saved = localStorage.getItem(storageKey)
@@ -108,6 +115,30 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
   }, [current, chapters])
   useEffect(() => () => setGhostContext(null), [])
 
+  // Copy buttons on every code block (copies commands without the "$ " prompt).
+  useEffect(() => {
+    const root = contentRef.current
+    if (!root) return
+    root.querySelectorAll('pre').forEach(pre => {
+      if (pre.querySelector('.cx-copy')) return
+      const b = document.createElement('button')
+      b.type = 'button'
+      b.className = 'cx-copy'
+      b.textContent = 'COPY'
+      b.setAttribute('aria-label', 'Copy code')
+      b.onclick = () => {
+        const raw = Array.from(pre.childNodes).filter(n => n !== b).map(n => n.textContent || '').join('')
+        const text = raw.split('\n').map(l => l.replace(/^\s*\$ /, '')).join('\n').trim()
+        navigator.clipboard?.writeText(text).then(() => {
+          b.textContent = 'COPIED'
+          b.dataset.done = 'true'
+          setTimeout(() => { b.textContent = 'COPY'; b.dataset.done = 'false' }, 1600)
+        }).catch(() => {})
+      }
+      pre.appendChild(b)
+    })
+  }, [current])
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null
@@ -126,169 +157,140 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
   }
 
   const ch = chapters[current]
-  const pct = Math.round(((current + 1) / chapters.length) * 100)
+  const readNow = visited.has(current) && dwelt && reachedEnd
+  const acc = accentText(accent)
 
   return (
-    <div>
-      {/* Resume banner */}
+    <div className="cx" style={{ ['--accent' as string]: accent, ['--acc' as string]: acc, ['--read' as string]: READ_SIZES[size] + 'px' } as React.CSSProperties}>
+      <GxStyles />
+
       {resumeFrom !== null && !resumed && (
-        <div style={{
-          background: 'rgba(0,0,0,0.6)', border: '1px solid ' + accent + '55',
-          borderRadius: '6px', padding: '0.75rem 1.25rem', marginBottom: '1.5rem',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          fontFamily: mono, fontSize: '0.75rem'
-        }}>
-          <span style={{ color: '#6a8a6a' }}>
-            Resume from <span style={{ color: accent }}>Chapter {resumeFrom + 1}: {chapters[resumeFrom].title}</span>?
+        <div className="gx-clay cx-resume">
+          <span style={{ fontFamily: T.sans, fontSize: '15px', color: T.body }}>
+            Pick up where you left off: <b style={{ color: T.tx }}>Chapter {resumeFrom + 1}, {chapters[resumeFrom].title}</b>
           </span>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button onClick={() => { goTo(resumeFrom!); setResumed(true) }}
-              style={{ background: accent + '22', border: '1px solid ' + accent + '88', borderRadius: '3px', color: accent, fontFamily: mono, fontSize: '0.7rem', padding: '4px 12px', cursor: 'pointer' }}>
-              Resume
-            </button>
-            <button onClick={() => { setResumeFrom(null); setResumed(true) }}
-              style={{ background: 'transparent', border: '1px solid #2a2a2a', borderRadius: '3px', color: '#4a4a4a', fontFamily: mono, fontSize: '0.7rem', padding: '4px 12px', cursor: 'pointer' }}>
-              Start over
-            </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button className="gx-btn gx-btn--secondary" onClick={() => { goTo(resumeFrom!); setResumed(true) }}>RESUME</button>
+            <button className="gx-btn gx-btn--ghost" onClick={() => { setResumeFrom(null); setResumed(true) }}>START OVER</button>
           </div>
         </div>
       )}
 
-      {/* Chapter nav strip */}
-      <div className="codex-nav-strip" style={{
-        background: '#05080a', border: '1px solid #0e1810',
-        borderRadius: '6px', padding: '0.75rem 1rem', marginBottom: '1.5rem'
-      }}>
-        {/* Progress bar */}
-        <div style={{ display: 'flex', gap: '3px', marginBottom: '8px' }}>
-          {chapters.map((_, i) => (
-            <div key={i} onClick={() => goTo(i)}
-              title={'Ch ' + (i + 1) + ': ' + chapters[i].title}
-              style={{
-                flex: 1, height: '3px', borderRadius: '2px', cursor: 'pointer',
-                background: i === current ? accent : (visited.has(i) ? accent + '44' : '#1a1a1a'),
-                transition: 'background 0.2s'
-              }} />
-          ))}
-        </div>
-        {/* Chapter pills */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
+      {/* Chapter rail */}
+      <nav className="codex-nav-strip cx-strip" aria-label="Chapters">
+        <div className="cx-dots">
           {chapters.map((c, i) => (
-            <button key={i} onClick={() => goTo(i)} title={c.title}
-              style={{
-                fontFamily: mono, fontSize: '0.65rem', padding: '3px 10px',
-                borderRadius: '3px', cursor: 'pointer', letterSpacing: '0.05em',
-                border: '1px solid ' + (i === current ? accent : (visited.has(i) ? accent + '33' : '#1a1a1a')),
-                background: i === current ? accent + '18' : 'transparent',
-                color: i === current ? accent : (visited.has(i) ? accent + '88' : '#333'),
-                transition: 'all 0.15s', whiteSpace: 'nowrap'
-              }}>
-              {visited.has(i) && i !== current ? '✓ ' : ''}{String(i + 1).padStart(2, '0')}
+            <button key={i} onClick={() => goTo(i)} className="cx-dot" data-current={i === current} data-read={visited.has(i)} aria-label={'Chapter ' + (i + 1) + ': ' + c.title + (visited.has(i) ? ' (read)' : '')} aria-current={i === current ? 'step' : undefined}>
+              {visited.has(i) && i !== current ? '✓' : String(i + 1).padStart(2, '0')}
             </button>
           ))}
-          <span style={{ fontFamily: mono, fontSize: '0.6rem', color: '#2a3a2a', marginLeft: 'auto' }}>
-            {pct}% — {visited.size}/{chapters.length} read &nbsp;·&nbsp; ← → keys
-          </span>
         </div>
-      </div>
+        <div className="cx-strip-meta">
+          <span>{visited.size}/{chapters.length} READ</span>
+          <div className="cx-size" role="group" aria-label="Text size">
+            {(['S', 'M', 'L', 'XL'] as const).map(k => (
+              <button key={k} aria-pressed={size === k} onClick={() => setSize(k)} aria-label={'Text size ' + k}>{k === 'S' ? 'A-' : k === 'M' ? 'A' : k === 'L' ? 'A+' : 'A++'}</button>
+            ))}
+          </div>
+        </div>
+      </nav>
 
       {/* Chapter header */}
-      <div className="codex-chapter-header" style={{
-        border: '1px solid ' + accent + '22', borderRadius: '8px',
-        padding: '1.5rem 2rem', marginBottom: '2rem',
-        background: 'linear-gradient(135deg, rgba(0,0,0,0.4) 0%, ' + accent + '08 100%)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
-          <span style={{
-            fontFamily: mono, fontSize: '0.6rem', letterSpacing: '0.2em',
-            padding: '2px 8px', borderRadius: '2px',
-            background: difficultyColor(ch.difficulty) + '15',
-            border: '1px solid ' + difficultyColor(ch.difficulty) + '55',
-            color: difficultyColor(ch.difficulty)
-          }}>{ch.difficulty}</span>
-          <span style={{ fontFamily: mono, fontSize: '0.6rem', color: '#3a4a3a', letterSpacing: '0.1em' }}>~{ch.readTime} read</span>
-          <span style={{ fontFamily: mono, fontSize: '0.6rem', color: '#2a3a2a', marginLeft: 'auto' }}>
-            CHAPTER {current + 1} OF {chapters.length}
-          </span>
+      <header className="codex-chapter-header cx-head gx-hud">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <span className="hx-tag" style={{ color: difficultyColor(ch.difficulty) }}>{ch.difficulty}</span>
+          <span style={{ fontFamily: T.mono, fontSize: '11.5px', color: T.dimHi, letterSpacing: '.1em' }}>~{ch.readTime} READ</span>
+          <span style={{ fontFamily: T.mono, fontSize: '11.5px', color: T.dimHi, letterSpacing: '.1em', marginLeft: 'auto' }}>CHAPTER {current + 1} OF {chapters.length}</span>
         </div>
-        <div style={{ fontFamily: mono, fontSize: '0.65rem', color: accent + '66', letterSpacing: '0.2em', marginBottom: '0.4rem' }}>
-          // CHAPTER {String(current + 1).padStart(2, '0')}
-        </div>
-        <h2 className="codex-chapter-title" style={{ fontFamily: mono, fontSize: '1.5rem', fontWeight: 700, color: accent, margin: 0, textShadow: '0 0 20px ' + accent + '44' }}>
-          {ch.title}
-        </h2>
-      </div>
+        <h2 className="codex-chapter-title cx-title">{ch.title}</h2>
+      </header>
 
       {/* Content */}
-      <div ref={contentRef}>{ch.content}</div>
+      <div ref={contentRef} className="cx-body">{ch.content}</div>
       <div ref={endRef} aria-hidden="true" style={{ height: 1 }} />
 
       {/* Key takeaways */}
-      <div className="codex-takeaways" style={{
-        background: accent + '08', border: '1px solid ' + accent + '22',
-        borderRadius: '6px', padding: '1.25rem 1.5rem', marginTop: '2.5rem'
-      }}>
-        <div style={{ fontFamily: mono, fontSize: '0.6rem', color: accent + '88', letterSpacing: '0.2em', marginBottom: '0.75rem' }}>
-          KEY TAKEAWAYS
+      <section className="codex-takeaways gx-clay cx-take" aria-label="Key takeaways">
+        <div style={{ fontFamily: T.mono, fontSize: '11px', fontWeight: 700, color: acc, letterSpacing: '.22em', marginBottom: '12px' }}>KEY TAKEAWAYS</div>
+        <ul>
+          {ch.takeaways.map((t, i) => <li key={i}>{t}</li>)}
+        </ul>
+        <div className="cx-read-status" data-done={readNow}>
+          {readNow ? '✓ Chapter read · progress saved' : reachedEnd ? 'Almost there: stay a moment longer to count this chapter' : 'Read to the end to count this chapter'}
         </div>
-        {ch.takeaways.map((t, i) => (
-          <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '0.4rem' }}>
-            <span style={{ color: accent, fontFamily: mono, fontSize: '0.75rem', flexShrink: 0 }}>›</span>
-            <span style={{ color: '#8a9a8a', fontFamily: mono, fontSize: '0.75rem', lineHeight: 1.6 }}>{t}</span>
-          </div>
-        ))}
-      </div>
+      </section>
 
-      {/* Lab link if present */}
-      {ch.labLink && (
-        <div style={{
-          marginTop: '1.5rem', background: accent + '06',
-          border: '1px solid ' + accent + '33', borderRadius: '6px',
-          padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between'
-        }}>
-          <div style={{ fontFamily: mono, fontSize: '0.7rem', color: '#5a7a5a' }}>
-            Practice this chapter in the lab
-          </div>
-          <a href={ch.labLink} style={{
-            fontFamily: mono, fontSize: '0.7rem', color: accent,
-            textDecoration: 'none', padding: '4px 14px',
-            border: '1px solid ' + accent + '55', borderRadius: '3px',
-            background: accent + '12', letterSpacing: '0.1em', fontWeight: 700
-          }}>
-            OPEN LAB &#8594;
-          </a>
-        </div>
-      )}
+      <div className="cx-actions">
+        <button className="gx-btn gx-btn--secondary" onClick={() => openGhost('Quiz me with 3 quick questions on this chapter: ' + ch.title)}>QUIZ ME WITH GHOST</button>
+        <button className="gx-btn gx-btn--ghost" onClick={() => openGhost('Explain the key idea of "' + ch.title + '" more simply, with a real-world example.')}>EXPLAIN SIMPLER</button>
+        {ch.labLink && <a href={ch.labLink} className="gx-btn gx-btn--ghost">PRACTISE IN THE LAB ▸</a>}
+      </div>
 
       {/* Prev / Next */}
-      <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid #0e1810'
-      }}>
-        <button className="codex-prev-btn" onClick={() => current > 0 && goTo(current - 1)}
-          disabled={current === 0}
-          style={{
-            fontFamily: mono, fontSize: '0.75rem', cursor: current > 0 ? 'pointer' : 'default',
-            color: current > 0 ? accent : '#1a1a1a', background: 'transparent',
-            border: '1px solid ' + (current > 0 ? accent + '44' : '#111'),
-            borderRadius: '4px', padding: '8px 18px', transition: 'all 0.15s'
-          }}>
-          &#8592; {current > 0 ? chapters[current - 1].title : 'Start'}
+      <div className="cx-pn">
+        <button className="codex-prev-btn gx-clay gx-hit cx-pn-btn" onClick={() => current > 0 && goTo(current - 1)} disabled={current === 0}>
+          <span className="cx-pn-label">◂ PREVIOUS</span>
+          <span className="cx-pn-title">{current > 0 ? chapters[current - 1].title : 'Start of module'}</span>
         </button>
-        <span style={{ fontFamily: mono, fontSize: '0.6rem', color: '#2a3a2a', flexShrink: 0 }}>
-          {current + 1} / {chapters.length}
-        </span>
-        <button className="codex-next-btn" onClick={() => current < chapters.length - 1 && goTo(current + 1)}
-          disabled={current === chapters.length - 1}
-          style={{
-            fontFamily: mono, fontSize: '0.75rem', cursor: current < chapters.length - 1 ? 'pointer' : 'default',
-            color: current < chapters.length - 1 ? accent : '#1a1a1a', background: 'transparent',
-            border: '1px solid ' + (current < chapters.length - 1 ? accent + '44' : '#111'),
-            borderRadius: '4px', padding: '8px 18px', transition: 'all 0.15s'
-          }}>
-          {current < chapters.length - 1 ? chapters[current + 1].title : 'Complete'} &#8594;
+        <button className="codex-next-btn gx-clay gx-hit cx-pn-btn" style={{ textAlign: 'right' }} onClick={() => current < chapters.length - 1 && goTo(current + 1)} disabled={current === chapters.length - 1}>
+          <span className="cx-pn-label">NEXT ▸</span>
+          <span className="cx-pn-title">{current < chapters.length - 1 ? chapters[current + 1].title : 'Module complete'}</span>
         </button>
       </div>
+
+      <style>{`
+        .cx { color: var(--tx); }
+        .cx-resume { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 16px 20px; margin-bottom: 20px; }
+        .cx-strip { position: sticky; top: 60px; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 10px 12px; margin: 0 0 24px; border-radius: 16px;
+          background: rgba(10,18,24,.88); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(232,243,246,.06); }
+        .cx-dots { display: flex; gap: 6px; flex-wrap: wrap; }
+        .cx-dot { min-width: 38px; height: 34px; padding: 0 8px; border-radius: 10px; border: 0; cursor: pointer; font: 700 12px/1 var(--mono); color: var(--tx-dim-hi); background: var(--clay-face); box-shadow: var(--e-clay); transition: transform .15s, color .15s; }
+        .cx-dot:hover { transform: translateY(-1px); color: var(--tx); }
+        .cx-dot[data-read="true"] { color: #04070a; background: var(--accent); box-shadow: inset 0 1px 0 rgba(255,255,255,.4); }
+        .cx-dot[data-current="true"] { color: var(--tx); background: var(--s1); box-shadow: var(--e-pressed), 0 0 0 2px var(--accent); }
+        .cx-dot:focus-visible, .cx-size button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+        .cx-strip-meta { display: flex; align-items: center; gap: 14px; font: 600 11px/1 var(--mono); letter-spacing: .14em; color: var(--tx-dim-hi); }
+        .cx-size { display: flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--s1); box-shadow: var(--e-well); }
+        .cx-size button { font: 700 11px/1 var(--mono); color: var(--tx-dim); background: none; border: 0; padding: 6px 8px; border-radius: 8px; cursor: pointer; }
+        .cx-size button[aria-pressed="true"] { color: var(--tx); background: var(--s3); }
+        .cx-head { padding: clamp(20px, 4vw, 30px); margin-bottom: 32px; }
+        .cx-title { font-family: var(--sans); font-weight: 650; font-size: clamp(26px, 4vw, 36px); letter-spacing: -.015em; line-height: 1.2; color: var(--tx); margin: 16px 0 0; }
+
+        /* Reading column: one readable style for every chapter's content */
+        .cx-body { max-width: 76ch; }
+        .cx-body p, .cx-body li { font-family: var(--sans) !important; font-size: var(--read) !important; line-height: 1.75 !important; color: var(--tx-body) !important; }
+        .cx-body p { margin: 0 0 1.1em !important; }
+        .cx-body li { margin-bottom: .4em; }
+        .cx-body strong, .cx-body b { color: var(--tx) !important; }
+        .cx-body a { color: var(--cyan) !important; }
+        .cx-body h3, .cx-body h4 { font-family: var(--sans) !important; font-weight: 650 !important; color: var(--tx) !important; letter-spacing: -.01em; line-height: 1.3 !important; text-shadow: none !important; }
+        .cx-body h3 { font-size: calc(var(--read) * 1.35) !important; margin: 2.2em 0 .7em !important; padding-left: 14px; border-left: 3px solid var(--accent); }
+        .cx-body h4 { font-size: calc(var(--read) * 1.1) !important; margin: 1.6em 0 .5em !important; }
+        .cx-body pre { position: relative; font-size: 14px !important; line-height: 1.65 !important; background: #071017 !important; border: 1px solid rgba(232,243,246,.08) !important; border-radius: 0 !important; color: #d6f5e0 !important; padding: 18px 18px 18px 18px !important; max-width: 100%; }
+        .cx-body code { font-family: var(--mono); }
+        .cx-body table { font-family: var(--sans); font-size: calc(var(--read) * .88) !important; border-collapse: collapse; width: 100%; }
+        .cx-body th { color: var(--tx) !important; font-weight: 600 !important; text-align: left; }
+        .cx-body td, .cx-body th { border-bottom: 1px solid rgba(232,243,246,.08) !important; padding: 10px 12px !important; color: var(--tx-body) !important; }
+        .cx-body div[style*="border-left"] { border-radius: 0 !important; }
+        .cx-body div[style*="border-left"] > div:last-child { font-family: var(--sans) !important; font-size: calc(var(--read) * .94) !important; line-height: 1.7 !important; color: var(--tx-body) !important; }
+        .cx-copy { position: absolute; top: 8px; right: 8px; font: 700 10.5px/1 var(--mono); letter-spacing: .14em; color: var(--tx-dim-hi); background: rgba(10,18,24,.9); border: 1px solid var(--line-hi); padding: 7px 9px; cursor: pointer; }
+        .cx-copy:hover { color: var(--tx); border-color: var(--cyan); }
+        .cx-copy[data-done="true"] { color: var(--green); border-color: var(--green); }
+
+        .cx-take { padding: 22px 24px; margin-top: 40px; }
+        .cx-take ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+        .cx-take li { position: relative; padding-left: 22px; font-family: var(--sans); font-size: 15.5px; line-height: 1.6; color: var(--tx-body); }
+        .cx-take li::before { content: ''; position: absolute; left: 0; top: .6em; width: 8px; height: 8px; border-radius: 2px; background: var(--accent); transform: rotate(45deg); }
+        .cx-read-status { margin-top: 18px; padding-top: 14px; border-top: 1px dashed rgba(232,243,246,.1); font: 600 11.5px/1.4 var(--mono); letter-spacing: .08em; color: var(--tx-dim-hi); }
+        .cx-read-status[data-done="true"] { color: var(--green); }
+        .cx-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+        .cx-pn { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin-top: 40px; }
+        .cx-pn-btn { display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; border: 0; color: inherit; font: inherit; text-align: left; border-radius: 16px; }
+        .cx-pn-btn:disabled { opacity: .45; cursor: default; transform: none !important; }
+        .cx-pn-label { font: 700 11px/1 var(--mono); letter-spacing: .18em; color: var(--acc); }
+        .cx-pn-title { font-family: var(--sans); font-size: 15px; font-weight: 600; color: var(--tx); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        @media (max-width: 640px) { .cx-strip { top: 60px; } .cx-strip-meta > span { display: none } .cx-pn { grid-template-columns: minmax(0, 1fr); } }
+      `}</style>
     </div>
   )
 }
