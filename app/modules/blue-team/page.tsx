@@ -1022,6 +1022,143 @@ $ zeek-cut ts id.orig_h id.resp_h query < dns.log | grep cdn-telemetry.example`}
       </div>
     ),
   },
+  {
+    id: 'endpoint-defence',
+    title: 'Endpoint Defence',
+    difficulty: 'INTERMEDIATE',
+    readTime: '16 min',
+    labLink: '/modules/blue-team/lab',
+    takeaways: [
+      'EDR combines continuous telemetry (process, file, registry, network, module loads) with behavioural detection and remote response actions such as isolation, process kill and file collection.',
+      'EDR telemetry is a process tree with context: always read the parent, the command line, the signer and what the process did next.',
+      'Hardening shrinks what EDR has to catch: Attack Surface Reduction rules, App Control for Business or AppLocker, macro and script controls, and removing local admin rights.',
+      'Windows LAPS gives every machine a unique, rotated local admin password, killing the "same local admin everywhere" lateral movement path.',
+      'Credential Guard and LSA protection make credential theft from LSASS much harder; combine them with monitoring for LSASS access because attackers adapt.',
+      'Attackers increasingly target the EDR itself (BYOVD, tampering, unprotected hosts); alert on sensor health and enable tamper protection.',
+    ],
+    content: (
+      <div>
+        <H3>From Antivirus to EDR and XDR</H3>
+        <P>
+          Traditional antivirus asked one question about a file: is it known bad? Endpoint Detection and Response (EDR) asks a much richer set of questions about behaviour over time: what started this process, what did it do, who did it talk to, and does that sequence look like an attack? Products such as Microsoft Defender for Endpoint, CrowdStrike Falcon, SentinelOne, Elastic Defend and others install a kernel-level or system-extension sensor that records activity, applies local detection logic (including machine-learning models and behavioural rules), and streams telemetry to a cloud console where analysts investigate and act. XDR extends the same idea across email, identity, cloud and network data so that an incident is presented as one story rather than several product alerts.
+        </P>
+        <Table
+          headers={['Capability', 'What it gives the defender']}
+          rows={[
+            ['Telemetry', 'Process creation with full command lines, file writes, registry changes, network connections, DLL loads, script content (via AMSI)'],
+            ['Prevention', 'Blocks known malware, exploit techniques, ransomware behaviour, credential theft attempts'],
+            ['Behavioural detection', 'Alerts on sequences such as Office spawning PowerShell that then connects out'],
+            ['Investigation', 'Process trees, timelines, prevalence of a file across the fleet'],
+            ['Response', 'Isolate host, kill process, quarantine file, collect forensic package, live response shell'],
+            ['Hunting', 'Query raw telemetry across all endpoints (e.g. Defender Advanced Hunting in KQL)'],
+          ]}
+        />
+
+        <H3>What EDR Telemetry Looks Like</H3>
+        <P>
+          Each vendor has its own schema, but the shape is consistent. Below is an EDR process event in a normalised, ECS-like format, followed by a typical process tree an analyst would see in the console for the intrusion used in this module&apos;s lab.
+        </P>
+        <Pre label="EDR PROCESS EVENT (ECS-STYLE JSON)">
+{`{
+  "@timestamp": "2026-11-03T21:17:44.118Z",
+  "event": { "category": "process", "type": "start", "action": "exec" },
+  "host": { "name": "WS-FIN-042", "ip": ["10.20.30.42"] },
+  "user": { "domain": "CORP", "name": "m.hale" },
+  "process": {
+    "pid": 7312,
+    "executable": "C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe",
+    "command_line": "powershell.exe -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0A...",
+    "hash": { "sha256": "9f2c...e1a0" },
+    "code_signature": { "subject_name": "Microsoft Windows", "trusted": true },
+    "parent": { "pid": 4120, "name": "explorer.exe" }
+  },
+  "file": { "origin_url": "zip://Invoice_Q4.zip/Invoice_Q4.pdf.lnk" }
+}`}
+        </Pre>
+        <Pre label="PROCESS TREE AS SHOWN IN AN EDR CONSOLE">
+{`explorer.exe (4120)  user=CORP/m.hale
+ '-- powershell.exe (7312)  -nop -w hidden -enc SQBFAFgA...        [ALERT: Suspicious PowerShell]
+      |-- network: cdn-telemetry.example (192.0.2.66:443)            [first seen in org: today]
+      |-- file write: C:/ProgramData/UpdSvc/updsvc.exe               [unsigned, prevalence 1]
+      '-- sc.exe (7790)  create UpdSvc binPath= C:/ProgramData/UpdSvc/updsvc.exe start= auto
+           '-- (services.exe) updsvc.exe (8012)
+                |-- network: 192.0.2.66:443 every ~60s
+                '-- net.exe (8120)  group "Domain Admins" /domain     [discovery]`}
+        </Pre>
+        <P>
+          Read trees from the top. The signed Microsoft binary powershell.exe is not the problem by itself; the problem is the context: a user shell launching hidden, encoded PowerShell from a shortcut inside a ZIP, which then reaches a domain the organisation has never seen, drops an unsigned binary that exists on one machine in the fleet, and installs it as a service. Prevalence (how many hosts have seen this file or domain) is one of the most useful fields an EDR provides.
+        </P>
+
+        <H3>Hardening: Shrinking the Attack Surface</H3>
+        <P>
+          Every technique you prevent is one you do not have to detect. Hardening is unglamorous but it is where the largest risk reductions usually come from.
+        </P>
+        <Table
+          headers={['Control', 'What it stops', 'Notes']}
+          rows={[
+            ['Remove local admin rights from users', 'Most persistence, driver loading, credential dumping', 'Use a privilege management tool for exceptions'],
+            ['Attack Surface Reduction (ASR) rules', 'Office child processes, credential stealing from LSASS, executable content from email, obfuscated scripts, PSExec/WMI process creation', 'Start in audit mode, review, then block'],
+            ['Block macros from the internet', 'Classic macro phishing', 'Default in Microsoft 365 since 2022; attackers moved to LNK, ISO, OneNote and HTML smuggling'],
+            ['Mark-of-the-Web handling and SmartScreen', 'Downloaded files running without warning', 'Watch for container formats that drop MotW'],
+            ['PowerShell Constrained Language Mode + script block logging', 'Many offensive PowerShell tools', 'CLM is enforced automatically under App Control'],
+            ['Disable or restrict legacy protocols', 'LLMNR/NBT-NS poisoning, NTLM relay, SMBv1', 'Require SMB signing; LDAP signing and channel binding'],
+            ['Patch and remove unused software', 'Exploit-based initial access and privilege escalation', 'Prioritise known-exploited vulnerabilities (CISA KEV)'],
+          ]}
+        />
+
+        <H3>Application Allowlisting</H3>
+        <P>
+          Allowlisting flips the model: instead of blocking known bad, only approved code may run. On Windows the modern option is App Control for Business (formerly Windows Defender Application Control, WDAC), which enforces policy in the kernel and can trust code by publisher certificate, file hash, path or the Intelligent Security Graph reputation service. AppLocker is older and easier to deploy but weaker, because it is enforced in user mode and is not treated by Microsoft as a security boundary. On Linux, fapolicyd and SELinux or AppArmor play similar roles. Even a partial policy, such as blocking execution from user-writable paths like AppData, Temp, Downloads and ProgramData unless signed by trusted publishers, defeats a large share of commodity malware.
+        </P>
+        <Note type="info">
+          Microsoft maintains a recommended block list of signed binaries that can be abused to bypass App Control (for example certain versions of msbuild.exe or debugging tools) and a vulnerable driver block list. Merge both into your policy; attackers know exactly which signed files slip through naive allowlists.
+        </Note>
+
+        <H3>Windows LAPS</H3>
+        <P>
+          For years many organisations imaged every workstation with the same local administrator password. An attacker who dumped one machine&apos;s local SAM hash could pass it to every other machine. Windows LAPS (Local Administrator Password Solution), built into Windows since the April 2023 updates and replacing the older downloadable &quot;legacy LAPS&quot;, sets a unique random password per device, rotates it on a schedule or after use, and stores it in Active Directory or Entra ID with access controlled by permissions. It can also back up the Directory Services Restore Mode password on domain controllers and encrypt stored passwords. Monitor who reads LAPS passwords: a burst of reads by one account is a strong signal of an attacker harvesting them.
+        </P>
+        <Pre label="CHECK LAPS STATUS AND AUDIT READS">
+{`PS> Get-LapsADPassword -Identity WS-FIN-042 -AsPlainText
+ComputerName        : WS-FIN-042
+Account             : Administrator
+Password            : (redacted)
+PasswordUpdateTime  : 2026-10-28 03:12:44
+ExpirationTimestamp : 2026-11-27 03:12:44
+Source              : EncryptedPassword
+
+# On DCs, enable "Audit Directory Service Access" and watch event 4662
+# for reads of the msLAPS-EncryptedPassword attribute by unexpected accounts.`}
+        </Pre>
+
+        <H3>Credential Guard and LSA Protection</H3>
+        <P>
+          Credential theft from LSASS memory (the Mimikatz family of techniques covered in the Active Directory module) is the engine of most domain compromises. Credential Guard uses virtualization-based security to move NTLM hashes and Kerberos secrets into an isolated process (LSAIso) that even a SYSTEM-level attacker cannot read directly. It is enabled by default on eligible, domain-joined Windows 11 Enterprise and Education devices from version 22H2 onward, and on suitable Windows Server 2025 systems. LSA protection (RunAsPPL) runs LSASS as a protected process so that unsigned code cannot open it for memory reads, and recent Windows 11 releases enable it by default on new installs.
+        </P>
+        <P>
+          Neither is a silver bullet. Credential Guard does not protect credentials typed into a compromised session (keyloggers, fake prompts), Kerberos tickets already issued can still be abused, and attackers with kernel access via a vulnerable signed driver can disable protections. Keep the Sysmon EID 10 and ASR &quot;block credential stealing from LSASS&quot; detections in place even after enabling both.
+        </P>
+
+        <H3>Protecting the Sensor</H3>
+        <P>
+          Ransomware crews now routinely try to blind EDR before deploying payloads. Common methods are Bring Your Own Vulnerable Driver (BYOVD: loading a legitimately signed but vulnerable driver to kill security processes from the kernel), abusing uninstallers with stolen admin credentials, adding broad exclusions, or simply operating from hosts with no agent (unmanaged servers, VPN appliances, hypervisors).
+        </P>
+        <Table
+          headers={['Defence', 'Detection signal']}
+          rows={[
+            ['Enable tamper protection and uninstall passwords', 'Console alert on tamper attempt'],
+            ['Vulnerable driver block list / HVCI (memory integrity)', 'Sysmon EID 6 driver load of a known-vulnerable driver'],
+            ['Sensor health monitoring', 'Host stops reporting while still seen on the network (DHCP, Zeek, flow logs)'],
+            ['Exclusion change auditing', 'Defender event 5007 configuration change adding exclusions'],
+            ['Coverage reconciliation', 'Weekly diff of asset inventory vs EDR-enrolled hosts'],
+          ]}
+        />
+        <Note type="danger">
+          An EDR that is installed on 92 percent of hosts protects 92 percent of hosts. Attackers actively search for the other 8 percent. Coverage gaps are findings in their own right and belong on the risk register.
+        </Note>
+      </div>
+    ),
+  },
 // __MORE_CHAPTERS__
 ]
 
