@@ -66,6 +66,7 @@ export async function POST(req: NextRequest) {
       const step = Math.floor(Number(b.step))
       const total = Math.floor(Number(b.total))
       if (!(step >= 0 && step <= 100) || !(total > 0 && total <= 100)) return fail('Bad step.')
+      const before = await one<{ steps_done: number }>(`SELECT steps_done FROM lab_progress WHERE user_id = $1 AND lab_id = $2`, [s.id, labId])
       await sql(
         `INSERT INTO lab_progress (user_id, lab_id, module_id, steps_done, steps_total, attempts)
          VALUES ($1, $2, $3, $4, $5, 1)
@@ -73,6 +74,11 @@ export async function POST(req: NextRequest) {
            steps_done = GREATEST(lab_progress.steps_done, $4), steps_total = $5, updated_at = now()`,
         [s.id, labId, moduleId, Math.min(step, total), total],
       )
+      // A new step cleared counts as learning today (streak + missions), with no XP of its own.
+      if (Math.min(step, total) > (before?.steps_done ?? 0)) {
+        await sql(`INSERT INTO activity (user_id, kind, module_id, ref, xp) VALUES ($1, 'lab_step', $2, $3, 0)`, [s.id, moduleId, labId + ':' + step])
+        await addXp(s.id, 0)
+      }
       return json({ ok: true })
     }
 

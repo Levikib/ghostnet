@@ -260,6 +260,7 @@ export default function GhostAgent() {
     const text = input.trim()
     if (!text || loading) return
 
+    try { const k = 'gn_ghost_asks_' + new Date().toISOString().slice(0, 10); localStorage.setItem(k, String(Number(localStorage.getItem(k) || 0) + 1)) } catch {}
     const userMsg: Message = { role: 'user', content: text, timestamp: new Date() }
     const nextMessages = [...messages, userMsg]
     setMessages(nextMessages)
