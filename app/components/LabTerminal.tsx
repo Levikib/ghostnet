@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { fetchServerProgress, syncLabComplete, syncLabStep } from '../../lib/client/progress'
+import { setGhostContext } from '../../lib/client/ghostContext'
 
 export interface LabStep {
   id: string
@@ -31,12 +32,23 @@ function normalise(s: string) {
   return s.trim().toLowerCase().replace(/\s+/g, ' ')
 }
 
+// An answer passes when it matches, or contains the expected command plus a few extra flags.
+// Long inputs stuffed with keywords no longer pass.
 function checkAnswer(input: string, answers: string[]): boolean {
   const norm = normalise(input)
+  const words = norm.split(' ').length
   return answers.some(a => {
     if (a === '*') return norm.length > 0
-    return normalise(a) === norm || norm.includes(normalise(a))
+    const want = normalise(a)
+    if (want === norm) return true
+    const extra = words - want.split(' ').length
+    return norm.includes(want) && extra <= 4 && norm.length <= want.length + 40
   })
+}
+
+const firstOpen = (done: Set<number>, total: number) => {
+  for (let i = 0; i < total; i++) if (!done.has(i)) return i
+  return total
 }
 
 export default function LabTerminal({ labId, moduleId, title, accent, steps, onComplete, onRestart }: Props) {
@@ -44,6 +56,8 @@ export default function LabTerminal({ labId, moduleId, title, accent, steps, onC
   const [input, setInput] = useState('')
   const [lines, setLines] = useState<{ text: string; type: 'cmd' | 'out' | 'err' | 'sys' | 'flag' }[]>([])
   const [completed, setCompleted] = useState<Set<number>>(new Set())
+  const [skipped, setSkipped] = useState<Set<number>>(new Set())
+  const [recent, setRecent] = useState<string[]>([])
   const [failed, setFailed] = useState(false)
   const [showHint, setShowHint] = useState(false)
   const [totalXp, setTotalXp] = useState(0)
@@ -57,6 +71,23 @@ export default function LabTerminal({ labId, moduleId, title, accent, steps, onC
   const mono = 'JetBrains Mono, monospace'
 
   const step = steps[currentStep]
+
+  // Tell GHOST which step the learner is on and what they have tried.
+  useEffect(() => {
+    if (!step) return
+    setGhostContext({
+      path: window.location.pathname,
+      lab: { title, objective: step.title + ': ' + step.objective, step: currentStep + 1, total: steps.length, attempts, recent },
+    })
+  }, [step, currentStep, steps.length, title, attempts, recent])
+  useEffect(() => () => setGhostContext(null), [])
+
+  // A lab finished on an earlier visit still unlocks what the page gates behind it (free lab).
+  const notifiedRef = useRef(false)
+  useEffect(() => {
+    if (allDone && !notifiedRef.current) { notifiedRef.current = true; onComplete?.(totalXp) }
+  }, [allDone, totalXp, onComplete])
+  useEffect(() => { setRecent([]) }, [currentStep])
 
   // Restore from localStorage
   useEffect(() => {
@@ -100,14 +131,14 @@ export default function LabTerminal({ labId, moduleId, title, accent, steps, onC
     setLines(prev => [...prev, { text, type }])
   }, [])
 
-  const saveProgress = useCallback(async (newCompleted: Set<number>, newXp: number, done: boolean) => {
+  const saveProgress = useCallback(async (newCompleted: Set<number>, newXp: number, done: boolean, nextStep?: number) => {
     const nowIso = new Date().toISOString()
 
     // localStorage always — include completedAt for profile activity feed
     localStorage.setItem('lab_' + labId, JSON.stringify({
       completed: Array.from(newCompleted),
       xp: newXp,
-      step: currentStep,
+      step: nextStep ?? currentStep,
       done,
       completedAt: done ? nowIso : undefined,
     }))
@@ -170,17 +201,18 @@ export default function LabTerminal({ labId, moduleId, title, accent, steps, onC
         addLine('', 'sys')
       }
 
-      const newXp = totalXp + step.xp
+      const gained = skipped.has(currentStep) ? 0 : step.xp
+      const newXp = totalXp + gained
       setTotalXp(newXp)
-      setXpFlash(step.xp)
+      setXpFlash(gained)
       setTimeout(() => setXpFlash(0), 2000)
 
       const newCompleted = new Set(completed)
       newCompleted.add(currentStep)
       setCompleted(newCompleted)
 
-      const nextStep = currentStep + 1
-      const done = nextStep >= steps.length
+      const nextStep = firstOpen(newCompleted, steps.length)
+      const done = newCompleted.size >= steps.length
 
       if (done) {
         addLine('', 'sys')
@@ -189,24 +221,24 @@ export default function LabTerminal({ labId, moduleId, title, accent, steps, onC
         addLine('█████████████████████████████████████████', 'sys')
         setAllDone(true)
         saveProgress(newCompleted, newXp, true)
-        onComplete?.(newXp)
       } else {
         addLine('', 'sys')
         addLine('→ Advancing to step ' + (nextStep + 1) + '/' + steps.length + '...', 'sys')
         addLine('', 'sys')
         setCurrentStep(nextStep)
-        saveProgress(newCompleted, newXp, false)
+        saveProgress(newCompleted, newXp, false, nextStep)
       }
     } else {
       const newAttempts = attempts + 1
       setAttempts(newAttempts)
       setFailed(true)
       addLine('✗ Not quite right. Try again.', 'err')
+      setRecent(r => [...r.slice(-4), raw])
       if (newAttempts >= 2) {
         addLine('  Hint: type "hint" to see a clue.', 'err')
       }
     }
-  }, [input, step, completed, currentStep, steps.length, totalXp, attempts, addLine, saveProgress, onComplete])
+  }, [input, step, completed, skipped, currentStep, steps.length, totalXp, attempts, addLine, saveProgress, onComplete])
 
   const handleKeyword = useCallback((cmd: string) => {
     const lower = cmd.toLowerCase()
@@ -217,21 +249,13 @@ export default function LabTerminal({ labId, moduleId, title, accent, steps, onC
       setInput('')
       return true
     }
-    if (lower === 'skip' && step?.flag) {
-      // allow skip but no XP
+    if ((lower === 'skip' || lower === 'solution') && step) {
+      // Reveal the answer; the learner still types it, and this step pays no XP.
       addLine('ghost@lab:~$ ' + cmd, 'cmd')
-      addLine('⚠ Step skipped (no XP awarded).', 'err')
-      const newCompleted = new Set(completed)
-      newCompleted.add(currentStep)
-      setCompleted(newCompleted)
-      const nextStep = currentStep + 1
-      if (nextStep >= steps.length) {
-        setAllDone(true)
-        saveProgress(newCompleted, totalXp, true)
-      } else {
-        setCurrentStep(nextStep)
-        saveProgress(newCompleted, totalXp, false)
-      }
+      const shown = step.answers.find(a => a !== '*') || 'any answer'
+      addLine('ANSWER: ' + shown, 'out')
+      addLine('Type it to continue. No XP for this step.', 'err')
+      setSkipped(prev => { const n = new Set(prev); n.add(currentStep); return n })
       setInput('')
       return true
     }
@@ -241,7 +265,7 @@ export default function LabTerminal({ labId, moduleId, title, accent, steps, onC
       return true
     }
     return false
-  }, [step, completed, currentStep, steps.length, totalXp, addLine, saveProgress])
+  }, [step, currentStep, addLine])
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -277,7 +301,7 @@ export default function LabTerminal({ labId, moduleId, title, accent, steps, onC
             <div
               key={i}
               onClick={() => {
-                if (allDone) return
+                if (allDone || i > firstOpen(completed, steps.length)) return
                 setCurrentStep(i)
                 setFailed(false)
                 setShowHint(false)
@@ -296,7 +320,7 @@ export default function LabTerminal({ labId, moduleId, title, accent, steps, onC
             <button
               key={i}
               onClick={() => {
-                if (allDone) return
+                if (allDone || i > firstOpen(completed, steps.length)) return
                 setCurrentStep(i)
                 setFailed(false)
                 setShowHint(false)

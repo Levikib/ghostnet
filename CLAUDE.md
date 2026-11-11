@@ -6,7 +6,7 @@ Babel compiler (NOT SWC) — .babelrc exists, do not remove it.
 Database: Neon Postgres via SQL-over-HTTP (lib/server/db.ts, no driver). Schema self-heals in lib/server/schema.ts (idempotent statements; add new columns at the end).
 Auth: GHOSTNET's own engine (lib/server/*): scrypt passwords, email OTP verification, DB sessions (httpOnly `gn_session`, hashed), optional TOTP 2FA + backup codes, new-device alerts, rate limits, audit log. Supabase is no longer used.
 Email: Gmail SMTP via lib/server/mailer.ts (SMTP_USER, SMTP_PASS app password). Env: DATABASE_URL, AUTH_SECRET, SMTP_USER, SMTP_PASS, MAIL_FROM_NAME, ADMIN_EMAILS.
-Groq API — llama-3.3-70b-versatile, 4096 max tokens, via /api/ghost route.
+Groq API via /api/ghost — model from GHOST_MODEL (default openai/gpt-oss-120b, fallback GHOST_FALLBACK_MODEL openai/gpt-oss-20b; llama-3.3-70b was retired 16 Aug 2026). The system prompt is built ONLY on the server (lib/ghost/prompt.ts + lib/ghost/pages.ts); clients send { messages, path, context } or { mode: 'attack-narrative' | 'report' }. Never accept prompt text from the browser. Pages publish what the learner sees with setGhostContext (lib/client/ghostContext.ts).
 
 ## Auth & LMS rules
 - Server code that touches the DB lives in lib/server/* and route handlers with `export const runtime = 'nodejs'`. Always use `sql()` / `one()` with $n params.
@@ -71,7 +71,7 @@ lib/
 supabase-schema.sql     — Full DB schema + seed (run in Supabase SQL Editor)
 middleware.ts           — Auth gate, 20-min sliding session timeout, /welcome redirect
 api/
-  ghost/route.ts        — Groq AI chat endpoint (4096 tokens)
+  ghost/route.ts        — Groq AI endpoint: server-built prompt, Postgres rate limits (20/10 min, 200/day)
   progress/route.ts     — Lab completion + XP award (POST) / progress fetch (GET)
   auth/callback/route.ts — Email confirmation redirect handler
 
@@ -112,3 +112,9 @@ Logout redirects to /welcome (not /) to always show the splash screen after sign
 Platform owner: ShanGhost Admin
 Target audience: Beginners to advanced security researchers
 Tone: Clear, educational, technically accurate but accessible. Explain concepts like you would to a smart person who is new to security. Avoid jargon without explanation.
+
+## Learning integrity rules
+- Chapter XP is credited only after 20s on the chapter AND reaching its end (ModuleCodex).
+- A lab completes only when every step is in the completed set; learners can only jump to completed steps or the first open one.
+- `skip`/`solution` reveals the answer; the learner still types it and that step pays no XP.
+- Answer matching: exact, or the expected command plus at most 4 extra words (no keyword stuffing).

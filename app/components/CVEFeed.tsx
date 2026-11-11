@@ -29,10 +29,11 @@ export default function CVEFeed() {
     setLoading(true)
     setError('')
     try {
-      const url = `https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=20&startIndex=0`
+      const end = new Date(), start = new Date(Date.now() - 14 * 86400000)
+      const url = 'https://services.nvd.nist.gov/rest/json/cves/2.0?resultsPerPage=40&pubStartDate=' + start.toISOString().slice(0, 19) + '.000Z&pubEndDate=' + end.toISOString().slice(0, 19) + '.000Z'
       const res = await fetch(url)
       const data = await res.json()
-      const parsed: CVE[] = (data.vulnerabilities || []).map((v: Record<string, unknown>) => {
+      const parsed: CVE[] = (data.vulnerabilities || []).slice().reverse().slice(0, 20).map((v: Record<string, unknown>) => {
         const cve = v.cve as Record<string, unknown>
         const desc = (cve.descriptions as Array<{lang: string; value: string}>)?.find((d) => d.lang === 'en')?.value || 'No description'
         const metrics = cve.metrics as Record<string, unknown>

@@ -225,7 +225,7 @@ export default function AttackPathPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          systemPrompt: 'You are a senior red team operator writing attack path narratives for penetration test reports. Given a numbered sequence of MITRE ATT&CK techniques with target assets and notes, write a clear, technically accurate, third-person prose narrative describing the full attack chain. Write one paragraph per step. For each step explain: what the attacker did, the specific technique used, why it succeeded (what misconfiguration or weakness enabled it), and what defensive control failed or was absent. Use precise security terminology. Do not use bullet points — write flowing paragraphs. Be thorough but concise.',
+          mode: 'attack-narrative',
           messages: [{ role: 'user', content: 'Write an attack narrative for a pentest report. Path title: "' + pathName + '"\n\nSteps:\n' + summary }],
         }),
       })

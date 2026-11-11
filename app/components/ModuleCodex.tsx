@@ -1,6 +1,7 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { fetchServerProgress, syncChapter } from '../../lib/client/progress'
+import { setGhostContext } from '../../lib/client/ghostContext'
 
 const mono = 'JetBrains Mono, monospace'
 
@@ -51,18 +52,66 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
     })
   }, [storageKey, chapters.length, moduleId])
 
+  // A chapter counts as read (and pays XP) after 20 seconds on it AND reaching its end.
+  const endRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const [dwelt, setDwelt] = useState(false)
+  const [reachedEnd, setReachedEnd] = useState(false)
+
   useEffect(() => {
     localStorage.setItem(storageKey, String(current))
+    setDwelt(false)
+    setReachedEnd(false)
+    const t = setTimeout(() => setDwelt(true), 20000)
+    return () => clearTimeout(t)
+  }, [current, storageKey])
+
+  useEffect(() => {
+    const el = endRef.current
+    if (!el) return
+    const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) setReachedEnd(true) }, { rootMargin: '0px 0px -10% 0px' })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [current])
+
+  useEffect(() => {
+    if (!dwelt || !reachedEnd) return
     syncChapter(moduleId, current, chapters.length)
     setVisited(prev => {
       const next = new Set(prev)
       next.add(current)
       return next
     })
-  }, [current, storageKey, moduleId, chapters.length])
+  }, [dwelt, reachedEnd, current, moduleId, chapters.length])
+
+  // Tell GHOST which chapter and section are on screen.
+  useEffect(() => {
+    const root = contentRef.current
+    const title = chapters[current]?.title
+    const publish = (section?: string, excerpt?: string) =>
+      setGhostContext({ path: window.location.pathname, chapter: (current + 1) + '. ' + title, section, excerpt })
+    publish(undefined, root?.innerText.slice(0, 2400))
+    if (!root) return
+    const heads = Array.from(root.querySelectorAll('h2, h3, h4')) as HTMLElement[]
+    if (!heads.length) return
+    const io = new IntersectionObserver(entries => {
+      const hit = entries.filter(e => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]
+      if (!hit) return
+      const h = hit.target as HTMLElement
+      let text = ''
+      let n = h.nextElementSibling as HTMLElement | null
+      while (n && !/^H[2-4]$/.test(n.tagName) && text.length < 2400) { text += (n.innerText || '') + '\n'; n = n.nextElementSibling as HTMLElement | null }
+      publish(h.innerText, text)
+    }, { rootMargin: '-35% 0px -55% 0px' })
+    heads.forEach(h => io.observe(h))
+    return () => io.disconnect()
+  }, [current, chapters])
+  useEffect(() => () => setGhostContext(null), [])
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
       if (e.key === 'ArrowRight' && current < chapters.length - 1) setCurrent(c => c + 1)
       if (e.key === 'ArrowLeft' && current > 0) setCurrent(c => c - 1)
     }
@@ -171,7 +220,8 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
       </div>
 
       {/* Content */}
-      <div>{ch.content}</div>
+      <div ref={contentRef}>{ch.content}</div>
+      <div ref={endRef} aria-hidden="true" style={{ height: 1 }} />
 
       {/* Key takeaways */}
       <div className="codex-takeaways" style={{

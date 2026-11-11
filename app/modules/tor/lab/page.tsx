@@ -806,7 +806,7 @@ export default function TorLab() {
                 boxShadow: guidedDone ? '0 0 24px rgba(0,255,65,0.18)' : 'none', transition: 'all 0.2s',
               }}
             >
-              {guidedDone ? '&#9658; LAUNCH FREE LAB ENVIRONMENT' : '&#128274; COMPLETE GUIDED PHASE FIRST'}
+              {guidedDone ? '▸ LAUNCH FREE LAB ENVIRONMENT' : 'COMPLETE THE GUIDED PHASE FIRST'}
             </button>
             {!guidedDone && (
               <div style={{ marginTop: '1rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#1a3a1a' }}>

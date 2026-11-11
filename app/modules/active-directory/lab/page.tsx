@@ -1495,7 +1495,7 @@ export default function ActiveDirectoryLab() {
               disabled={!guidedDone}
               style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '0.9rem', fontWeight: 700, letterSpacing: '0.15em', padding: '14px 40px', border: '1px solid ' + (guidedDone ? 'rgba(255,65,54,0.6)' : '#5a1a0a'), borderRadius: '6px', background: guidedDone ? 'rgba(255,65,54,0.12)' : 'transparent', color: guidedDone ? accent : '#7a2a1a', cursor: guidedDone ? 'pointer' : 'not-allowed', boxShadow: guidedDone ? '0 0 24px rgba(255,65,54,0.18)' : 'none', transition: 'all 0.2s' }}
             >
-              {guidedDone ? '&#9658; LAUNCH FREE LAB ENVIRONMENT' : '&#128274; COMPLETE GUIDED PHASE FIRST'}
+              {guidedDone ? '▸ LAUNCH FREE LAB ENVIRONMENT' : 'COMPLETE THE GUIDED PHASE FIRST'}
             </button>
             {!guidedDone && <div style={{ marginTop: '1rem', fontFamily: 'JetBrains Mono, monospace', fontSize: '7px', color: '#5a1a0a' }}>Complete all {steps.length} guided steps above to unlock the free lab environment</div>}
           </div>
