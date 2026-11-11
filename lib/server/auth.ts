@@ -191,7 +191,7 @@ export async function recordFailedLogin(user: UserRow) {
   const n = user.failed_logins + 1
   const lockMinutes = n >= 15 ? 240 : n >= 10 ? 60 : n >= 5 ? 15 : 0
   await sql(
-    `UPDATE users SET failed_logins = $2, locked_until = CASE WHEN $3::int > 0 THEN now() + ($3 || ' minutes')::interval ELSE locked_until END WHERE id = $1`,
+    `UPDATE users SET failed_logins = $2, locked_until = CASE WHEN $3::int > 0 THEN now() + make_interval(mins => $3::int) ELSE locked_until END WHERE id = $1`,
     [user.id, n, lockMinutes],
   )
   return lockMinutes

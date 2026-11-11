@@ -49,8 +49,8 @@ export async function POST(req: NextRequest) {
         userId = existing.id
       } else {
         const row = await one<{ id: string }>(
-          `INSERT INTO users (email, username, display_name, password_hash, avatar_seed, password_changed_at) VALUES ($1, $2, $2, $3, $4, now()) RETURNING id`,
-          [email, username, hash, username + ':' + Date.now().toString(36)],
+          `INSERT INTO users (email, username, display_name, password_hash, avatar_seed, password_changed_at) VALUES ($1, $2, $3, $4, $5, now()) RETURNING id`,
+          [email, username, username, hash, username + ':' + Date.now().toString(36)],
         )
         userId = row!.id
       }

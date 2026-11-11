@@ -8,10 +8,10 @@ export async function rateLimit(key: string, limit: number, windowSeconds: numbe
   const row = await one<{ count: number }>(
     `INSERT INTO rate_limits (key, window_start, count) VALUES ($1, now(), 1)
      ON CONFLICT (key) DO UPDATE SET
-       count = CASE WHEN rate_limits.window_start < now() - ($2 || ' seconds')::interval THEN 1 ELSE rate_limits.count + 1 END,
-       window_start = CASE WHEN rate_limits.window_start < now() - ($2 || ' seconds')::interval THEN now() ELSE rate_limits.window_start END
+       count = CASE WHEN rate_limits.window_start < now() - make_interval(secs => $2::int) THEN 1 ELSE rate_limits.count + 1 END,
+       window_start = CASE WHEN rate_limits.window_start < now() - make_interval(secs => $2::int) THEN now() ELSE rate_limits.window_start END
      RETURNING count`,
-    [key, String(windowSeconds)],
+    [key, windowSeconds],
   )
   return (row?.count ?? 1) <= limit
 }
