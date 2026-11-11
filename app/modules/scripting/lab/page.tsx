@@ -145,7 +145,7 @@ The double quotes around "high" are jq string syntax; the single quotes around t
     id: 'scripting-06',
     title: 'Extract IOCs With grep -o',
     objective: "A partner sent a threat report as report.txt. Pull out every unique IPv4-looking string. Use grep with -o (only the match) and -E (extended regex) and the pattern [0-9]{1,3}([.][0-9]{1,3}){3} in single quotes, then pipe to sort -u to deduplicate. Write the dot as [.] so it means a literal dot.",
-    hint: "grep -oE '[0-9]{1,3}([.][0-9]{1,3}){3}' report.txt | sort -u",
+    hint: '-o prints only the matching text, -E enables the {1,3} quantifiers without escaping, and sort -u sorts and removes duplicates in one stage. Wrap the regex in single quotes.',
     answers: [
       "grep -oE '[0-9]{1,3}([.][0-9]{1,3}){3}' report.txt | sort -u",
       "grep -Eo '[0-9]{1,3}([.][0-9]{1,3}){3}' report.txt | sort -u",
@@ -179,7 +179,7 @@ Never paste extracted IOCs straight into a blocklist without review - one false 
     id: 'scripting-07',
     title: 'Loop Over a Host List',
     objective: "You need to check which of your lab hosts are alive. hosts.txt contains fictional lab hosts (db01.lab.local, web02.lab.local, dc01.lab.local, one per line). Write a one-line Bash for loop using the variable name host that iterates over $(cat hosts.txt) and pings each host once with ping -c 1.",
-    hint: 'for host in $(cat hosts.txt); do ping -c 1 "$host"; done  (quote the variable, and remember the semicolons before do and done)',
+    hint: 'Syntax: for VAR in LIST; do COMMAND; done. The list comes from $(cat hosts.txt) and the variable is referenced as "$host". Note the semicolons before do and done.',
     answers: [
       'for host in $(cat hosts.txt); do ping -c 1 "$host"; done',
       'for host in $(cat hosts.txt); do ping -c 1 $host; done',
@@ -256,7 +256,7 @@ Defender angle: a new executable script appearing in /tmp, /dev/shm or a web roo
     id: 'scripting-10',
     title: 'Decode Base64 With Python',
     objective: "The alert payload contains R0hPU1R7YjY0X2lzX2VuY29kaW5nX25vdF9jcnlwdG99. Decode it with a python3 -c one-liner: import base64, then print base64.b64decode of the string, followed by .decode() to turn the bytes into text. Use double quotes around the Python code and single quotes around the base64 string.",
-    hint: `python3 -c "import base64; print(base64.b64decode('R0hPU1R7YjY0X2lzX2VuY29kaW5nX25vdF9jcnlwdG99').decode())"`,
+    hint: 'base64.b64decode() returns bytes and .decode() turns them into text. Put the Python code in double quotes after python3 -c, and separate the import from the print with a semicolon.',
     answers: [
       `python3 -c "import base64; print(base64.b64decode('R0hPU1R7YjY0X2lzX2VuY29kaW5nX25vdF9jcnlwdG99').decode())"`,
       `python3 -c "import base64;print(base64.b64decode('R0hPU1R7YjY0X2lzX2VuY29kaW5nX25vdF9jcnlwdG99').decode())"`,
@@ -282,7 +282,7 @@ PowerShell -EncodedCommand blobs are base64 of UTF-16LE text, so decode those wi
     id: 'scripting-11',
     title: 'SHA-256 With hashlib',
     objective: "Threat intel wants the SHA-256 of the string nightshift (the campaign codename) to match against a shared IOC list. Compute it with a python3 -c one-liner: import hashlib and print hashlib.sha256 of the bytes literal b'nightshift', followed by .hexdigest().",
-    hint: `python3 -c "import hashlib; print(hashlib.sha256(b'nightshift').hexdigest())"`,
+    hint: "hashlib.sha256() takes bytes (a b'...' literal) and .hexdigest() returns the hash as hex text. Same python3 -c pattern as the previous step.",
     answers: [
       `python3 -c "import hashlib; print(hashlib.sha256(b'nightshift').hexdigest())"`,
       `python3 -c "import hashlib;print(hashlib.sha256(b'nightshift').hexdigest())"`,
@@ -383,7 +383,7 @@ Supply-chain hygiene:
     id: 'scripting-15',
     title: 'Run the Log Parser With Flags',
     objective: "The team tool parse_auth.py has an argparse CLI. Its --help shows: --log LOG (file to read), --threshold THRESHOLD (report IPs with at least N failures), --json (emit JSON), -v, --version. Run it with python3 against auth.log, reporting IPs with at least 20 failures, as JSON.",
-    hint: 'python3 parse_auth.py --log auth.log --threshold 20 --json  (flag order does not matter to argparse)',
+    hint: 'Each option is followed by its value after a space; --json is a switch with no value. argparse does not care about the order of options.',
     answers: [
       'python3 parse_auth.py --log auth.log --threshold 20 --json',
       'python3 parse_auth.py --json --log auth.log --threshold 20',
@@ -450,7 +450,7 @@ Blue-team reminder: malicious crontab entries are a top Linux persistence techni
     id: 'scripting-17',
     title: 'PowerShell: Failed Logons (4625)',
     objective: "The same actor is now hitting a Windows jump host. In an elevated PowerShell session, query the Security log for failed logon events (ID 4625) using Get-WinEvent with -FilterHashtable, so the filtering happens in the event log service rather than in the pipeline.",
-    hint: "Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4625}",
+    hint: "A PowerShell hashtable looks like @{Key='Value'; Key2=Value2}. You need two keys: LogName and Id.",
     answers: [
       "Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4625}",
       "Get-WinEvent -FilterHashtable @{LogName='Security';Id=4625}",
@@ -482,7 +482,7 @@ Pair with 4624 (successful logon): a burst of 4625s followed by a 4624 from the 
     id: 'scripting-18',
     title: 'PowerShell: Script Block Logging (4104)',
     objective: "The attacker got in and ran obfuscated PowerShell. Script Block Logging records the de-obfuscated code as event ID 4104 in the Microsoft-Windows-PowerShell/Operational log. Write the Get-WinEvent -FilterHashtable command that retrieves those events.",
-    hint: "Same pattern as before: Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-PowerShell/Operational'; Id=4104}",
+    hint: 'Reuse the exact pattern from the previous step - only the LogName value and the Id change. Quote the log name because it contains slashes.',
     answers: [
       "Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-PowerShell/Operational'; Id=4104}",
       "Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-PowerShell/Operational';Id=4104}",
