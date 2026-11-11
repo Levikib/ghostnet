@@ -72,7 +72,7 @@ export async function sql<T = Record<string, unknown>>(query: string, params: un
     preferred = url
     const data = body as NeonResponse
     const fields = data.fields || []
-    return (data.rows as Record<string, unknown>[]).map(row => {
+    return (data.rows as unknown as Record<string, unknown>[]).map(row => {
       const out: Record<string, unknown> = {}
       for (const f of fields) out[f.name] = parseValue(row[f.name], f.dataTypeID)
       return out as T
