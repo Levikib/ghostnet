@@ -1212,6 +1212,14 @@ IP_RE = re.compile(r"(?<![0-9A-Za-z.])[0-9]{1,3}(?:[.][0-9]{1,3}){3}(?![0-9.])")
 SHA256_RE = re.compile(r"(?<![a-fA-F0-9])[a-fA-F0-9]{64}(?![a-fA-F0-9])")
 DOMAIN_RE = re.compile(r"(?<![A-Za-z0-9.-])(?:[A-Za-z0-9-]{1,63}[.])+[A-Za-z]{2,24}(?![A-Za-z0-9-])")
 
+RFC1918 = [ipaddress.ip_network(n) for n in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")]
+
+def interesting(ip) -> bool:
+    # drop internal noise; production code often uses ip.is_global, which ALSO drops
+    # documentation ranges like the 198.51.100.0/24 addresses used in this module
+    return not (ip.is_loopback or ip.is_link_local or ip.is_multicast or ip.is_unspecified
+                or any(ip in net for net in RFC1918))
+
 def refang(text: str) -> str:
     return text.replace("[.]", ".").replace("(.)", ".").replace("hxxp", "http").replace("[:]", ":")
 
@@ -1220,7 +1228,7 @@ def extract(text: str) -> dict[str, list[str]]:
     ips = set()
     for cand in IP_RE.findall(text):
         try:
-            if ipaddress.ip_address(cand).is_global:
+            if interesting(ipaddress.ip_address(cand)):
                 ips.add(cand)
         except ValueError:
             pass                                   # 999.1.1.1 and friends
@@ -1237,7 +1245,7 @@ if __name__ == "__main__":
         </Pre>
         <Pre label="USAGE">
 {`$ cat report.txt | python3 iocx.py
-ipv4,45.142.212.61
+ipv4,198.51.100.77
 sha256,24196f8a6feeb465c790774d3f85b53a2cdf84ed1e0044c420086c4310c3f56e
 domains,cdn-sync.example
 domains,update-check.example`}
