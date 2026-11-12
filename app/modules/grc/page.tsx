@@ -1057,6 +1057,9 @@ Score 20 = Likelihood 4 x Impact 5 -> CRITICAL. Every row has ONE owner.`}
         <P>
           The most underrated skill in GRC is plain writing. A policy that a non-technical executive misreads is a failed control. A risk statement that buries the decision in jargon will not get funded. A good risk statement names the asset, the threat, the consequence and the recommendation in language a busy, non-technical leader can act on in thirty seconds. Compare &quot;the EDR agent coverage gap on the DMZ hosts elevates lateral-movement exposure&quot; with &quot;twelve internet-facing servers have no security monitoring, so an attacker who breaks in could move through our network unseen; fixing it costs KES 180,000 and takes two weeks.&quot; Same fact, but only the second one gets funded. Practise writing the second kind.
         </P>
+        <P>
+          Beyond writing, the soft skills decide how far a GRC career goes, because the entire job is influence without direct authority. You rarely own the servers, the code or the budgets you are trying to protect; you must persuade the people who do. That means listening to the business before prescribing, framing security as an enabler of what a team is trying to achieve rather than an obstacle, negotiating realistic deadlines instead of issuing impossible ones, and staying calm and credible during an incident when everyone else is not. The GRC professionals who plateau are usually technically fine but treat security as a set of rules to enforce; the ones who become trusted advisors treat it as a service they provide to colleagues who have their own pressures. Curiosity, humility and the patience to explain the same idea three different ways are worth as much as any framework.
+        </P>
 
         <H3>Certifications</H3>
         <P>

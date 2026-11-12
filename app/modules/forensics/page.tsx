@@ -94,7 +94,7 @@ const chapters: CodexChapter[] = [
     readTime: '14 min',
     labLink: '/modules/forensics/lab',
     takeaways: [
-      'Locard&apos;s exchange principle is the philosophical core of forensics: every interaction leaves a trace, and your job is to find and interpret it.',
+      'Locard’s exchange principle is the philosophical core of forensics: every interaction leaves a trace, and your job is to find and interpret it.',
       'The order of volatility dictates acquisition sequence - capture RAM, network state and running processes before you ever touch disk.',
       'Chain of custody is a documented, unbroken record of who handled evidence, when, and why - break it and your evidence is inadmissible.',
       'Forensic soundness means working on verified copies, using write blockers, and proving with hashes that the original was never altered.',
@@ -205,9 +205,8 @@ lsblk -o NAME,SIZE,MODEL,SERIAL
   sda   931.5G  ST1000LM035-1RK172  5XW3QZ8K
 
 # Image the whole physical device, hashing as we read
-dc3dd if=/dev/sda of=/evidence/GN-0042.raw \\
-      hash=sha256 log=/evidence/GN-0042.log \\
-      hofs=/evidence/GN-0042.hashes bs=4M
+dc3dd if=/dev/sda of=/evidence/GN-0042.raw hash=sha256
+      log=/evidence/GN-0042.log hofs=/evidence/GN-0042.hashes bs=4M
 
   input  results for device /dev/sda:
    1953525168 sectors in
@@ -215,7 +214,7 @@ dc3dd if=/dev/sda of=/evidence/GN-0042.raw \\
    device verified : yes`}
         </Pre>
         <Note type="warn">
-          The backslash line continuations above are shell syntax shown for readability. Always confirm if= points at the physical device and of= points at your evidence drive - transposing them wipes the evidence. Many examiners physically label the write-blocked source and the destination before running anything.
+          Long commands are wrapped across lines for readability. Always confirm if= points at the physical device and of= points at your evidence drive - transposing them wipes the evidence. Many examiners physically label the write-blocked source and the destination before running anything.
         </Note>
 
         <H3>Raw vs E01 Containers</H3>
@@ -441,7 +440,7 @@ Executable name : SVVHOST.EXE
 Run count       : 4
 Last run        : 2026-11-03 00:05:12
 Other run times : 2026-11-02 23:51:11, 23:55:40, 23:59:03
-Volume          : \\VOLUME{01d7...}  C:  Serial AE42-9C11
+Volume          : VOLUME{01d7...}  C:  Serial AE42-9C11
 Referenced files: ...Temp/svvhost.exe, ...System32/ws2_32.dll,
                   ...System32/wininet.dll, ...Temp/exfil.dat
 # ws2_32 + wininet referenced -> the binary used network APIs.`}
@@ -522,12 +521,12 @@ C:/Users/<user>/AppData/Roaming/Microsoft/Windows/
     readTime: '15 min',
     labLink: '/modules/forensics/lab',
     takeaways: [
-      'LNK files and JumpLists record which files a user opened, from where, and often the target&apos;s size and timestamps - even after the file is deleted.',
+      'LNK files and JumpLists record which files a user opened, from where, and often the target’s size and timestamps - even after the file is deleted.',
       'ShellBags prove a user browsed a specific folder (including on removable or deleted volumes) and preserve its view settings and timestamps.',
       'Browser history, cache and downloads (SQLite) reconstruct web activity, searches, and exactly what was downloaded and when.',
-      'The Recycle Bin $I / $R pair preserves a deleted file&apos;s original path, size and deletion time alongside its recoverable content.',
+      'The Recycle Bin $I / $R pair preserves a deleted file’s original path, size and deletion time alongside its recoverable content.',
       'A handful of event-log IDs (4624/4625 logon, 4688 process, 4634 logoff, 1149 RDP, 7045 service install) carry most forensic weight.',
-      'User-activity artifacts attribute actions to a specific account - the bridge from &quot;something happened&quot; to &quot;this user did it&quot;.',
+      'User-activity artifacts attribute actions to a specific account - the bridge from "something happened" to "this user did it".',
     ],
     content: (
       <div>
@@ -782,7 +781,7 @@ log2timeline.py --storage-file gn0042.plaso GN-0042.raw
                      lnk, usnjrnl, mft, filestat ...
 
 # 2. Filter + render to CSV for a tight window and timezone
-psort.py -z UTC -o l2tcsv -w breach.csv gn0042.plaso \\
+psort.py -z UTC -o l2tcsv -w breach.csv gn0042.plaso
   "date > '2026-11-02 23:00:00' AND date < '2026-11-03 03:00:00'"`}
         </Pre>
         <Note type="tip">
@@ -855,7 +854,7 @@ tshark -r capture.pcap -q -z conv,tcp | sort -k9 -n | tail
 tshark -r capture.pcap --export-objects http,/evidence/http_objs
 
 # Pull every DNS query name (C2 domains, DGA patterns)
-tshark -r capture.pcap -Y dns.flags.response==0 \\
+tshark -r capture.pcap -Y dns.flags.response==0
   -T fields -e frame.time -e dns.qry.name | sort -u`}
         </Pre>
 
@@ -874,6 +873,21 @@ ts                 id.orig_h    id.resp_h        resp_p  duration  orig_bytes
 # dns.log - resolution that preceded the connections
 ts                 query                         answers
 00:08:58  11-03    cdn-telemetry.example.net     185.220.101.17`}
+        </Pre>
+
+        <H3>NetFlow and IPFIX: Months of Who-Talked-to-Whom</H3>
+        <P>
+          When the question reaches back further than any packet buffer, flow records are the answer. Routers and firewalls export NetFlow (v5/v9) or its IETF successor IPFIX to a collector, summarising each unidirectional conversation into a handful of fields: source and destination address and port, protocol, start and end time, and the packet and byte counts. Because a record is a few dozen bytes regardless of how much data the flow carried, organisations keep flow data for months or years. Tools such as nfdump, SiLK and the flow views in a SIEM let you ask &quot;which internal hosts spoke to 185.220.101.17, when did it start, and how much left?&quot; across the whole estate. Flow cannot show content, but it establishes scope - every other host that touched the same C2 - and anchors the first contact date for the incident timeline.
+        </P>
+        <Pre label="nfdump: SCOPING THE C2 ACROSS THE ESTATE">
+{`nfdump -R /flows/2026/11 -o extended 'dst ip 185.220.101.17'
+
+Date first seen      Duration  Src IP:Port         Dst IP:Port          Bytes
+2026-10-29 14:12:08  0.412     10.0.14.22:49102    185.220.101.17:443   818
+2026-10-29 14:17:09  0.398     10.0.14.22:49118    185.220.101.17:443   820
+2026-11-01 09:40:51  0.405     10.0.14.31:51220    185.220.101.17:443   816
+# First contact was 29 October, not 2 November - and a second host, .31,
+# is beaconing too. Flow data just widened the scope of the incident.`}
         </Pre>
 
         <H3>Encrypted Traffic Still Talks</H3>
@@ -1010,7 +1024,7 @@ eventName        : StopLogging            (CloudTrail!) <- anti-forensics
       'The report is the deliverable - a finding no one can read, reproduce or defend has no value, however brilliant the analysis.',
       'A defensible report separates fact from opinion, states confidence honestly, and lets an independent examiner reproduce every conclusion.',
       'Expert testimony demands you explain complex artifacts in plain language and concede the limits of your evidence under cross-examination.',
-      'SOPs and validated, documented tooling make your lab&apos;s work repeatable and admissible - process is as important as skill.',
+      'SOPs and validated, documented tooling make your lab’s work repeatable and admissible - process is as important as skill.',
       'Triage tooling (KAPE for artifact collection, Velociraptor for fleet-scale hunting) is how modern DFIR scales beyond one disk at a time.',
       'The field rewards continuous learning: certifications (GCFA, GCFE, GNFA, GX-FA/GREM) map the body of knowledge and a home lab builds the reps.',
     ],
@@ -1060,8 +1074,8 @@ eventName        : StopLogging            (CloudTrail!) <- anti-forensics
         <Pre label="RAPID TRIAGE COLLECTION WITH KAPE">
 {`# Collect key artifacts from a mounted image to an output tree,
 # then run the parser modules over what was collected.
-kape.exe --tsource C: --tdest E:/triage/FIN-WS-14 \\
-  --target KapeTriage \\
+kape.exe --tsource C: --tdest E:/triage/FIN-WS-14
+  --target KapeTriage
   --mdest E:/triage/FIN-WS-14/out --module !EZParser
 
   Collected : $MFT, $J, SYSTEM, SOFTWARE, NTUSER.DAT, *.evtx,
