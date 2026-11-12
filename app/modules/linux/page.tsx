@@ -2,6 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import ModuleCodex, { CodexChapter } from '@/app/components/ModuleCodex'
+import { Local } from '@/app/components/learn/Mtaani'
 
 const mono = 'JetBrains Mono, monospace'
 const accent = '#73c991'
@@ -909,6 +910,7 @@ cat access.log | sort | uniq -c | sort -rn | head
     ],
     content: (
       <div>
+        <Local>Linux permissions (<strong>rwx</strong> for owner / group / others) are a matatu SACCO&apos;s rules. The <strong>owner</strong> can do anything with the vehicle; <strong>SACCO members</strong> (the group) may drive it; the <strong>public</strong> (others) can only ride. <strong>chmod</strong> is moving someone between those three lists, and <strong>chown</strong> is signing the logbook over to a new owner. Almost every Linux privilege-escalation trick is somebody quietly promoting themselves from &quot;public&quot; to &quot;owner&quot;.</Local>
         <H3>Why Permissions Exist</H3>
         <P>
           Linux is a multi-user system from the ground up: many people (and many services) can use one machine, and the system must stop them from reading or wrecking each other&apos;s files. The permission model is how it does that, and it is one of the most important things a security practitioner understands, because a huge share of real-world attacks and misconfigurations come down to the wrong permissions on the wrong file. The good news is that the model is small and regular once you see its shape.
@@ -1074,6 +1076,7 @@ ls -li original.txt second-name.txt   # -i shows the inode number:
     ],
     content: (
       <div>
+        <Local><strong>root</strong> is the SACCO chairman who can overrule any rule. Running as root all day is like driving around town with the chairman&apos;s master key left in the ignition &mdash; one wrong move and the entire fleet is gone. That is why you work as a normal user and use <strong>sudo</strong>: you borrow the master key for one specific trip, the system notes it in the register, and you hand it straight back.</Local>
         <H3>root - The One Account That Can Do Anything</H3>
         <P>
           On every Linux system there is one supremely powerful account: <strong style={{ color: '#a8c8b2' }}>root</strong>, also called the superuser, with user ID 0. root bypasses the permission checks of the previous chapter entirely - it can read, change, or delete any file, kill any process, reconfigure the kernel, and add or remove other users. This power is necessary for administering the system, and it is exactly why you should not spend your day logged in as root. A mistyped command as a normal user affects your own files; the same mistake as root can destroy the whole machine, and a browser or program exploited while you are root hands the attacker the entire system.
@@ -1345,6 +1348,7 @@ ls /var/log                           # see what a given system records`}
     ],
     content: (
       <div>
+        <Local>A <strong>package manager</strong> (<strong>apt</strong>, <strong>dnf</strong>, <strong>pacman</strong>) is M-Pesa for software. Instead of hawking around town for a CD, you request a program by name; it fetches that program <em>and</em> everything it depends on from a trusted till (the repository), installs it, and can reverse the whole transaction just as cleanly. Downloading random software off the open web to install by hand is the digital version of buying goods from a stranger in a dark alley.</Local>
         <H3>Why Package Managers Exist</H3>
         <P>
           On Windows or macOS you install software by downloading an installer from a website and running it, trusting each vendor individually. Linux took a different, safer path decades ago: the <strong style={{ color: '#a8c8b2' }}>package manager</strong>. Software is pre-built into <em>packages</em> and published in <em>repositories</em> - central, curated catalogues maintained by your distribution. One command searches them, installs software, automatically pulls in every other package it depends on, and later updates everything at once. The packages are cryptographically signed, so your system verifies they genuinely came from the distribution and were not tampered with in transit. This is both more convenient and more secure than hunting down installers.

@@ -2,6 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import ModuleCodex, { CodexChapter } from '@/app/components/ModuleCodex'
+import { Local } from '@/app/components/learn/Mtaani'
 
 const mono = 'JetBrains Mono, monospace'
 const accent = '#ffd166'
@@ -102,6 +103,7 @@ const chapters: CodexChapter[] = [
     ],
     content: (
       <div>
+        <Local>Scripting is hiring a tireless mkokoteni boy who never sleeps and never forgets. Anything you find yourself doing by hand more than twice &mdash; renaming 200 files, checking which servers are up, pulling the same numbers every morning &mdash; you write down once, and he repeats it perfectly at 3am while you rest. A script is just those instructions, written clearly enough that the machine can follow them without you standing over it.</Local>
         <H3>The Automation Mindset</H3>
         <P>
           Picture a night-shift analyst. At 02:00 an alert fires: a web server is seeing thousands of failed SSH logins. Without scripting, the analyst opens the log in a text editor, scrolls, copies IP addresses into a spreadsheet, looks each one up in a threat-intel site, and writes a ticket. That takes an hour and is full of copy-paste mistakes. With a ten-line script, the same work takes four seconds, produces the same answer every time, and can run again tomorrow without anyone awake. That is the whole argument for this module.
@@ -450,6 +452,7 @@ wc -l "$logfile"`}
     ],
     content: (
       <div>
+        <Local>The Unix philosophy is a mama mboga&apos;s stall: a few small, sharp tools, each doing exactly one thing &mdash; one knife, one scale, one sufuria &mdash; combined fresh for every customer. <strong>grep</strong> (find), <strong>sort</strong> (order), <strong>uniq</strong> (dedupe), <strong>wc</strong> (count) are those tools; the <strong>pipe</strong> (<strong>|</strong>) is her passing the vegetable from one hand to the next. You rarely need a big new machine &mdash; you need to arrange the small tools you already have.</Local>
         <H3>The Unix Philosophy for Analysts</H3>
         <P>
           The tools in this chapter are older than most of the people using them, and they are still the fastest way to answer questions about logs. Each one does one thing well. The pipe character | sends the output of one command into the input of the next, so you build an answer step by step, checking the output after each stage. Get in the habit of adding one stage at a time and looking at the result before adding the next.
@@ -1040,6 +1043,7 @@ for cve_id in ["CVE-2024-3400", "CVE-2023-4966", "CVE-2021-44228"]:
     ],
     content: (
       <div>
+        <Local>A <strong>regex</strong> is describing a matatu to a tout by its pattern instead of its plate: &quot;white Nissan, red stripe, route 125&quot; matches every matatu that fits, no matter the number plate. That is its power &mdash; you catch all the emails, all the IPs, all the error lines at once. But describe it too loosely (&quot;any white vehicle&quot;) and you flag half the road; write it carelessly and a <em>greedy</em> pattern can even hang your program. Precise pattern, precise catch.</Local>
         <H3>Regular Expressions, Done Safely</H3>
         <P>
           A regular expression is a pattern that describes text. Python&apos;s re module finds, extracts and replaces matching text. Regex is how you pull IPs, hashes, domains and usernames out of messy logs and threat reports. In your own code you will often see shortcuts written with a backslash, such as backslash-d for a digit; in this module we use the equivalent character classes, which are often clearer anyway.
