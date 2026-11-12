@@ -2,6 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import ModuleCodex, { CodexChapter } from '../../components/ModuleCodex'
+import { Local, Watch, Ref } from '@/app/components/learn/Mtaani'
 
 const accent = '#00d4ff'
 const mono = 'JetBrains Mono, monospace'
@@ -69,6 +70,9 @@ const chapters: CodexChapter[] = [
     content: (
       <div>
         <P>Web application testing is the largest subdomain of offensive security. Every modern organisation runs web apps, APIs, and microservices - all of which carry their own attack surface. This chapter covers the methodology, tooling, and conceptual framework you need before touching any target.</P>
+        <Local>
+          A big Naivas branch keeps a ranked list of the ten commonest ways stock walks out the door &mdash; the unwatched exit, the faked receipt, the shelf left in a blind spot. OWASP&apos;s Top 10 is that same ranked list for websites: not every possible theft, but the ten that catch the most victims, so you check these first before anything exotic.
+        </Local>
         <H3>OWASP Top 10 2021 - Full Breakdown</H3>
         <P>The OWASP Top 10 is a community-consensus document listing the most critical web application security risks. The 2021 edition reorganised categories significantly. It is a risk classification, not a vulnerability checklist - each category contains dozens of specific vulnerability classes.</P>
         <Table
@@ -87,6 +91,10 @@ const chapters: CodexChapter[] = [
           ]}
         />
         <H3>Web App Testing Methodology</H3>
+        <Watch
+          reads={<>This is a tester&apos;s opening move: quietly asking public sources what a site is built from and which other addresses belong to it, without yet poking the site itself. Every line here only reads information that is already out in the open.</>}
+          later={<>You&apos;ll run this recon against a safe practice target in the <Ref>MOD-06 lab</Ref>.</>}
+        >
         <Pre label="// PHASE 1: PASSIVE RECON - NO ACTIVE PROBING YET">{`# Technology fingerprinting:
 whatweb https://TARGET_URL              # identifies CMS, framework, server
 wappalyzer (browser extension)          # same but in browser
@@ -108,6 +116,7 @@ curl "https://crt.sh/?q=%.target.com&output=json" | jq '.[].name_value'
 # Wayback Machine - find old endpoints:
 # https://web.archive.org/web/*/target.com/*
 # waybackurls target.com | tee wayback.txt`}</Pre>
+        </Watch>
         <Pre label="// PHASE 2: ACTIVE MAPPING - ENUMERATE ATTACK SURFACE">{`# Directory and file brute-force:
 ffuf -w /usr/share/wordlists/dirb/common.txt -u https://TARGET_URL/FUZZ
 gobuster dir -u https://TARGET_URL -w /usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt
@@ -239,7 +248,14 @@ grpcurl -d '{"user_id": "1"}' TARGET_HOST:PORT service.Method`}</Pre>
     content: (
       <div>
         <P>SQL injection has existed since the 1990s and remains in the OWASP Top 10 because developers continue to concatenate user input into queries. A single SQLi vulnerability can result in full database extraction, authentication bypass, file system access, and sometimes OS command execution.</P>
+        <Local>
+          At a busy nyama choma joint, waiters scribble orders on chits and the cook does exactly what each chit says. Imagine slipping in a chit that reads &quot;two kilos goat &mdash; and also unlock the store and hand over all the meat.&quot; If the cook treats every line as a genuine order without stopping to ask which part is the real request, your smuggled command gets obeyed. SQL injection is that smuggled chit, aimed at a database.
+        </Local>
         <H3>Detection - Finding the Injection Point</H3>
+        <Watch
+          reads={<>Do not be put off by the symbols. Each of these is just a small nudge &mdash; a stray quote, a dash, a short pause &mdash; typed into a web form to see if the database flinches. A flinch (an error, a different reply, a five-second delay) is the tell that your input is being trusted when it should not be.</>}
+          later={<>You&apos;ll try these probes safely against a lab app in <Ref>MOD-06</Ref>.</>}
+        >
         <Pre label="// DETECTION PAYLOADS">{`# Start with a single quote - causes a syntax error if input is unsanitised:
 '
 ''
@@ -264,6 +280,7 @@ grpcurl -d '{"user_id": "1"}' TARGET_HOST:PORT service.Method`}</Pre>
 '; WAITFOR DELAY '0:0:5'--   # MSSQL
 ' OR pg_sleep(5)--     # PostgreSQL
 ' OR 1=1 AND SLEEP(5)--`}</Pre>
+        </Watch>
         <H3>Union-Based SQL Injection</H3>
         <Pre label="// UNION-BASED EXTRACTION - STEP BY STEP">{`# Step 1: Determine number of columns using ORDER BY
 # Increment until error:
@@ -442,6 +459,9 @@ sqlmap -u "https://TARGET_URL/page?id=1" --tamper=space2comment,greatest --level
     content: (
       <div>
         <P>Cross-Site Scripting allows attackers to inject and execute JavaScript in victim browsers. Despite being well-known, XSS remains extremely common. Modern exploitation goes far beyond alert(1) - a working XSS in the right place can result in full account takeover, internal network reconnaissance, and keylogging.</P>
+        <Local>
+          Picture pinning a notice on the estate board that every neighbour obeys the moment they read it &mdash; &quot;leave your gate open tonight.&quot; You attacked no one directly; you simply planted instructions that act inside each person&apos;s own home as they pass by. Cross-site scripting is that booby-trapped notice: code you slip into a page so it runs inside the browser of whoever views it.
+        </Local>
         <H3>Reflected XSS</H3>
         <Pre label="// REFLECTED XSS - DETECTION AND BASIC PAYLOADS">{`# Reflected XSS: payload is in the request, reflected in the response
 # Appears in: search queries, error messages, URL params, POST body fields

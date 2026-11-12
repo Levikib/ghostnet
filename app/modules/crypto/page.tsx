@@ -2,6 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import ModuleCodex, { CodexChapter } from '@/app/components/ModuleCodex'
+import { Local, Watch, Ref } from '@/app/components/learn/Mtaani'
 
 const mono = 'JetBrains Mono, monospace'
 const accent = '#ffb347'
@@ -86,6 +87,9 @@ const chapters: CodexChapter[] = [
       <div>
         <P>Cryptography is the science of securing communication. Before touching any algorithm, you need to understand what goals cryptography actually serves - and what it cannot do.</P>
 
+        <Local>
+          When you hand your contribution to the chama committee, four things are quietly in play. You seal the cash in an envelope so only the treasurer sees it (confidentiality). The amount is written and witnessed so no one can change it later (integrity). You sign the book so they know it was really you (authentication). And because you signed, you cannot afterwards deny you gave it (non-repudiation). Cryptography chases these same four assurances.
+        </Local>
         <H3>The Four Security Properties (CIA+)</H3>
         <P>Modern cryptographic systems aim to provide four core guarantees:</P>
         <Note type="beginner">
@@ -114,7 +118,12 @@ const chapters: CodexChapter[] = [
         <H3>XOR and the One-Time Pad</H3>
         <P>XOR (exclusive or) is the fundamental operation of most ciphers. Key property: A XOR B XOR B = A. If you XOR plaintext with a random keystream and send it, the recipient XORs with the same keystream to recover the plaintext.</P>
         <P>The one-time pad uses a truly random key the same length as the message, used only once. It is provably unbreakable - but practically useless because the key distribution problem is as hard as just sending the message securely in the first place. Reusing the key destroys security instantly.</P>
+        <Watch
+          reads={<>This is the whole trick behind most encryption, shown in binary. Combine your message with a secret keystream using XOR and it turns to gibberish; apply the very same keystream once more and the original message comes straight back. Encrypting and decrypting are the same single move.</>}
+          later={<>You&apos;ll XOR bytes by hand and watch them reverse in the <Ref>MOD-03 lab</Ref>.</>}
+        >
         <Pre label="XOR PROPERTY DEMO">{'plaintext  = 0b10110100\nkey        = 0b01101110\nciphertext = 0b11011010  (XOR)\n\nciphertext = 0b11011010\nkey        = 0b01101110\nplaintext  = 0b10110100  (XOR again to recover)'}</Pre>
+        </Watch>
 
         <H3>Kerckhoffs Principle</H3>
         <P>A cryptographic system should be secure even if everything about the system, except the key, is public knowledge. Security through obscurity - hiding the algorithm itself - is not security. If your cipher is only safe because attackers do not know the algorithm, you have no real security.</P>
@@ -174,6 +183,9 @@ const chapters: CodexChapter[] = [
       <div>
         <P>Symmetric encryption uses the same key for encryption and decryption. Understanding the internals of AES and how different modes of operation work - and fail - is essential for building and breaking secure systems.</P>
 
+        <Local>
+          Think of the padlock on the estate water tank. The landlord cuts one key and gives every tenant an identical copy &mdash; the same key both locks the tank and opens it. Symmetric encryption works exactly so: one shared key seals the data and the same key unseals it. The hard part is never the lock; it is safely getting a copy of that one key into each new tenant&apos;s hand.
+        </Local>
         <H3>AES (Rijndael) Internals</H3>
         <P>AES operates on a 4x4 matrix of bytes called the state. Each round applies four transformations in sequence. For AES-128 there are 10 rounds; AES-192 uses 12 rounds; AES-256 uses 14 rounds.</P>
         <Note type="info">
@@ -248,9 +260,17 @@ const chapters: CodexChapter[] = [
       <div>
         <P>Asymmetric cryptography uses mathematically linked key pairs. The security of every asymmetric algorithm rests on a hard mathematical problem - one that is easy to compute in one direction but computationally infeasible to reverse.</P>
 
+        <Local>
+          Picture a P.O. Box at the post office. Anyone who knows your box number can post a letter through the slot &mdash; that number is your public key, and you can print it everywhere. But only you hold the little key that opens the box to read what is inside &mdash; that is your private key, which never leaves your pocket. Asymmetric encryption hands out the box number freely and keeps the box key secret.
+        </Local>
         <H3>RSA (Rivest-Shamir-Adleman)</H3>
         <P>RSA security rests on the integer factorisation problem: multiplying two large primes is easy, but factoring their product into the original primes is computationally hard for large enough numbers.</P>
+        <Watch
+          reads={<>Read it as a recipe, not a test. These steps pick two big prime numbers and mix them into a public key (which you share) and a private key (which you guard). The security rests on one fact: multiplying the primes together is easy, but working backwards from the result to recover them is practically impossible.</>}
+          later={<>You&apos;ll generate a real key pair with these steps in the <Ref>MOD-03 lab</Ref>.</>}
+        >
         <Pre label="RSA KEY GENERATION STEPS">{'1. Choose two large distinct primes: p and q\n2. Compute n = p * q  (modulus, part of both keys)\n3. Compute phi(n) = (p-1)(q-1)  (Euler totient)\n4. Choose e: 1 < e < phi(n), gcd(e, phi(n)) = 1  (usually 65537)\n5. Compute d: d*e = 1 mod phi(n)  (modular inverse of e)\n\nPublic key:  (n, e)\nPrivate key: (n, d)\n\nEncrypt: C = M^e mod n\nDecrypt: M = C^d mod n'}</Pre>
+        </Watch>
 
         <H3>RSA Padding</H3>
         <P>Raw RSA (textbook RSA) is deterministic and malleable - the same plaintext always produces the same ciphertext, and ciphertexts can be manipulated algebraically. Padding schemes fix this.</P>
