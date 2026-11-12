@@ -87,6 +87,24 @@ const Table = ({ headers, rows }: { headers: string[]; rows: string[][] }) => (
   </div>
 )
 
+// Scannable "must-know" box — lead each section with these so a reader can take notes fast.
+const Key = ({ title, items }: { title?: string; items: React.ReactNode[] }) => (
+  <div style={{ background: 'rgba(127,219,255,0.05)', border: '1px solid rgba(127,219,255,0.2)', borderLeft: '3px solid ' + accent, borderRadius: '6px', padding: '0.85rem 1.1rem', margin: '1rem 0 1.5rem' }}>
+    <div style={{ fontFamily: mono, fontSize: '9px', color: accent, letterSpacing: '0.18em', marginBottom: '0.55rem' }}>{title || 'KEY POINTS'}</div>
+    <ul style={{ margin: 0, paddingLeft: '1.05rem', display: 'grid', gap: '0.5rem' }}>
+      {items.map((it, i) => <li key={i} style={{ color: '#b6c3cb', fontSize: '0.855rem', lineHeight: 1.6, fontFamily: 'sans-serif' }}>{it}</li>)}
+    </ul>
+  </div>
+)
+
+// "Picture it" — a relatable, everyday analogy in plain language (African/Kenyan context).
+const Local = ({ children }: { children: React.ReactNode }) => (
+  <div style={{ background: 'rgba(115,201,145,0.06)', border: '1px solid rgba(115,201,145,0.26)', borderRadius: '6px', padding: '0.85rem 1.1rem', margin: '1rem 0 1.5rem' }}>
+    <div style={{ fontFamily: mono, fontSize: '9px', color: '#73c991', letterSpacing: '0.15em', marginBottom: '6px' }}>&#9672; PICTURE IT &#8212; MTAANI EDITION</div>
+    <p style={{ color: '#aeb9b2', fontSize: '0.85rem', lineHeight: 1.75, margin: 0, fontFamily: 'sans-serif' }}>{children}</p>
+  </div>
+)
+
 const chapters: CodexChapter[] = [
   {
     id: 'computers-and-operating-systems',
@@ -102,9 +120,16 @@ const chapters: CodexChapter[] = [
     ],
     content: (
       <div>
+        <Key title="WHAT YOU'LL OWN BY THE END" items={[
+          <>What a <strong>CPU, RAM and storage</strong> each do &mdash; and why it matters to an attacker</>,
+          <>What an <strong>operating system</strong> and its <strong>kernel</strong> actually manage</>,
+          <>What a <strong>system call</strong> is &mdash; the single gate between your program and the hardware</>,
+          <>How <strong>processes, memory and files</strong> work, and where attacks hide inside them</>,
+          <>The <strong>user and permission model</strong> &mdash; the lock-and-key system behind every hack and every defence</>,
+        ]} />
         <H3>Why Start Here</H3>
         <P>
-          Every technique in this platform, from cracking a password hash to escalating privileges on a domain controller, is ultimately a story about a computer doing exactly what it was told. Attackers succeed when they understand the machine better than the people who configured it. So before we touch a single security tool, we need a clear mental model of what a computer actually is, what an operating system does, and how it decides who is allowed to do what.
+          Every hack is just a computer doing exactly what it was told. Attackers win when they understand the machine better than the people who set it up. So before any tool, get the mental model: what a computer is, what the OS does, and how it decides who is allowed to do what.
         </P>
 
         <H3>The Hardware in Plain Terms</H3>
@@ -123,6 +148,7 @@ const chapters: CodexChapter[] = [
             ['SSD / HDD', 'The pantry', 'Slow', 'Yes', 'Files, logs, deleted-data recovery, disk forensics'],
           ]}
         />
+        <Local>Think of <strong>RAM</strong> like the cash in a duka&apos;s till during the day: fast to reach, but counted out and emptied every closing time. <strong>Storage</strong> is the owner&apos;s bank account &mdash; slower to get to, but your money is still there tomorrow. Opening an app just carries it from the &quot;bank&quot; (storage) to the &quot;till&quot; (RAM) so the CPU can work fast. Cut the power and RAM vanishes like the till at closing &mdash; which is exactly why investigators rush to capture a machine&apos;s memory <em>while it is still on</em> (MOD-18).</Local>
 
         <H3>What an Operating System Does</H3>
         <P>
@@ -164,15 +190,16 @@ ghost-lab
         </Pre>
 
         <H3>Processes, Threads and Virtual Memory</H3>
-        <P>
-          A <strong>program</strong> is a file on disk. A <strong>process</strong> is that program while it is running: a living instance with its own memory, its own list of open files, and a unique number called the <strong>PID</strong> (Process ID). If you open three terminal windows, you have three separate bash processes from one program file. Each process also records which user owns it, which process started it (its parent, or PPID), and its current working directory. A <strong>thread</strong> is a separate line of execution inside a process; threads share the process&apos;s memory, which makes them efficient but also means one buggy thread can corrupt data used by the others.
-        </P>
-        <P>
-          Each process believes it has the whole memory of the machine to itself. This illusion is called <strong>virtual memory</strong>. The kernel and the CPU&apos;s memory management unit translate each process&apos;s private addresses into real physical RAM, and they stop one process from reading another&apos;s memory. It is also why tools that dump credentials from memory (for example from the Windows LSASS process, covered in MOD-05) need high privileges: they must ask the kernel to break that isolation on their behalf.
-        </P>
-        <P>
-          A process&apos;s virtual memory is organised into regions. The <strong>code</strong> (text) region holds instructions. The <strong>heap</strong> grows as the program asks for memory at runtime. The <strong>stack</strong> holds function call information, including the return address the CPU jumps back to when a function finishes. Overwrite that return address and you control where the CPU goes next. That one sentence is the core of the classic stack buffer overflow.
-        </P>
+        <P>A <strong>program</strong> is a file on disk; a <strong>process</strong> is that program actually running. Same recipe, different meals.</P>
+        <Key items={[
+          <><strong>PID</strong> &mdash; every process has a unique Process ID. Open three terminals and you get three bash processes from one file</>,
+          <><strong>Owner</strong> &mdash; every process runs as some user, and that decides what it may touch</>,
+          <><strong>Thread</strong> &mdash; a separate line of work inside a process; threads share memory (fast, but one can corrupt the others)</>,
+          <><strong>Virtual memory</strong> &mdash; each process thinks it owns all the RAM; the kernel keeps them walled off from one another</>,
+          <><strong>Stack / heap / code</strong> &mdash; the regions of a process&apos;s memory. Overwrite the stack&apos;s saved <em>return address</em> and you control where the CPU jumps next &mdash; that one sentence is the whole classic buffer overflow (MOD-04)</>,
+          <>Dumping another process&apos;s memory (e.g. Windows LSASS, MOD-05) needs high privilege: you must ask the kernel to break the wall for you</>,
+        ]} />
+        <Local>A matatu <strong>route</strong> &mdash; say Route 46 to Ng&apos;ando &mdash; is the <strong>program</strong>: the plan, written down. A specific matatu actually plying that route right now is the <strong>process</strong>. Ten matatus can run Route 46 at once, just like ten processes run from one program file &mdash; each with its own passengers (memory) and its own conductor deciding who boards (the user it runs as). Forcing your way onto someone else&apos;s matatu to see their passengers is memory dumping; the kernel is the traffic marshal who normally won&apos;t allow it.</Local>
         <Pre label="INSPECTING PROCESSES ON LINUX">
 {`$ ps -o pid,ppid,user,cmd -p $$
     PID    PPID USER     CMD
@@ -201,12 +228,16 @@ Uid:    1000    1000    1000    1000
         </Note>
 
         <H3>Users and the Permission Model</H3>
-        <P>
-          An operating system is a shared building, and the permission model is its lock-and-key system. Every person or service gets a <strong>user account</strong>, identified internally by a number. On Linux this is the <strong>UID</strong> (User ID); on Windows it is the <strong>SID</strong> (Security Identifier). Users can be collected into <strong>groups</strong> so that permissions can be granted to many people at once. Every process runs with the identity of some user, and every file is owned by some user and group. When a process tries to read, write or execute a file, the kernel compares the process&apos;s identity with the file&apos;s permissions and allows or denies the action. That check, repeated millions of times a day, is what keeps one user from reading another&apos;s mail.
-        </P>
-        <P>
-          Each system also has a super-user who is exempt from most checks. On Linux it is <strong>root</strong>, always UID 0. On Windows, the local <strong>Administrator</strong> account is powerful, but the built-in <strong>SYSTEM</strong> account (NT AUTHORITY\SYSTEM) sits even higher and is what the OS itself runs as. Services, the background programs that serve web pages or manage printers, usually run under dedicated low-privilege accounts such as <C>www-data</C> on Linux, so that if a service is compromised the attacker inherits only that account&apos;s limited rights.
-        </P>
+        <P>An OS is a shared building; the permission model is its lock-and-key system.</P>
+        <Key items={[
+          <><strong>User account</strong> &mdash; every person or service has one, identified by a number: <strong>UID</strong> on Linux, <strong>SID</strong> on Windows</>,
+          <><strong>Groups</strong> &mdash; bundle users so you can grant access to many at once</>,
+          <>Every <strong>process runs as a user</strong>; every <strong>file is owned by a user and group</strong></>,
+          <>On each access the <strong>kernel checks identity against the file&apos;s permissions</strong> and allows or denies &mdash; millions of times a day</>,
+          <><strong>Super-user</strong> skips most checks: <C>root</C> (UID 0) on Linux; <strong>Administrator</strong> and the even-higher <strong>SYSTEM</strong> account on Windows</>,
+          <><strong>Services</strong> run as low-privilege accounts (like <C>www-data</C>) so a hacked service only hands over limited rights</>,
+        ]} />
+        <Local>Picture a plot (apartment block). Each tenant has a key to their own door only &mdash; that is a <strong>user</strong> and their <strong>permissions</strong>. The caretaker holds a master key to the shared areas &mdash; a <strong>group</strong> privilege. The landlord has every key and answers to no one &mdash; that is <strong>root</strong> / <strong>SYSTEM</strong>. Nearly every attack in the later modules is one quiet move: a tenant trying to become the landlord.</Local>
         <Table
           headers={['Concept', 'Linux', 'Windows']}
           rows={[
@@ -220,9 +251,14 @@ Uid:    1000    1000    1000    1000
         />
 
         <H3>How This Maps to Attacks</H3>
-        <P>
-          With this model you can already describe most of offensive security in one line each. <strong>Initial access</strong> means getting your code running as some user on the target. <strong>Privilege escalation</strong> means moving from a low-privilege user (such as <C>www-data</C>) to root or SYSTEM, usually by abusing a misconfigured permission or a kernel bug. <strong>Credential access</strong> means reading secrets out of files or memory you should not reach. <strong>Persistence</strong> means arranging for your code to run again after a reboot, for example as a service. Defenders, meanwhile, watch processes, files, users and system calls for exactly these changes. Every later module is a deeper look at one of these moves.
-        </P>
+        <P>With just this model, you can already describe most of offensive security &mdash; one line each:</P>
+        <Key title="THE WHOLE GAME, IN FIVE MOVES" items={[
+          <><strong>Initial access</strong> &mdash; get your code running as <em>some</em> user on the target</>,
+          <><strong>Privilege escalation</strong> &mdash; climb from a low user (like <C>www-data</C>) to root/SYSTEM via a misconfig or kernel bug</>,
+          <><strong>Credential access</strong> &mdash; read secrets from files or memory you should not reach</>,
+          <><strong>Persistence</strong> &mdash; arrange to run again after a reboot (for example, as a service)</>,
+          <><strong>Defenders</strong> watch processes, files, users and syscalls for exactly these moves &mdash; every later module goes deep on one</>,
+        ]} />
         <Note type="info">
           Keep three questions in your head on every system you touch: Who am I running as? What can this user read, write and execute? Which processes run as someone more powerful than me? The lab for this module trains exactly those reflexes.
         </Note>
