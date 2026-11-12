@@ -2,6 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import ModuleCodex, { CodexChapter } from '@/app/components/ModuleCodex'
+import { Watch, Ref } from '@/app/components/learn/Mtaani'
 
 const mono = 'JetBrains Mono, monospace'
 const accent = '#7fdbff'
@@ -174,20 +175,21 @@ const chapters: CodexChapter[] = [
 +-----------------------------------------------------------+`}
         </Pre>
         <P>
-          You can watch system calls happen. On Linux, the <C>strace</C> tool prints every syscall a program makes. Running it against a simple command shows that even printing a file is a conversation with the kernel.
+          Here is a peek under the hood. Do not worry about the exact text &mdash; you are not expected to type any of this yet. Just look at it the way you would watch a mechanic open an engine: you are seeing <em>that</em> a conversation happens, not memorising the parts.
         </P>
-        <Pre label="WATCHING SYSCALLS WITH STRACE (TRIMMED)">
+        <Watch
+          reads={<>The command <strong>cat /etc/hostname</strong> just prints one tiny file (the computer&apos;s name, &quot;ghost-lab&quot;). Watch the three polite requests it makes to the kernel: <strong>open</strong> the file (the kernel hands back ticket number 3), <strong>read</strong> from that ticket, then <strong>write</strong> what it got to your screen. Three back-and-forths just to show one word &mdash; <em>that</em> is all a &quot;system call&quot; is: a program asking the kernel to do something it is not allowed to do by itself.</>}
+          later={<>You&apos;ll start running commands like this yourself from <strong>MOD-02 (Linux)</strong>. For now, the only takeaway is: even printing one file is a conversation with the kernel.</>}
+        >
+        <Pre label="A PROGRAM TALKING TO THE KERNEL (JUST READ IT)">
 {`$ strace -e trace=openat,read,write cat /etc/hostname
-openat(AT_FDCWD, "/etc/hostname", O_RDONLY) = 3
-read(3, "ghost-lab\\n", 131072)              = 10
-write(1, "ghost-lab\\n", 10)                 = 10
+openat(AT_FDCWD, "/etc/hostname", O_RDONLY) = 3     <- "open this file, please"
+read(3, "ghost-lab\\n", 131072)              = 10     <- "now read it"
+write(1, "ghost-lab\\n", 10)                 = 10     <- "print it to the screen"
 ghost-lab
-+++ exited with 0 +++
-
-# openat -> ask the kernel to open the file, it returns file descriptor 3
-# read   -> read bytes from descriptor 3
-# write  -> write those bytes to descriptor 1 (standard output, your screen)`}
++++ exited with 0 +++`}
         </Pre>
+        </Watch>
 
         <H3>Processes, Threads and Virtual Memory</H3>
         <P>A <strong>program</strong> is a file on disk; a <strong>process</strong> is that program actually running. Same recipe, different meals.</P>
@@ -200,21 +202,19 @@ ghost-lab
           <>Dumping another process&apos;s memory (e.g. Windows LSASS, MOD-05) needs high privilege: you must ask the kernel to break the wall for you</>,
         ]} />
         <Local>A matatu <strong>route</strong> &mdash; say Route 46 to Ng&apos;ando &mdash; is the <strong>program</strong>: the plan, written down. A specific matatu actually plying that route right now is the <strong>process</strong>. Ten matatus can run Route 46 at once, just like ten processes run from one program file &mdash; each with its own passengers (memory) and its own conductor deciding who boards (the user it runs as). Forcing your way onto someone else&apos;s matatu to see their passengers is memory dumping; the kernel is the traffic marshal who normally won&apos;t allow it.</Local>
-        <Pre label="INSPECTING PROCESSES ON LINUX">
+        <Watch
+          reads={<>Each line is just the computer answering a question. First: &quot;which process am I in?&quot; &mdash; it&apos;s bash (your command line), process number 2314, started by the user &quot;ghost&quot;. Then it shows that Linux keeps live information about every running process inside a special folder called <strong>/proc</strong>. You don&apos;t need to remember the commands &mdash; just notice that a running program is something you can look at and ask questions about.</>}
+          later={<>You&apos;ll use <strong>ps</strong> and friends comfortably after <Ref>MOD-02 Linux</Ref> &mdash; here, just read.</>}
+        >
+        <Pre label="A RUNNING PROGRAM YOU CAN LOOK AT (JUST READ IT)">
 {`$ ps -o pid,ppid,user,cmd -p $$
     PID    PPID USER     CMD
-   2314    2301 ghost    -bash
+   2314    2301 ghost    -bash       <- this is your shell, running as "ghost"
 
 $ ls /proc/2314/
-cmdline  cwd  environ  exe  fd  maps  status  ...
-
-$ cat /proc/2314/status | grep -E 'Name|Uid'
-Name:   bash
-Uid:    1000    1000    1000    1000
-
-# /proc is a virtual file system: the kernel shows live process
-# information as if it were ordinary files.`}
+cmdline  cwd  environ  exe  fd  maps  status  ...   <- live info the kernel keeps`}
         </Pre>
+        </Watch>
 
         <H3>Files and File Systems</H3>
         <P>
