@@ -585,7 +585,7 @@ export default function LinuxLab() {
         </div>
 
         {!freeLaunched ? (
-          <div style={{ background: guidedDone ? 'rgba(115,201,145,0.04)' : '#02060300', border: '1px solid ' + (guidedDone ? 'rgba(115,201,145,0.25)' : '#0a1a10'), borderRadius: '10px', padding: '2.5rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ background: guidedDone ? 'rgba(115,201,145,0.04)' : '#020603', border: '1px solid ' + (guidedDone ? 'rgba(115,201,145,0.25)' : '#0a1a10'), borderRadius: '10px', padding: '2.5rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
             {guidedDone && (
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg, transparent, ' + accent + ', transparent)' }} />
             )}
