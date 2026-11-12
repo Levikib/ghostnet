@@ -881,6 +881,9 @@ from two years ago tells you nothing about today.`}
         <P>
           Your vendors have vendors, and those fourth parties are risk you inherit without ever choosing them. If SafiPay&apos;s KYC provider relies on a particular cloud region, SafiPay is exposed to that cloud region even though it never signed a contract with it. Two patterns deserve attention. First, chained dependency: a failure three links down the chain can still reach you. Second, concentration risk: when many of your vendors - or many companies in your whole sector - depend on the same underlying cloud, CDN or library, a single failure in that shared component becomes everyone&apos;s failure at once. Mapping your critical vendors&apos; key sub-processors, and noticing where the whole chain funnels through one provider, is advanced third-party work that separates a thorough GRC function from a box-ticking one.
         </P>
+        <P>
+          Third-party risk also does not end when the contract is signed; it needs continuous management across the whole vendor lifecycle. At onboarding you assess and contract. During the relationship you monitor - re-collecting assurance reports on a schedule, watching for news of a vendor breach, and re-assessing when the vendor changes what data it holds or which sub-processors it uses. At offboarding, which is the step teams most often forget, you must ensure the vendor actually deletes or returns your data, revoke the access and integrations you granted them, and record that it was done. A former vendor that still holds a copy of your customer database, or still has a live API key into your systems, is a breach waiting to happen long after anyone remembers the relationship existed. Treating vendor risk as a lifecycle rather than a one-off gate is the mark of a mature program.
+        </P>
       </div>
     ),
   },
