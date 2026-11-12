@@ -6,7 +6,7 @@ import { GxStyles, T, accentText } from './gx/Gx'
 import ChapterQuiz from './ChapterQuiz'
 import { CATALOG, LAB_STEPS } from '../../lib/learning'
 
-const READ_SIZES = { S: 15, M: 16, L: 18, XL: 20 } as const
+const READ_SIZES = { S: 14, M: 15, L: 16, XL: 18 } as const
 type ReadSize = keyof typeof READ_SIZES
 
 const mono = 'JetBrains Mono, monospace'
@@ -209,12 +209,12 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
 
       {/* Scannable key points — the quick version, before the deep read */}
       {ch.takeaways && ch.takeaways.length > 0 && (
-        <section aria-label="Key points at a glance" style={{ background: 'rgba(0,212,255,0.04)', border: '1px solid ' + acc + '2e', borderLeft: '3px solid ' + acc, borderRadius: '10px', padding: '14px 18px', margin: '0 0 22px' }}>
-          <div style={{ fontFamily: T.mono, fontSize: '10.5px', fontWeight: 700, color: acc, letterSpacing: '.2em', marginBottom: '10px' }}>KEY POINTS · THE QUICK VERSION</div>
-          <ul style={{ margin: 0, paddingLeft: '1.1rem', display: 'grid', gap: '7px' }}>
-            {ch.takeaways.map((t, i) => <li key={i} style={{ color: T.body, fontSize: '14px', lineHeight: 1.55 }}>{t}</li>)}
+        <section aria-label="Key points at a glance" style={{ background: 'rgba(0,212,255,0.04)', border: '1px solid ' + acc + '2e', borderLeft: '3px solid ' + acc, borderRadius: '9px', padding: '11px 14px', margin: '0 0 16px' }}>
+          <div style={{ fontFamily: T.mono, fontSize: '10px', fontWeight: 700, color: acc, letterSpacing: '.2em', marginBottom: '8px' }}>KEY POINTS · THE QUICK VERSION</div>
+          <ul style={{ margin: 0, paddingLeft: '1.05rem', display: 'grid', gap: '6px' }}>
+            {ch.takeaways.map((t, i) => <li key={i} style={{ color: T.body, fontSize: '13px', lineHeight: 1.5 }}>{t}</li>)}
           </ul>
-          <div style={{ fontFamily: T.sans, fontSize: '12px', color: T.dim, marginTop: '11px' }}>Scan these first, then read below for the depth and examples &mdash; or jump straight to the lab.</div>
+          <div style={{ fontFamily: T.sans, fontSize: '11.5px', color: T.dim, marginTop: '9px' }}>Scan these first, then read below for the depth and examples &mdash; or jump straight to the lab.</div>
         </section>
       )}
 
@@ -258,6 +258,8 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
         chapterId={ch.id}
         chapterTitle={ch.title}
         takeaways={ch.takeaways}
+        priorTitles={chapters.slice(0, current).map(c => c.title)}
+        priorTakeaways={chapters.slice(Math.max(0, current - 5), current).flatMap(c => c.takeaways)}
         accent={acc}
       />
 
@@ -281,8 +283,8 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
 
       <style>{`
         .cx { color: var(--tx); }
-        .cx-resume { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; padding: 12px 16px; margin-bottom: 14px; }
-        .cx-strip { position: sticky; top: 60px; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 8px 11px; margin: 0 0 16px; border-radius: 12px;
+        .cx-resume { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 10px 13px; margin-bottom: 12px; }
+        .cx-strip { position: sticky; top: 60px; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 9px; flex-wrap: wrap; padding: 7px 10px; margin: 0 0 12px; border-radius: 10px;
           background: rgba(10,18,24,.88); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(232,243,246,.06); }
         .cx-dots { display: flex; gap: 6px; flex-wrap: wrap; }
         .cx-dot { min-width: 38px; height: 34px; padding: 0 8px; border-radius: 10px; border: 0; cursor: pointer; font: 700 12px/1 var(--mono); color: var(--tx-dim-hi); background: var(--clay-face); box-shadow: var(--e-clay); transition: transform .15s, color .15s; }
@@ -294,8 +296,8 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
         .cx-size { display: flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--s1); box-shadow: var(--e-well); }
         .cx-size button { font: 700 11px/1 var(--mono); color: var(--tx-dim); background: none; border: 0; padding: 6px 8px; border-radius: 8px; cursor: pointer; }
         .cx-size button[aria-pressed="true"] { color: var(--tx); background: var(--s3); }
-        .cx-head { padding: clamp(16px, 3vw, 24px); margin-bottom: 22px; }
-        .cx-title { font-family: var(--sans); font-weight: 650; font-size: clamp(22px, 3.4vw, 30px); letter-spacing: -.015em; line-height: 1.2; color: var(--tx); margin: 12px 0 0; }
+        .cx-head { padding: clamp(12px, 2.4vw, 18px); margin-bottom: 16px; }
+        .cx-title { font-family: var(--sans); font-weight: 650; font-size: clamp(18px, 2.8vw, 25px); letter-spacing: -.015em; line-height: 1.2; color: var(--tx); margin: 10px 0 0; }
 
         /* Reading column: one readable style for every chapter's content */
         .cx-body { max-width: 76ch; }
@@ -305,9 +307,9 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
         .cx-body strong, .cx-body b { color: var(--tx) !important; }
         .cx-body a { color: var(--cyan) !important; }
         .cx-body h3, .cx-body h4 { font-family: var(--sans) !important; font-weight: 650 !important; color: var(--tx) !important; letter-spacing: -.01em; line-height: 1.3 !important; text-shadow: none !important; }
-        .cx-body h3 { font-size: calc(var(--read) * 1.26) !important; margin: 1.7em 0 .6em !important; padding-left: 12px; border-left: 3px solid var(--accent); }
+        .cx-body h3 { font-size: calc(var(--read) * 1.18) !important; margin: 1.35em 0 .5em !important; padding-left: 10px; border-left: 3px solid var(--accent); }
         .cx-body h4 { font-size: calc(var(--read) * 1.1) !important; margin: 1.6em 0 .5em !important; }
-        .cx-body pre { position: relative; font-size: 13px !important; line-height: 1.6 !important; background: #071017 !important; border: 1px solid rgba(232,243,246,.08) !important; border-radius: 0 !important; color: #d6f5e0 !important; padding: 14px !important; max-width: 100%; }
+        .cx-body pre { position: relative; font-size: 12px !important; line-height: 1.55 !important; background: #071017 !important; border: 1px solid rgba(232,243,246,.08) !important; border-radius: 0 !important; color: #d6f5e0 !important; padding: 11px !important; max-width: 100%; }
         .cx-body code { font-family: var(--mono); }
         .cx-body table { font-family: var(--sans); font-size: calc(var(--read) * .88) !important; border-collapse: collapse; width: 100%; }
         .cx-body th { color: var(--tx) !important; font-weight: 600 !important; text-align: left; }
@@ -318,21 +320,21 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
         .cx-copy:hover { color: var(--tx); border-color: var(--cyan); }
         .cx-copy[data-done="true"] { color: var(--green); border-color: var(--green); }
 
-        .cx-take { padding: 16px 20px; margin-top: 28px; }
-        .cx-take ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-        .cx-take li { position: relative; padding-left: 20px; font-family: var(--sans); font-size: 14px; line-height: 1.55; color: var(--tx-body); }
+        .cx-take { padding: 12px 15px; margin-top: 22px; }
+        .cx-take ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+        .cx-take li { position: relative; padding-left: 18px; font-family: var(--sans); font-size: 13px; line-height: 1.5; color: var(--tx-body); }
         .cx-take li::before { content: ''; position: absolute; left: 0; top: .6em; width: 8px; height: 8px; border-radius: 2px; background: var(--accent); transform: rotate(45deg); }
         .cx-read-status { margin-top: 18px; padding-top: 14px; border-top: 1px dashed rgba(232,243,246,.1); font: 600 11.5px/1.4 var(--mono); letter-spacing: .08em; color: var(--tx-dim-hi); }
         .cx-read-status[data-done="true"] { color: var(--green); }
-        .cx-labready { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 18px; padding: 13px 16px; border-radius: 12px; text-decoration: none; background: color-mix(in srgb, var(--accent) 7%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent); transition: transform .14s, box-shadow .14s; }
+        .cx-labready { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 14px; padding: 11px 14px; border-radius: 10px; text-decoration: none; background: color-mix(in srgb, var(--accent) 7%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent); transition: transform .14s, box-shadow .14s; }
         .cx-labready:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,.3); }
         .cx-labready-k { font-family: var(--mono); font-size: 9.5px; letter-spacing: .16em; color: var(--accent); }
         .cx-labready-t { font-family: var(--sans); font-size: 13.5px; color: var(--tx-body); margin-top: 3px; line-height: 1.5; }
         .cx-labready-t strong { color: var(--tx); }
         .cx-labready-go { flex: none; font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: .12em; color: var(--accent); }
-        .cx-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
-        .cx-pn { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-top: 28px; }
-        .cx-pn-btn { display: flex; flex-direction: column; gap: 5px; padding: 13px 15px; border: 0; color: inherit; font: inherit; text-align: left; border-radius: 12px; }
+        .cx-actions { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 14px; }
+        .cx-pn { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; margin-top: 22px; }
+        .cx-pn-btn { display: flex; flex-direction: column; gap: 4px; padding: 11px 13px; border: 0; color: inherit; font: inherit; text-align: left; border-radius: 10px; }
         .cx-pn-btn:disabled { opacity: .45; cursor: default; transform: none !important; }
         .cx-pn-label { font: 700 11px/1 var(--mono); letter-spacing: .18em; color: var(--acc); }
         .cx-pn-title { font-family: var(--sans); font-size: 15px; font-weight: 600; color: var(--tx); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

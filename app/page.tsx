@@ -130,7 +130,7 @@ export default function Dashboard() {
       </header>
 
       <div className="dash-grid">
-        <main style={{ minWidth: 0, display: 'grid', gap: '20px', alignContent: 'start' }}>
+        <main style={{ minWidth: 0, display: 'grid', gap: '14px', alignContent: 'start' }}>
           {/* Path banner: calibrate / pick a path / your path */}
           {(() => {
             const chosen = profile.chosen_path ? PATHS.find(p => p.id === profile.chosen_path) : null
@@ -306,8 +306,8 @@ export default function Dashboard() {
         </main>
 
         {/* Right rail */}
-        <aside style={{ display: 'grid', gap: '14px', alignContent: 'start', minWidth: 0 }}>
-          <section className="gx-clay" style={{ padding: '16px' }} aria-labelledby="today-h">
+        <aside style={{ display: 'grid', gap: '11px', alignContent: 'start', minWidth: 0 }}>
+          <section className="gx-clay" style={{ padding: '12px' }} aria-labelledby="today-h">
             <h2 id="today-h" className="dash-h2" style={{ margin: 0 }}>TODAY</h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '18px', marginTop: '16px' }}>
               <Ring value={(missionsDone / 3) * 100} size={84} width={8} color={missionsDone === 3 ? T.green : T.cyan} label={missionsDone + ' of 3 missions cleared'}>{missionsDone}/3</Ring>
@@ -334,7 +334,7 @@ export default function Dashboard() {
             </div>
           </section>
 
-          <section className="gx-clay" style={{ padding: '16px', ['--accent' as string]: rank.color } as React.CSSProperties} aria-labelledby="rank-h">
+          <section className="gx-clay" style={{ padding: '12px', ['--accent' as string]: rank.color } as React.CSSProperties} aria-labelledby="rank-h">
             <h2 id="rank-h" className="dash-h2" style={{ margin: 0 }}>RANK</h2>
             <div style={{ fontFamily: T.mono, fontWeight: 800, fontSize: '26px', letterSpacing: '.1em', color: rank.color, marginTop: '12px' }}>{rank.title.toUpperCase()}</div>
             <div style={{ margin: '14px 0 8px' }}><Bar value={rankPct} color={rank.color} label={'Progress to ' + (next ? next.title : 'max rank')} /></div>
@@ -349,7 +349,7 @@ export default function Dashboard() {
             </div>
           </section>
 
-          <section className="gx-hud" style={{ padding: '14px 16px', ['--accent' as string]: T.cyan } as React.CSSProperties} aria-labelledby="log-h">
+          <section className="gx-hud" style={{ padding: '11px 13px', ['--accent' as string]: T.cyan } as React.CSSProperties} aria-labelledby="log-h">
             <h2 id="log-h" className="dash-h2" style={{ margin: '0 0 10px' }}>RECENT ACTIVITY</h2>
             {profile.recent.length === 0 ? (
               <p style={{ fontFamily: T.sans, fontSize: '13.5px', color: T.dim, margin: 0 }}>Your activity log fills up as you learn.</p>
@@ -385,21 +385,21 @@ export default function Dashboard() {
       <style>{`
         .dash { position: relative; color: var(--tx); }
         .dash > :not(canvas) { position: relative; z-index: 1; }
-        .dash-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 22px; }
-        .dash-h1 { font-family: var(--mono); font-weight: 800; font-size: clamp(24px, 4vw, 40px); letter-spacing: .06em; line-height: 1.15; margin: 10px 0 0; color: var(--tx); overflow-wrap: anywhere; }
+        .dash-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 16px; }
+        .dash-h1 { font-family: var(--mono); font-weight: 800; font-size: clamp(20px, 3.2vw, 30px); letter-spacing: .05em; line-height: 1.15; margin: 8px 0 0; color: var(--tx); overflow-wrap: anywhere; }
         .dash-h2 { font-family: var(--mono); font-weight: 700; font-size: 12px; letter-spacing: .22em; color: var(--tx-dim-hi); margin: 0; }
         .dash-avatar { flex: none; border-radius: 50%; display: block; }
         .dash-avatar:focus-visible { outline: 2px solid var(--cyan); outline-offset: 4px; }
-        .dash-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; }
-        .dash-pathbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 13px 18px; border-radius: 12px; text-decoration: none; color: inherit; flex-wrap: wrap; }
-        .dash-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: clamp(16px, 3vw, 24px); }
-        .dash-sec-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
-        .dash-missions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-        .dash-mission { display: block; padding: 14px; color: inherit; border-radius: 12px; }
+        .dash-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 14px; align-items: start; }
+        .dash-pathbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 10px 14px; border-radius: 10px; text-decoration: none; color: inherit; flex-wrap: wrap; }
+        .dash-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: clamp(12px, 2.4vw, 18px); }
+        .dash-sec-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+        .dash-missions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
+        .dash-mission { display: block; padding: 11px; color: inherit; border-radius: 10px; }
         .dash-check { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; color: #04070a; box-shadow: var(--e-well); background: var(--s1); }
         .dash-check[data-done="true"] { background: var(--green); box-shadow: 0 0 12px rgba(0,255,65,.45); }
-        .dash-mods { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 12px; }
-        .dash-mod { display: block; padding: 14px; color: inherit; border-radius: 12px; }
+        .dash-mods { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 9px; }
+        .dash-mod { display: block; padding: 11px; color: inherit; border-radius: 10px; }
         .dash-mod.owned { box-shadow: var(--e-clay), 0 0 0 1px rgba(0,255,65,.25); }
         .dash-day { height: 30px; border-radius: 8px; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #04070a; background: var(--s1); box-shadow: var(--e-well); }
         .dash-day[data-on="true"] { background: var(--green); box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 0 10px rgba(0,255,65,.35); }

@@ -9,8 +9,8 @@ type QGet = { q: string; options: string[] }
 type GradeResult = { answer: number; correct: boolean; why: string }
 
 export default function ChapterQuiz({
-  moduleId, moduleTitle, chapterId, chapterTitle, takeaways, accent,
-}: { moduleId: string; moduleTitle: string; chapterId: string; chapterTitle: string; takeaways: string[]; accent: string }) {
+  moduleId, moduleTitle, chapterId, chapterTitle, takeaways, priorTitles = [], priorTakeaways = [], accent,
+}: { moduleId: string; moduleTitle: string; chapterId: string; chapterTitle: string; takeaways: string[]; priorTitles?: string[]; priorTakeaways?: string[]; accent: string }) {
   const [phase, setPhase] = useState<'idle' | 'loading' | 'active' | 'graded' | 'error'>('idle')
   const [questions, setQuestions] = useState<QGet[]>([])
   const [picks, setPicks] = useState<Record<number, number>>({})
@@ -22,7 +22,7 @@ export default function ChapterQuiz({
   async function start() {
     setPhase('loading'); setErr('')
     const r = await api<{ questions: QGet[]; best: { correct: number; total: number } | null }>(
-      '/api/quiz', { action: 'get', moduleId, chapterId, title: moduleTitle, chapterTitle, takeaways }, 'POST',
+      '/api/quiz', { action: 'get', moduleId, chapterId, title: moduleTitle, chapterTitle, takeaways, priorTitles, priorTakeaways }, 'POST',
     )
     if (r.ok === false || !Array.isArray((r as { questions?: QGet[] }).questions)) {
       setErr((r as { error?: string }).error || 'Could not load the quiz.'); setPhase('error'); return

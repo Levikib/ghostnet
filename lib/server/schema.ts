@@ -226,9 +226,11 @@ const STATEMENTS = [
     module_id text NOT NULL,
     chapter_id text NOT NULL,
     questions jsonb NOT NULL,
+    gen_version int NOT NULL DEFAULT 1,
     created_at timestamptz NOT NULL DEFAULT now(),
     PRIMARY KEY (module_id, chapter_id)
   )`,
+  `ALTER TABLE chapter_quizzes ADD COLUMN IF NOT EXISTS gen_version int NOT NULL DEFAULT 1`,
   `CREATE TABLE IF NOT EXISTS quiz_results (
     user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     module_id text NOT NULL,
