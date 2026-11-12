@@ -280,10 +280,21 @@ function AppShell({ children }: { children: React.ReactNode }) {
       </footer>
       {!mobileMenuOpen && (
         <>
+          {/* Floating widgets, each kept in its own zone so buttons never overlap:
+              bottom-right stack = GhostAgent (lowest) + CVEFeed (above it);
+              bottom-left stack = CheatSheet (lowest) + ProgressTracker (above it);
+              RecallPopup sits top-right, GhostDrone on the left margin.
+              The upper widget of each bottom stack is nudged up via a transform wrapper
+              (transform makes the wrapper the containing block for its fixed button + panel)
+              so its button clears the one beneath it without editing the widgets themselves. */}
           <ErrorBoundary label="Ghost Agent"><GhostAgent /></ErrorBoundary>
-          <ErrorBoundary label="Progress Tracker"><ProgressTracker /></ErrorBoundary>
+          <div style={{ transform: 'translateY(-14px)' }}>
+            <ErrorBoundary label="Progress Tracker"><ProgressTracker /></ErrorBoundary>
+          </div>
           <ErrorBoundary label="Cheat Sheet"><CheatSheet /></ErrorBoundary>
-          <ErrorBoundary label="CVE Feed"><CVEFeed /></ErrorBoundary>
+          <div style={{ transform: 'translateY(-14px)' }}>
+            <ErrorBoundary label="CVE Feed"><CVEFeed /></ErrorBoundary>
+          </div>
           <ErrorBoundary label="Recall"><RecallPopup /></ErrorBoundary>
           <ErrorBoundary label="Guide"><GhostDrone /></ErrorBoundary>
         </>

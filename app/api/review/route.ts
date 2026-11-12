@@ -31,6 +31,9 @@ export async function GET(req: NextRequest) {
     await ensureCardBank()
 
     const n = Math.min(HARD_MAX, Math.max(1, parseInt(req.nextUrl.searchParams.get('n') || '12', 10) || 12))
+    // Optional: the module the learner is currently reading. When present we surface
+    // cards about THAT topic first so recall matches what is on screen.
+    const moduleParam = (req.nextUrl.searchParams.get('module') || '').trim() || null
     const u = await one<UserReview>(
       `SELECT desired_retention, daily_review_cap, review_streak_days, last_review_date FROM users WHERE id = $1`,
       [s.id],
@@ -44,18 +47,34 @@ export async function GET(req: NextRequest) {
     const reviewedToday = doneToday?.c ?? 0
 
     // Due cards (seen before, now due) first; then new cards, but only for modules the learner has started.
-    const cards = await sql<{ id: string; module_id: string; prompt: string; code: string | null; options: unknown; kind: string; is_new: boolean }>(
-      `SELECT c.id, c.module_id, c.prompt, c.code, c.options, c.kind, (st.user_id IS NULL) AS is_new
-       FROM recall_cards c
-       LEFT JOIN recall_state st ON st.card_id = c.id AND st.user_id = $1
-       WHERE c.status = 'approved' AND (
-         (st.user_id IS NOT NULL AND st.due_at <= now())
-         OR (st.user_id IS NULL AND c.module_id IN (SELECT module_id FROM module_progress WHERE user_id = $1))
-       )
-       ORDER BY is_new ASC, st.due_at ASC NULLS LAST, random()
-       LIMIT $2`,
-      [s.id, n],
-    )
+    // When a module is given, that module's due/new cards are ordered ahead of everything else, and its
+    // new cards are eligible even if the module is not yet in module_progress (reading it counts as started).
+    type CardRow = { id: string; module_id: string; prompt: string; code: string | null; options: unknown; kind: string; is_new: boolean }
+    const cards = moduleParam
+      ? await sql<CardRow>(
+          `SELECT c.id, c.module_id, c.prompt, c.code, c.options, c.kind, (st.user_id IS NULL) AS is_new
+           FROM recall_cards c
+           LEFT JOIN recall_state st ON st.card_id = c.id AND st.user_id = $1
+           WHERE c.status = 'approved' AND (
+             (st.user_id IS NOT NULL AND st.due_at <= now())
+             OR (st.user_id IS NULL AND (c.module_id = $3 OR c.module_id IN (SELECT module_id FROM module_progress WHERE user_id = $1)))
+           )
+           ORDER BY (c.module_id = $3) DESC, is_new ASC, st.due_at ASC NULLS LAST, random()
+           LIMIT $2`,
+          [s.id, n, moduleParam],
+        )
+      : await sql<CardRow>(
+          `SELECT c.id, c.module_id, c.prompt, c.code, c.options, c.kind, (st.user_id IS NULL) AS is_new
+           FROM recall_cards c
+           LEFT JOIN recall_state st ON st.card_id = c.id AND st.user_id = $1
+           WHERE c.status = 'approved' AND (
+             (st.user_id IS NOT NULL AND st.due_at <= now())
+             OR (st.user_id IS NULL AND c.module_id IN (SELECT module_id FROM module_progress WHERE user_id = $1))
+           )
+           ORDER BY is_new ASC, st.due_at ASC NULLS LAST, random()
+           LIMIT $2`,
+          [s.id, n],
+        )
 
     const dueCount = await one<{ c: number }>(
       `SELECT count(*)::int AS c FROM recall_state WHERE user_id = $1 AND due_at <= now()`,

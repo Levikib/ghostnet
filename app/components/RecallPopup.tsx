@@ -60,12 +60,18 @@ export default function RecallPopup() {
     if (Date.now() < snoozedUntil()) return
     if (Date.now() - armedAt.current < ARM_DELAY_MS) return
     busy.current = true
-    const r = await api<{ cards: Card[] }>('/api/review?n=1')
+    // On a module page (/modules/<slug>) ask for a card about THAT module, so the recall
+    // matches what the learner is reading instead of some unrelated advanced topic.
+    const moduleSlug = path.startsWith('/modules/') ? (path.split('/')[2] || null) : null
+    const url = moduleSlug ? `/api/review?n=1&module=${encodeURIComponent(moduleSlug)}` : '/api/review?n=1'
+    const r = await api<{ cards: Card[] }>(url)
     busy.current = false
-    const first = r.ok !== false && Array.isArray(r.cards) ? r.cards[0] : null
+    let first = r.ok !== false && Array.isArray(r.cards) ? r.cards[0] : null
+    // While reading a module, show a same-module card or nothing — never an off-topic one.
+    if (moduleSlug && first && first.moduleId !== moduleSlug) first = null
     if (first) { setCard(first); setPicked(null); setGraded(null); setClosing(false) }
-    else setSnooze(SNOOZE_SHOWN_MS) // nothing due — don't re-check for a while
-  }, [card, eligible])
+    else setSnooze(SNOOZE_SHOWN_MS) // nothing relevant due — don't re-check for a while
+  }, [card, eligible, path])
 
   useEffect(() => {
     if (!eligible) return
