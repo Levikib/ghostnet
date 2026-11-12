@@ -6,6 +6,7 @@ import GhostAgent from './components/GhostAgent'
 import ProgressTracker from './components/ProgressTracker'
 import CheatSheet from './components/CheatSheet'
 import CVEFeed from './components/CVEFeed'
+import RecallPopup from './components/RecallPopup'
 import ErrorBoundary from './components/ErrorBoundary'
 import { AuthProvider, useAuth } from './components/AuthProvider'
 import { CATALOG } from '../lib/learning'
@@ -107,6 +108,7 @@ function Nav({ onMobileMenuChange }: { onMobileMenuChange: (open: boolean) => vo
             )}
           </div>
           <Link href="/paths" className="gn-link" aria-current={path === '/paths' ? 'page' : undefined}>Paths</Link>
+          {profile && <Link href="/review" className="gn-link" aria-current={path === '/review' ? 'page' : undefined}>Review</Link>}
           <Link href="/leaderboard" className="gn-link" aria-current={path === '/leaderboard' ? 'page' : undefined}>Leaderboard</Link>
 
           {activeModule && (
@@ -147,6 +149,7 @@ function Nav({ onMobileMenuChange }: { onMobileMenuChange: (open: boolean) => vo
           <Link href="/" className="gn-mobile-link">Command centre</Link>
           <Link href="/paths" className="gn-mobile-link">Paths</Link>
           <Link href="/assess" className="gn-mobile-link">Find your level</Link>
+          {profile && <Link href="/review" className="gn-mobile-link">Daily review</Link>}
           <Link href="/leaderboard" className="gn-mobile-link">Leaderboard</Link>
           <div className="gn-pop-head" style={{ marginTop: '18px' }}>MODULES</div>
           {CATALOG.map(m => (
@@ -278,6 +281,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
           <ErrorBoundary label="Progress Tracker"><ProgressTracker /></ErrorBoundary>
           <ErrorBoundary label="Cheat Sheet"><CheatSheet /></ErrorBoundary>
           <ErrorBoundary label="CVE Feed"><CVEFeed /></ErrorBoundary>
+          <ErrorBoundary label="Recall"><RecallPopup /></ErrorBoundary>
         </>
       )}
     </MobileMenuContext.Provider>
