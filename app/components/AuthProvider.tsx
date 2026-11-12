@@ -35,6 +35,9 @@ export type Operator = {
   recent: { kind: string; module_id: string | null; ref: string | null; xp: number; created_at: string }[]
   active_days?: string[]
   today?: { chapters: number; lab_steps: number; labs: number; xp: number }
+  placement_done?: boolean
+  placement_results?: Record<string, number> | null
+  chosen_path?: string | null
 }
 
 interface AuthContextType {

@@ -5,6 +5,7 @@ import { RANK_LIST } from '../lib/supabase'
 import { useAuth, Operator } from './components/AuthProvider'
 import OperatorAvatar from './components/OperatorAvatar'
 import { CATALOG, LAB_STEPS } from '../lib/learning'
+import { PATHS, pathModules } from '../lib/paths'
 import { openGhost } from '../lib/client/ghostContext'
 import { Bar, Eyebrow, GxStyles, Ring, T, accentText } from './components/gx/Gx'
 import { Decode } from './components/hack/Hack'
@@ -120,6 +121,42 @@ export default function Dashboard() {
 
       <div className="dash-grid">
         <main style={{ minWidth: 0, display: 'grid', gap: '28px', alignContent: 'start' }}>
+          {/* Path banner: calibrate / pick a path / your path */}
+          {(() => {
+            const chosen = profile.chosen_path ? PATHS.find(p => p.id === profile.chosen_path) : null
+            if (chosen) {
+              const mods = pathModules(chosen)
+              const doneN = mods.filter(id => { const m = byId.get(id); return m?.labCompleted && (m?.percent || 0) >= 100 }).length
+              return (
+                <Link href="/paths" className="gx-clay gx-hit dash-pathbar" style={{ ['--accent' as string]: chosen.color } as React.CSSProperties}>
+                  <div style={{ minWidth: 0 }}>
+                    <Eyebrow color={accentText(chosen.color)}>YOUR PATH</Eyebrow>
+                    <div style={{ fontFamily: T.sans, fontWeight: 650, fontSize: '17px', color: T.tx, marginTop: '4px' }}>{chosen.title}</div>
+                    <div style={{ fontFamily: T.mono, fontSize: '11.5px', color: T.dimHi, marginTop: '4px' }}>{doneN}/{mods.length} MODULES OWNED</div>
+                  </div>
+                  <span className="gx-btn gx-btn--ghost" style={{ flex: 'none' }}>VIEW PATH ▸</span>
+                </Link>
+              )
+            }
+            return (
+              <div className="gx-clay dash-pathbar" style={{ ['--accent' as string]: T.cyan } as React.CSSProperties}>
+                <div style={{ minWidth: 0 }}>
+                  <Eyebrow>{profile.placement_done ? '// PICK YOUR ROUTE' : '// FIND YOUR LEVEL'}</Eyebrow>
+                  <div style={{ fontFamily: T.sans, fontWeight: 650, fontSize: '17px', color: T.tx, marginTop: '4px' }}>
+                    {profile.placement_done ? 'Choose a learning path' : 'Zero to operator — the guided way'}
+                  </div>
+                  <div style={{ fontFamily: T.sans, fontSize: '13.5px', color: T.dim, marginTop: '4px' }}>
+                    {profile.placement_done ? 'Pick a goal and get a step-by-step route.' : 'Take a 10-minute placement, get a route built around what you already know.'}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', flex: 'none' }}>
+                  {!profile.placement_done && <Link href="/assess" className="gx-btn gx-btn--primary">FIND MY LEVEL ▸</Link>}
+                  <Link href="/paths" className="gx-btn gx-btn--ghost">BROWSE PATHS</Link>
+                </div>
+              </div>
+            )
+          })()}
+
           {/* Continue hero */}
           {resume && resumeMeta && (
             <section className="gx-clay dash-hero" style={{ ['--accent' as string]: resume.color } as React.CSSProperties} aria-labelledby="resume-title">
@@ -308,6 +345,7 @@ export default function Dashboard() {
         .dash-avatar { flex: none; border-radius: 50%; display: block; }
         .dash-avatar:focus-visible { outline: 2px solid var(--cyan); outline-offset: 4px; }
         .dash-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 28px; align-items: start; }
+        .dash-pathbar { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px 22px; border-radius: 16px; text-decoration: none; color: inherit; flex-wrap: wrap; }
         .dash-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px; align-items: center; padding: clamp(22px, 4vw, 34px); }
         .dash-sec-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
         .dash-missions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
