@@ -12,10 +12,10 @@ const mono = 'JetBrains Mono, monospace'
 const sans = 'DM Sans, system-ui, sans-serif'
 type Tab = 'progress' | 'profile' | 'security'
 
-const panel: React.CSSProperties = { background: 'linear-gradient(160deg, rgba(4,16,6,.9), rgba(1,7,2,.95))', border: '1px solid rgba(0,255,65,.14)', padding: 'clamp(16px, 4vw, 24px)' }
-const label: React.CSSProperties = { display: 'block', fontFamily: mono, fontSize: '.58rem', letterSpacing: '.24em', color: '#4f9f5f', marginBottom: '7px' }
-const field: React.CSSProperties = { width: '100%', boxSizing: 'border-box', background: 'rgba(0,14,3,.75)', border: '1px solid rgba(0,255,65,.22)', padding: '11px 13px', color: '#d8ffd8', fontFamily: mono, fontSize: '.86rem', outline: 'none' }
-const btn = (c = '#00ff41', solid = false): React.CSSProperties => ({ fontFamily: mono, fontSize: '.66rem', letterSpacing: '.2em', fontWeight: 700, padding: '10px 16px', cursor: 'pointer', border: '1px solid ' + c, color: solid ? '#001a05' : c, background: solid ? c : c + '10' })
+const panel: React.CSSProperties = { background: 'linear-gradient(160deg,#17242e,#0f1820)', border: '1px solid rgba(232,243,246,.06)', borderRadius: '16px', boxShadow: 'inset 0 1px 0 rgba(255,255,255,.06), 0 14px 28px -12px rgba(0,0,0,.6)', padding: 'clamp(16px, 4vw, 24px)' }
+const label: React.CSSProperties = { display: 'block', fontFamily: mono, fontSize: '.62rem', letterSpacing: '.22em', color: '#93a8b4', marginBottom: '7px' }
+const field: React.CSSProperties = { width: '100%', boxSizing: 'border-box', background: '#0a1218', border: '1px solid #5b6f7b', borderRadius: '10px', padding: '12px 14px', color: '#e8f3f6', fontFamily: sans, fontSize: '.92rem', outline: 'none' }
+const btn = (c = '#00d4ff', solid = false): React.CSSProperties => ({ fontFamily: mono, fontSize: '.66rem', letterSpacing: '.18em', fontWeight: 700, padding: '10px 16px', cursor: 'pointer', borderRadius: '10px', border: '1px solid ' + (solid ? c : 'rgba(232,243,246,.14)'), color: solid ? '#04070a' : '#e8f3f6', background: solid ? c : 'transparent' })
 
 function ago(iso: string | null): string {
   if (!iso) return 'never'
@@ -31,9 +31,9 @@ function Ring({ pct, color, size = 56 }: { pct: number; color: string; size?: nu
   const r = 22, c = 2 * Math.PI * r
   return (
     <svg width={size} height={size} viewBox="0 0 56 56" aria-hidden="true">
-      <circle cx="28" cy="28" r={r} fill="none" stroke="#0c2a12" strokeWidth="5" />
+      <circle cx="28" cy="28" r={r} fill="none" stroke="rgba(232,243,246,.08)" strokeWidth="5" />
       <circle cx="28" cy="28" r={r} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - pct / 100)} transform="rotate(-90 28 28)" style={{ transition: 'stroke-dashoffset .8s ease', filter: 'drop-shadow(0 0 4px ' + color + '88)' }} />
-      <text x="28" y="32" textAnchor="middle" fontFamily={mono} fontSize="12" fontWeight="700" fill={pct ? color : '#2f5f3f'}>{pct}%</text>
+      <text x="28" y="32" textAnchor="middle" fontFamily={mono} fontSize="12" fontWeight="700" fill={pct ? color : '#7d93a0'}>{pct}%</text>
     </svg>
   )
 }
@@ -56,8 +56,8 @@ function ProgressTab({ p }: { p: Operator }) {
           <Ring pct={next.percent} color={next.color} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontFamily: mono, fontSize: '.58rem', letterSpacing: '.26em', color: next.color }}>{next.percent ? 'CONTINUE WHERE YOU LEFT OFF' : 'RECOMMENDED NEXT'}</div>
-            <div style={{ fontFamily: mono, fontSize: '1rem', color: '#eaffea', marginTop: '4px' }}>MOD-{next.code} · {next.title}</div>
-            <div style={{ fontFamily: sans, fontSize: '.8rem', color: '#6f9f7f', marginTop: '3px' }}>
+            <div style={{ fontFamily: mono, fontSize: '1rem', color: '#e8f3f6', marginTop: '4px' }}>MOD-{next.code} · {next.title}</div>
+            <div style={{ fontFamily: sans, fontSize: '.8rem', color: '#7d93a0', marginTop: '3px' }}>
               {next.chaptersRead}/{next.chaptersTotal} chapters · lab {next.labCompleted ? 'complete' : next.labTotal ? next.labSteps + '/' + next.labTotal + ' steps' : 'not started'}{next.updatedAt ? ' · last active ' + ago(next.updatedAt) : ''}
             </div>
           </div>
@@ -67,17 +67,17 @@ function ProgressTab({ p }: { p: Operator }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 240px), 1fr))', gap: '12px' }}>
         {p.modules.map(m => (
-          <div key={m.id} style={{ ...panel, padding: '16px', borderColor: m.percent ? m.color + '40' : 'rgba(0,255,65,.08)', opacity: m.percent ? 1 : 0.78 }}>
+          <div key={m.id} style={{ ...panel, padding: '16px', borderColor: m.percent ? m.color + '40' : 'rgba(232,243,246,.07)', opacity: m.percent ? 1 : 0.78 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <Ring pct={m.percent} color={m.color} size={50} />
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontFamily: mono, fontSize: '.56rem', letterSpacing: '.22em', color: m.color }}>MOD-{m.code}{m.labCompleted ? ' · ✓ LAB' : ''}</div>
-                <div style={{ fontFamily: sans, fontSize: '.88rem', color: '#d8f0d8', marginTop: '2px', lineHeight: 1.3 }}>{m.title}</div>
+                <div style={{ fontFamily: sans, fontSize: '.88rem', color: '#e8f3f6', marginTop: '2px', lineHeight: 1.3 }}>{m.title}</div>
               </div>
             </div>
-            <div style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '8px', fontFamily: mono, fontSize: '.6rem', color: '#5f8f6f' }}>
-              <div>CHAPTERS<div style={{ height: '3px', background: '#0c2a12', marginTop: '4px' }}><div style={{ height: '100%', width: (m.chaptersTotal ? (m.chaptersRead / m.chaptersTotal) * 100 : 0) + '%', background: m.color }} /></div><span style={{ color: '#9fcfaf' }}>{m.chaptersRead}/{m.chaptersTotal}</span></div>
-              <div>LAB<div style={{ height: '3px', background: '#0c2a12', marginTop: '4px' }}><div style={{ height: '100%', width: (m.labCompleted ? 100 : m.labTotal ? (m.labSteps / m.labTotal) * 100 : 0) + '%', background: m.color }} /></div><span style={{ color: '#9fcfaf' }}>{m.labCompleted ? 'DONE' : m.labTotal ? m.labSteps + '/' + m.labTotal : '—'}</span></div>
+            <div style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '8px', fontFamily: mono, fontSize: '.6rem', color: '#7d93a0' }}>
+              <div>CHAPTERS<div style={{ height: '3px', background: 'rgba(232,243,246,.08)', marginTop: '4px' }}><div style={{ height: '100%', width: (m.chaptersTotal ? (m.chaptersRead / m.chaptersTotal) * 100 : 0) + '%', background: m.color }} /></div><span style={{ color: '#c9d9df' }}>{m.chaptersRead}/{m.chaptersTotal}</span></div>
+              <div>LAB<div style={{ height: '3px', background: 'rgba(232,243,246,.08)', marginTop: '4px' }}><div style={{ height: '100%', width: (m.labCompleted ? 100 : m.labTotal ? (m.labSteps / m.labTotal) * 100 : 0) + '%', background: m.color }} /></div><span style={{ color: '#c9d9df' }}>{m.labCompleted ? 'DONE' : m.labTotal ? m.labSteps + '/' + m.labTotal : '—'}</span></div>
             </div>
             <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
               <Link href={'/modules/' + m.id} style={{ ...btn(m.color), textDecoration: 'none', flex: 1, textAlign: 'center', padding: '8px' }}>{m.chaptersRead ? 'READ' : 'START'}</Link>
@@ -88,15 +88,15 @@ function ProgressTab({ p }: { p: Operator }) {
       </div>
 
       <div style={panel}>
-        <div style={{ fontFamily: mono, fontSize: '.6rem', letterSpacing: '.26em', color: '#4f9f5f', marginBottom: '12px' }}>// ACTIVITY LOG</div>
+        <div style={{ fontFamily: mono, fontSize: '.6rem', letterSpacing: '.26em', color: '#93a8b4', marginBottom: '12px' }}>// ACTIVITY LOG</div>
         {p.recent.length === 0 ? (
-          <p style={{ fontFamily: sans, color: '#6f9f7f', fontSize: '.88rem', margin: 0 }}>Nothing yet. Open any module and your first chapter will show up here.</p>
+          <p style={{ fontFamily: sans, color: '#7d93a0', fontSize: '.88rem', margin: 0 }}>Nothing yet. Open any module and your first chapter will show up here.</p>
         ) : (
           <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {p.recent.map((a, i) => (
-              <li key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', fontFamily: sans, fontSize: '.85rem', color: '#b8d8b8', borderBottom: '1px solid rgba(0,255,65,.06)', paddingBottom: '7px' }}>
+              <li key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', fontFamily: sans, fontSize: '.85rem', color: '#c9d9df', borderBottom: '1px solid rgba(232,243,246,.06)', paddingBottom: '7px' }}>
                 <span>{activityText(a)}</span>
-                <span style={{ fontFamily: mono, fontSize: '.66rem', color: a.xp ? '#00ff41' : '#3f6f4f', whiteSpace: 'nowrap' }}>{a.xp ? '+' + a.xp + ' XP · ' : ''}{ago(a.created_at)}</span>
+                <span style={{ fontFamily: mono, fontSize: '.66rem', color: a.xp ? '#00ff41' : '#7d93a0', whiteSpace: 'nowrap' }}>{a.xp ? '+' + a.xp + ' XP · ' : ''}{ago(a.created_at)}</span>
               </li>
             ))}
           </ol>
@@ -146,11 +146,11 @@ function ProfileTab({ p, onSaved }: { p: Operator; onSaved: (u: Operator) => voi
         <span style={label}>FOCUS SECTORS</span>
         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
           {CATALOG.map(m => { const on = f.interests.includes(m.id); return (
-            <button key={m.id} onClick={() => setF({ ...f, interests: on ? f.interests.filter(x => x !== m.id) : [...f.interests, m.id] })} style={{ fontFamily: mono, fontSize: '.6rem', padding: '6px 10px', cursor: 'pointer', border: '1px solid ' + (on ? m.color : 'rgba(0,255,65,.14)'), color: on ? m.color : '#5f8f6f', background: on ? m.color + '12' : 'transparent' }}>{m.code} {m.title}</button>
+            <button key={m.id} onClick={() => setF({ ...f, interests: on ? f.interests.filter(x => x !== m.id) : [...f.interests, m.id] })} style={{ fontFamily: mono, fontSize: '.6rem', padding: '6px 10px', cursor: 'pointer', border: '1px solid ' + (on ? m.color : 'rgba(232,243,246,.08)'), color: on ? m.color : '#7d93a0', background: on ? m.color + '12' : 'transparent' }}>{m.code} {m.title}</button>
           ) })}
         </div>
       </div>
-      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontFamily: sans, fontSize: '.88rem', color: '#9fcfaf', cursor: 'pointer' }}>
+      <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontFamily: sans, fontSize: '.88rem', color: '#c9d9df', cursor: 'pointer' }}>
         <input type="checkbox" checked={f.is_public} onChange={e => setF({ ...f, is_public: e.target.checked })} /> Show me on the public leaderboard
       </label>
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
@@ -214,12 +214,12 @@ function SecurityTab({ p, refresh }: { p: Operator; refresh: () => void }) {
 
   return (
     <div id="security" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {msg && <div role="status" style={{ borderLeft: '3px solid ' + (msg.ok ? '#00ff41' : '#ff4136'), padding: '10px 12px', background: msg.ok ? 'rgba(0,255,65,.06)' : 'rgba(255,65,54,.07)', fontFamily: sans, fontSize: '.88rem', color: msg.ok ? '#9fffaf' : '#ffb0a8' }}>{msg.t}</div>}
+      {msg && <div role="status" style={{ borderLeft: '3px solid ' + (msg.ok ? '#00ff41' : '#ff4136'), padding: '10px 12px', background: msg.ok ? 'rgba(232,243,246,.06)' : 'rgba(255,65,54,.07)', fontFamily: sans, fontSize: '.88rem', color: msg.ok ? '#9fffaf' : '#ffb0a8' }}>{msg.t}</div>}
 
       <div style={panel}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
           <div>
-            <div style={{ fontFamily: mono, fontSize: '.6rem', letterSpacing: '.26em', color: '#4f9f5f' }}>// TWO-FACTOR AUTHENTICATION</div>
+            <div style={{ fontFamily: mono, fontSize: '.6rem', letterSpacing: '.26em', color: '#93a8b4' }}>// TWO-FACTOR AUTHENTICATION</div>
             <div style={{ fontFamily: mono, fontSize: '.95rem', color: p.two_factor ? '#00ff41' : '#ffb347', marginTop: '6px' }}>{p.two_factor ? '● ACTIVE' : '○ NOT SET UP'}</div>
             <p style={{ fontFamily: sans, fontSize: '.85rem', color: '#7faf8f', margin: '6px 0 0', maxWidth: '520px', lineHeight: 1.55 }}>Adds a 6-digit code from an authenticator app (Google Authenticator, Authy, 1Password) every time you sign in.</p>
           </div>
@@ -232,7 +232,7 @@ function SecurityTab({ p, refresh }: { p: Operator; refresh: () => void }) {
             <style>{`@media (max-width: 620px) { .sec-grid { grid-template-columns: minmax(0, 1fr) !important; justify-items: center } }`}</style>
             <div style={{ background: '#e9ffe9', padding: '8px', lineHeight: 0, maxWidth: '220px' }} dangerouslySetInnerHTML={{ __html: setup.qr.replace('<svg ', '<svg style="width:100%;height:auto" ') }} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
-              <p style={{ fontFamily: sans, fontSize: '.88rem', color: '#9fcfaf', margin: 0, lineHeight: 1.55 }}>1. Scan the code with your authenticator app (or type the key below).<br />2. Enter the 6-digit code it shows.</p>
+              <p style={{ fontFamily: sans, fontSize: '.88rem', color: '#c9d9df', margin: 0, lineHeight: 1.55 }}>1. Scan the code with your authenticator app (or type the key below).<br />2. Enter the 6-digit code it shows.</p>
               <code style={{ fontFamily: mono, fontSize: '.8rem', color: '#00d4ff', background: 'rgba(0,212,255,.06)', padding: '8px 10px', wordBreak: 'break-all' }}>{setup.secret}</code>
               <OtpInput value={code} onChange={setCode} onComplete={enable} disabled={busy} accent="#00d4ff" />
               <div style={{ display: 'flex', gap: '10px' }}>
@@ -267,15 +267,15 @@ function SecurityTab({ p, refresh }: { p: Operator; refresh: () => void }) {
 
       <div style={panel}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '10px', flexWrap: 'wrap' }}>
-          <div style={{ fontFamily: mono, fontSize: '.6rem', letterSpacing: '.26em', color: '#4f9f5f' }}>// ACTIVE SESSIONS</div>
+          <div style={{ fontFamily: mono, fontSize: '.6rem', letterSpacing: '.26em', color: '#93a8b4' }}>// ACTIVE SESSIONS</div>
           {sessions.length > 1 && <button style={btn('#ff4136')} onClick={() => revoke()}>SIGN OUT ALL OTHERS</button>}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {sessions.map(s => (
             <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', padding: '10px 12px', border: '1px solid ' + (s.current ? 'rgba(0,255,65,.35)' : 'rgba(0,255,65,.1)') }}>
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontFamily: mono, fontSize: '.8rem', color: '#d8f0d8' }}>{s.device_label}{s.current && <span style={{ color: '#00ff41', fontSize: '.6rem', marginLeft: '8px' }}>● THIS DEVICE</span>}</div>
-                <div style={{ fontFamily: sans, fontSize: '.78rem', color: '#6f9f7f', marginTop: '3px' }}>{s.location} · {s.ip} · active {ago(s.last_seen_at)}</div>
+                <div style={{ fontFamily: mono, fontSize: '.8rem', color: '#e8f3f6' }}>{s.device_label}{s.current && <span style={{ color: '#00ff41', fontSize: '.6rem', marginLeft: '8px' }}>● THIS DEVICE</span>}</div>
+                <div style={{ fontFamily: sans, fontSize: '.78rem', color: '#7d93a0', marginTop: '3px' }}>{s.location} · {s.ip} · active {ago(s.last_seen_at)}</div>
               </div>
               {!s.current && <button style={btn('#ff4136')} onClick={() => revoke(s.id)}>SIGN OUT</button>}
             </div>
@@ -284,16 +284,16 @@ function SecurityTab({ p, refresh }: { p: Operator; refresh: () => void }) {
       </div>
 
       <div style={panel}>
-        <div style={{ fontFamily: mono, fontSize: '.6rem', letterSpacing: '.26em', color: '#4f9f5f', marginBottom: '12px' }}>// SECURITY EVENTS</div>
+        <div style={{ fontFamily: mono, fontSize: '.6rem', letterSpacing: '.26em', color: '#93a8b4', marginBottom: '12px' }}>// SECURITY EVENTS</div>
         <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '7px' }}>
           {events.map((e, i) => (
-            <li key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', fontFamily: sans, fontSize: '.84rem', color: /fail|wrong/i.test(EVENT_TEXT[e.type] || '') ? '#ffb0a8' : '#b8d8b8' }}>
+            <li key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', fontFamily: sans, fontSize: '.84rem', color: /fail|wrong/i.test(EVENT_TEXT[e.type] || '') ? '#ffb0a8' : '#c9d9df' }}>
               <span>{EVENT_TEXT[e.type] || e.type}<span style={{ color: '#4f7f5f' }}> · {e.location}</span></span>
-              <span style={{ fontFamily: mono, fontSize: '.64rem', color: '#3f6f4f', whiteSpace: 'nowrap' }}>{ago(e.created_at)}</span>
+              <span style={{ fontFamily: mono, fontSize: '.64rem', color: '#7d93a0', whiteSpace: 'nowrap' }}>{ago(e.created_at)}</span>
             </li>
           ))}
         </ol>
-        <p style={{ fontFamily: sans, fontSize: '.8rem', color: '#5f8f6f', margin: '14px 0 0' }}>Need to change your password? <a href="/auth?mode=forgot" style={{ color: '#00d4ff' }}>Reset it with an email code</a>; every session is signed out afterwards.</p>
+        <p style={{ fontFamily: sans, fontSize: '.8rem', color: '#7d93a0', margin: '14px 0 0' }}>Need to change your password? <a href="/auth?mode=forgot" style={{ color: '#00d4ff' }}>Reset it with an email code</a>; every session is signed out afterwards.</p>
       </div>
 
       <div style={{ ...panel, borderColor: 'rgba(255,65,54,.25)' }}>
@@ -322,7 +322,7 @@ export default function ProfilePage() {
   useEffect(() => { if (!loading && !profile) window.location.href = '/auth?mode=login&from=/profile' }, [loading, profile])
 
   if (!profile) {
-    return <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: mono, fontSize: '.7rem', letterSpacing: '.3em', color: '#2f7f4f' }}>DECRYPTING OPERATOR FILE…</div>
+    return <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: mono, fontSize: '.7rem', letterSpacing: '.3em', color: '#7d93a0' }}>DECRYPTING OPERATOR FILE…</div>
   }
 
   const p = profile
@@ -339,31 +339,31 @@ export default function ProfilePage() {
           <OperatorAvatar seed={p.avatar_seed || p.username} color={p.avatar_color || rankColor} size={104} />
           <div style={{ flex: '1 1 260px', minWidth: 0 }}>
             <div style={{ fontFamily: mono, fontSize: '.58rem', letterSpacing: '.3em', color: rankColor }}>OPERATOR FILE · {p.ghost_rank.toUpperCase()}{p.role !== 'student' ? ' · ' + p.role.toUpperCase().replace('_', ' ') : ''}</div>
-            <h1 style={{ fontFamily: mono, fontSize: 'clamp(1.3rem, 5vw, 1.9rem)', color: '#f0fff0', margin: '6px 0 2px', letterSpacing: '.06em' }}>{p.display_name}</h1>
-            <div style={{ fontFamily: mono, fontSize: '.74rem', color: '#5f9f6f' }}>@{p.username}{p.country ? ' · ' + p.country : ''} · enlisted {new Date(p.created_at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</div>
-            {p.goal && <div style={{ fontFamily: sans, fontSize: '.85rem', color: '#9fcfaf', marginTop: '8px' }}>◆ {p.goal}</div>}
+            <h1 style={{ fontFamily: mono, fontSize: 'clamp(1.3rem, 5vw, 1.9rem)', color: '#e8f3f6', margin: '6px 0 2px', letterSpacing: '.06em' }}>{p.display_name}</h1>
+            <div style={{ fontFamily: mono, fontSize: '.74rem', color: '#7d93a0' }}>@{p.username}{p.country ? ' · ' + p.country : ''} · enlisted {new Date(p.created_at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}</div>
+            {p.goal && <div style={{ fontFamily: sans, fontSize: '.85rem', color: '#c9d9df', marginTop: '8px' }}>◆ {p.goal}</div>}
             <div style={{ marginTop: '14px', maxWidth: '460px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: mono, fontSize: '.6rem', color: '#5f8f6f', marginBottom: '5px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: mono, fontSize: '.6rem', color: '#7d93a0', marginBottom: '5px' }}>
                 <span style={{ color: rankColor }}>{p.xp.toLocaleString()} XP</span>
                 <span>{p.next_rank ? (p.next_rank.minXp - p.xp).toLocaleString() + ' XP TO ' + p.next_rank.title.toUpperCase() : 'MAX RANK'}</span>
               </div>
-              <div style={{ height: '6px', background: '#0c2a12' }}><div style={{ height: '100%', width: Math.max(2, toNext) + '%', background: 'linear-gradient(90deg, ' + rankColor + ', ' + (p.next_rank?.color || rankColor) + ')', boxShadow: '0 0 10px ' + rankColor, transition: 'width .8s ease' }} /></div>
+              <div style={{ height: '6px', background: 'rgba(232,243,246,.08)' }}><div style={{ height: '100%', width: Math.max(2, toNext) + '%', background: 'linear-gradient(90deg, ' + rankColor + ', ' + (p.next_rank?.color || rankColor) + ')', boxShadow: '0 0 10px ' + rankColor, transition: 'width .8s ease' }} /></div>
             </div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px', flex: '1 1 240px' }}>
-            {[['OVERALL', p.overall_percent + '%', '#00ff41'], ['STREAK', p.streak_days + 'd', '#ffb347'], ['LABS', p.labs_completed + '/13', '#00d4ff'], ['CHAPTERS', String(p.chapters_read), '#bf5fff']].map(([k, v, c]) => (
+            {[['OVERALL', p.overall_percent + '%', '#00ff41'], ['STREAK', p.streak_days + 'd', '#ffb347'], ['LABS', p.labs_completed + '/' + p.modules.length, '#00d4ff'], ['CHAPTERS', String(p.chapters_read), '#bf5fff']].map(([k, v, c]) => (
               <div key={k} style={{ border: '1px solid ' + c + '30', padding: '10px 12px', background: c + '08' }}>
                 <div style={{ fontFamily: mono, fontSize: '1.15rem', color: c, fontWeight: 700 }}>{v}</div>
-                <div style={{ fontFamily: mono, fontSize: '.54rem', letterSpacing: '.22em', color: '#5f8f6f', marginTop: '3px' }}>{k}</div>
+                <div style={{ fontFamily: mono, fontSize: '.54rem', letterSpacing: '.22em', color: '#7d93a0', marginTop: '3px' }}>{k}</div>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      <div role="tablist" style={{ display: 'flex', gap: '4px', borderBottom: '1px solid rgba(0,255,65,.12)' }}>
+      <div role="tablist" style={{ display: 'flex', gap: '4px', borderBottom: '1px solid rgba(232,243,246,.1)' }}>
         {(['progress', 'profile', 'security'] as Tab[]).map(t => (
-          <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)} style={{ fontFamily: mono, fontSize: '.66rem', letterSpacing: '.24em', padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', color: tab === t ? '#00ff41' : '#3f7f4f', borderBottom: '2px solid ' + (tab === t ? '#00ff41' : 'transparent') }}>
+          <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)} style={{ fontFamily: mono, fontSize: '.66rem', letterSpacing: '.24em', padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', color: tab === t ? '#e8f3f6' : '#7d93a0', borderBottom: '2px solid ' + (tab === t ? '#00d4ff' : 'transparent') }}>
             {t === 'progress' ? 'PROGRESS' : t === 'profile' ? 'PROFILE' : 'SECURITY' + (p.two_factor ? '' : ' ⚠')}
           </button>
         ))}

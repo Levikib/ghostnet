@@ -4,14 +4,14 @@ import { C, Decode, Frame, Typed, mono, sans } from '../components/hack/Hack'
 
 /** Mission briefing: what GHOSTNET is and how getting in works, typed out as a dossier. */
 
-const INTRO = 'GHOSTNET is a training ground for hackers who play defence. 13 modules, from Tor and OSINT to Active Directory, cloud and red team operations. Each module has chapters to read and a guided lab where you run the attack yourself.'
+const INTRO = 'GHOSTNET is a training ground for hackers who play defence. 20 modules, from Linux and scripting foundations through OSINT, web, cloud and red team to blue-team defence, forensics and AI security. Each module has chapters to read and a guided lab where you run it yourself.'
 
 const OBJECTIVES = [
   { code: '01', title: 'BREACH', color: C.red, text: 'Hack the gateway on the next screen. Hold to push your signal through five layers of defence.' },
   { code: '02', title: 'ENLIST', color: C.cyan, text: 'Choose a callsign, link an inbox and forge a password. We email you a 6-digit code to prove the inbox is yours.' },
   { code: '03', title: 'CONFIGURE', color: C.amber, text: 'Build your operator profile: sigil, skill level, and the sectors you want to break into first.' },
   { code: '04', title: 'TRAIN', color: C.green, text: 'Every chapter you read and every lab step you clear is saved. Each module shows its own progress, and you resume exactly where you stopped, on any device.' },
-  { code: '05', title: 'RANK UP', color: '#bf5fff', text: 'Labs pay XP: 5,450 in total. Climb from Ghost to Specter, Phantom, Wraith and Legend.' },
+  { code: '05', title: 'RANK UP', color: '#bf5fff', text: 'Labs pay XP: 8,010 in total. Climb from Ghost to Specter, Phantom, Wraith and Legend.' },
 ]
 
 export default function Briefing({ onDone, onSkip, instant }: { onDone: () => void; onSkip: () => void; instant?: boolean }) {

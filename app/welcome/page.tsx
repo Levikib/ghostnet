@@ -115,7 +115,7 @@ export default function WelcomePage() {
               <Typed text="LEARN HOW SYSTEMS BREAK. THEN LEARN TO DEFEND THEM." speed={24} delay={reduced ? 0 : 900} instant={reduced} onDone={() => setTitleReady(true)} />
             </p>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap', margin: '6px 0 30px', opacity: titleReady ? 1 : 0, transition: 'opacity .5s' }}>
-              {['13 MODULES', '13 LABS', '5,450 XP', '5 RANKS'].map(t => <span key={t} className="hx-tag" style={{ color: C.dim }}>{t}</span>)}
+              {['20 MODULES', '20 LABS', '8,010 XP', '5 RANKS'].map(t => <span key={t} className="hx-tag" style={{ color: C.dim }}>{t}</span>)}
             </div>
             <div style={{ minHeight: '110px' }}>
               {titleReady && (

@@ -156,6 +156,70 @@ const STATEMENTS = [
 
   // ── Later additions (keep idempotent) ─────────────────────────
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_last_step bigint`,
+
+  // ── Placement test & learning paths ───────────────────────────
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS placement_done boolean NOT NULL DEFAULT false`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS placement_results jsonb`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS placement_at timestamptz`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS chosen_path text`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS chosen_path_at timestamptz`,
+
+  // ── Spaced-repetition review (FSRS flashcards) ────────────────
+  `CREATE TABLE IF NOT EXISTS recall_cards (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    module_id text NOT NULL,
+    kind text NOT NULL DEFAULT 'mcq',
+    source text NOT NULL DEFAULT 'bank',
+    source_ref text,
+    prompt text NOT NULL,
+    code text,
+    answer text NOT NULL,
+    options jsonb NOT NULL DEFAULT '[]'::jsonb,
+    explain text NOT NULL DEFAULT '',
+    difficulty_seed int NOT NULL DEFAULT 5,
+    status text NOT NULL DEFAULT 'approved',
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS recall_cards_mod ON recall_cards (module_id, status)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS recall_cards_srcref ON recall_cards (source, source_ref)`,
+  `CREATE TABLE IF NOT EXISTS recall_state (
+    user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    card_id uuid NOT NULL REFERENCES recall_cards(id) ON DELETE CASCADE,
+    stability double precision NOT NULL DEFAULT 0,
+    difficulty double precision NOT NULL DEFAULT 5,
+    reps int NOT NULL DEFAULT 0,
+    lapses int NOT NULL DEFAULT 0,
+    state text NOT NULL DEFAULT 'new',
+    last_review timestamptz,
+    due_at timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (user_id, card_id)
+  )`,
+  `CREATE INDEX IF NOT EXISTS recall_state_due ON recall_state (user_id, due_at)`,
+  `CREATE TABLE IF NOT EXISTS recall_log (
+    id bigserial PRIMARY KEY,
+    user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    card_id uuid NOT NULL REFERENCES recall_cards(id) ON DELETE CASCADE,
+    grade smallint NOT NULL,
+    elapsed_days double precision NOT NULL DEFAULT 0,
+    stability_after double precision NOT NULL,
+    difficulty_after double precision NOT NULL,
+    interval_days int NOT NULL,
+    reviewed_at timestamptz NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS recall_log_user ON recall_log (user_id, reviewed_at DESC)`,
+  `CREATE TABLE IF NOT EXISTS recall_module_stat (
+    user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    module_id text NOT NULL,
+    mastered int NOT NULL DEFAULT 0,
+    strength int NOT NULL DEFAULT 0,
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (user_id, module_id)
+  )`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS desired_retention double precision NOT NULL DEFAULT 0.90`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS review_streak_days int NOT NULL DEFAULT 0`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS last_review_date date`,
+  `ALTER TABLE users ADD COLUMN IF NOT EXISTS daily_review_cap int NOT NULL DEFAULT 30`,
 ]
 
 let ready: Promise<void> | null = null

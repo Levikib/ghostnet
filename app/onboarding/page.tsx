@@ -81,7 +81,7 @@ function Inner() {
     { t: '[+] profile sealed: ' + (displayName || profile.username).toLowerCase() + ' · rank ghost · 0 xp', c: C.green, pause: 300 },
     { t: '', kind: 'blank', pause: 120 },
     { t: 'HOW THIS WORKS', c: C.cyan, pause: 200 },
-    { t: '  13 modules. each = chapters to read + a guided lab', c: C.white, pause: 380 },
+    { t: '  20 modules. each = chapters to read + a guided lab', c: C.white, pause: 380 },
     { t: '  every chapter you open: +' + CHAPTER_XP + ' xp, saved instantly', c: C.white, pause: 380 },
     { t: '  every lab step you clear: saved, resume on any device', c: C.white, pause: 380 },
     { t: '  module progress = 60% chapters + 40% lab', c: C.white, pause: 380 },

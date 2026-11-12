@@ -9,11 +9,11 @@ export const metadata: Metadata = {
 
 // Plain answers for search and answer engines (also summarised in /llms.txt).
 const FAQ = [
-  { q: 'What is GHOSTNET?', a: 'GHOSTNET is a hands-on cybersecurity training platform with 13 modules, from OSINT, Tor and cryptography to Active Directory, cloud security and red team operations. Each module has concept chapters and a guided lab.' },
+  { q: 'What is GHOSTNET?', a: 'GHOSTNET is a hands-on cybersecurity training platform with 20 modules, from Linux and scripting foundations through OSINT, web, cloud and red team to blue-team defence, digital forensics and AI security. Each module has concept chapters and a guided lab.' },
   { q: 'Do I need an account to learn on GHOSTNET?', a: 'No. All 13 module concept pages can be read without an account. The guided labs, XP tracking and research tools need a free account.' },
   { q: 'Who is GHOSTNET for?', a: 'Beginners through advanced security researchers. Concepts are explained in plain language first, then practised in the labs.' },
   { q: 'What topics does GHOSTNET cover?', a: MODULES.map(m => m.title).join(', ') + '.' },
-  { q: 'How does the rank system work?', a: 'Completing labs earns XP. There are 5,450 XP across the 13 labs and five ranks: Ghost, Specter, Phantom, Wraith and Legend.' },
+  { q: 'How does the rank system work?', a: 'Completing labs earns XP. There are over 8,000 XP across the 20 labs and five ranks: Ghost, Specter, Phantom, Wraith and Legend.' },
   { q: 'Is the content legal to practise?', a: 'GHOSTNET is for education and authorised testing only. Only practise techniques on systems you own or have written permission to test.' },
 ]
 
