@@ -4,7 +4,7 @@ import { fetchServerProgress, syncChapter } from '../../lib/client/progress'
 import { openGhost, setGhostContext } from '../../lib/client/ghostContext'
 import { GxStyles, T, accentText } from './gx/Gx'
 
-const READ_SIZES = { S: 16, M: 17, L: 19, XL: 21 } as const
+const READ_SIZES = { S: 15, M: 16, L: 18, XL: 20 } as const
 type ReadSize = keyof typeof READ_SIZES
 
 const mono = 'JetBrains Mono, monospace'
@@ -251,8 +251,8 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
 
       <style>{`
         .cx { color: var(--tx); }
-        .cx-resume { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 16px 20px; margin-bottom: 20px; }
-        .cx-strip { position: sticky; top: 60px; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 10px 12px; margin: 0 0 24px; border-radius: 16px;
+        .cx-resume { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; padding: 12px 16px; margin-bottom: 14px; }
+        .cx-strip { position: sticky; top: 60px; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 8px 11px; margin: 0 0 16px; border-radius: 12px;
           background: rgba(10,18,24,.88); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(232,243,246,.06); }
         .cx-dots { display: flex; gap: 6px; flex-wrap: wrap; }
         .cx-dot { min-width: 38px; height: 34px; padding: 0 8px; border-radius: 10px; border: 0; cursor: pointer; font: 700 12px/1 var(--mono); color: var(--tx-dim-hi); background: var(--clay-face); box-shadow: var(--e-clay); transition: transform .15s, color .15s; }
@@ -264,8 +264,8 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
         .cx-size { display: flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--s1); box-shadow: var(--e-well); }
         .cx-size button { font: 700 11px/1 var(--mono); color: var(--tx-dim); background: none; border: 0; padding: 6px 8px; border-radius: 8px; cursor: pointer; }
         .cx-size button[aria-pressed="true"] { color: var(--tx); background: var(--s3); }
-        .cx-head { padding: clamp(20px, 4vw, 30px); margin-bottom: 32px; }
-        .cx-title { font-family: var(--sans); font-weight: 650; font-size: clamp(26px, 4vw, 36px); letter-spacing: -.015em; line-height: 1.2; color: var(--tx); margin: 16px 0 0; }
+        .cx-head { padding: clamp(16px, 3vw, 24px); margin-bottom: 22px; }
+        .cx-title { font-family: var(--sans); font-weight: 650; font-size: clamp(22px, 3.4vw, 30px); letter-spacing: -.015em; line-height: 1.2; color: var(--tx); margin: 12px 0 0; }
 
         /* Reading column: one readable style for every chapter's content */
         .cx-body { max-width: 76ch; }
@@ -275,9 +275,9 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
         .cx-body strong, .cx-body b { color: var(--tx) !important; }
         .cx-body a { color: var(--cyan) !important; }
         .cx-body h3, .cx-body h4 { font-family: var(--sans) !important; font-weight: 650 !important; color: var(--tx) !important; letter-spacing: -.01em; line-height: 1.3 !important; text-shadow: none !important; }
-        .cx-body h3 { font-size: calc(var(--read) * 1.35) !important; margin: 2.2em 0 .7em !important; padding-left: 14px; border-left: 3px solid var(--accent); }
+        .cx-body h3 { font-size: calc(var(--read) * 1.26) !important; margin: 1.7em 0 .6em !important; padding-left: 12px; border-left: 3px solid var(--accent); }
         .cx-body h4 { font-size: calc(var(--read) * 1.1) !important; margin: 1.6em 0 .5em !important; }
-        .cx-body pre { position: relative; font-size: 14px !important; line-height: 1.65 !important; background: #071017 !important; border: 1px solid rgba(232,243,246,.08) !important; border-radius: 0 !important; color: #d6f5e0 !important; padding: 18px 18px 18px 18px !important; max-width: 100%; }
+        .cx-body pre { position: relative; font-size: 13px !important; line-height: 1.6 !important; background: #071017 !important; border: 1px solid rgba(232,243,246,.08) !important; border-radius: 0 !important; color: #d6f5e0 !important; padding: 14px !important; max-width: 100%; }
         .cx-body code { font-family: var(--mono); }
         .cx-body table { font-family: var(--sans); font-size: calc(var(--read) * .88) !important; border-collapse: collapse; width: 100%; }
         .cx-body th { color: var(--tx) !important; font-weight: 600 !important; text-align: left; }
@@ -288,15 +288,15 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
         .cx-copy:hover { color: var(--tx); border-color: var(--cyan); }
         .cx-copy[data-done="true"] { color: var(--green); border-color: var(--green); }
 
-        .cx-take { padding: 22px 24px; margin-top: 40px; }
-        .cx-take ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-        .cx-take li { position: relative; padding-left: 22px; font-family: var(--sans); font-size: 15.5px; line-height: 1.6; color: var(--tx-body); }
+        .cx-take { padding: 16px 20px; margin-top: 28px; }
+        .cx-take ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+        .cx-take li { position: relative; padding-left: 20px; font-family: var(--sans); font-size: 14px; line-height: 1.55; color: var(--tx-body); }
         .cx-take li::before { content: ''; position: absolute; left: 0; top: .6em; width: 8px; height: 8px; border-radius: 2px; background: var(--accent); transform: rotate(45deg); }
         .cx-read-status { margin-top: 18px; padding-top: 14px; border-top: 1px dashed rgba(232,243,246,.1); font: 600 11.5px/1.4 var(--mono); letter-spacing: .08em; color: var(--tx-dim-hi); }
         .cx-read-status[data-done="true"] { color: var(--green); }
         .cx-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
-        .cx-pn { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin-top: 40px; }
-        .cx-pn-btn { display: flex; flex-direction: column; gap: 6px; padding: 16px 18px; border: 0; color: inherit; font: inherit; text-align: left; border-radius: 16px; }
+        .cx-pn { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-top: 28px; }
+        .cx-pn-btn { display: flex; flex-direction: column; gap: 5px; padding: 13px 15px; border: 0; color: inherit; font: inherit; text-align: left; border-radius: 12px; }
         .cx-pn-btn:disabled { opacity: .45; cursor: default; transform: none !important; }
         .cx-pn-label { font: 700 11px/1 var(--mono); letter-spacing: .18em; color: var(--acc); }
         .cx-pn-title { font-family: var(--sans); font-size: 15px; font-weight: 600; color: var(--tx); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
