@@ -106,6 +106,7 @@ function Nav({ onMobileMenuChange }: { onMobileMenuChange: (open: boolean) => vo
               </div>
             )}
           </div>
+          <Link href="/paths" className="gn-link" aria-current={path === '/paths' ? 'page' : undefined}>Paths</Link>
           <Link href="/leaderboard" className="gn-link" aria-current={path === '/leaderboard' ? 'page' : undefined}>Leaderboard</Link>
 
           {activeModule && (
@@ -144,6 +145,8 @@ function Nav({ onMobileMenuChange }: { onMobileMenuChange: (open: boolean) => vo
             </Link>
           )}
           <Link href="/" className="gn-mobile-link">Command centre</Link>
+          <Link href="/paths" className="gn-mobile-link">Paths</Link>
+          <Link href="/assess" className="gn-mobile-link">Find your level</Link>
           <Link href="/leaderboard" className="gn-mobile-link">Leaderboard</Link>
           <div className="gn-pop-head" style={{ marginTop: '18px' }}>MODULES</div>
           {CATALOG.map(m => (

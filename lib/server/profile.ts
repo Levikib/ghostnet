@@ -32,6 +32,9 @@ export type ProfilePayload = {
   recent: { kind: string; module_id: string | null; ref: string | null; xp: number; created_at: string }[]
   /** UTC dates (YYYY-MM-DD) with any learning activity in the last 28 days. */
   active_days: string[]
+  placement_done: boolean
+  placement_results: Record<string, number> | null
+  chosen_path: string | null
   /** Today's learning, for daily missions. */
   today: { chapters: number; lab_steps: number; labs: number; xp: number }
 }
@@ -41,6 +44,7 @@ type U = {
   bio: string | null; country: string | null; skill_level: string | null; interests: string[] | null; goal: string | null; is_public: boolean
   onboarded_at: string | null; totp_enabled_at: string | null; email_verified_at: string | null; created_at: string; last_login_at: string | null
   xp: number; streak_days: number; last_active_date: string | null
+  placement_done: boolean; placement_results: Record<string, number> | null; chosen_path: string | null
 }
 
 export async function moduleProgressFor(userId: string): Promise<ModuleProgress[]> {
@@ -101,6 +105,9 @@ export async function buildProfile(userId: string): Promise<ProfilePayload | nul
     recent,
     active_days: days.map(r => r.d),
     today: td || { chapters: 0, lab_steps: 0, labs: 0, xp: 0 },
+    placement_done: !!u.placement_done,
+    placement_results: u.placement_results || null,
+    chosen_path: u.chosen_path || null,
   }
 }
 

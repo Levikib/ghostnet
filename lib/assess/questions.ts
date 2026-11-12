@@ -8,7 +8,7 @@ export type Level = 1 | 2 | 3 | 4   // 1 fundamentals, 2 practitioner, 3 advance
 export type Question = { id: string; domain: Domain; level: Level; modules: string[]; q: string; options: string[]; answer: number; why: string; code?: string }
 
 export const DOMAINS: { id: Domain; label: string; blurb: string; modules: string[] }[] = [
-  { id: 'linux', label: 'Linux & Systems', blurb: 'Shell, files and permissions, processes, privilege escalation and container boundaries.', modules: ['foundations', 'scripting', 'offensive', 'red-team'] },
+  { id: 'linux', label: 'Linux & Systems', blurb: 'Shell, files and permissions, processes, privilege escalation and container boundaries.', modules: ['foundations', 'linux', 'scripting', 'offensive', 'red-team'] },
   { id: 'networking', label: 'Networking', blurb: 'TCP/IP, ports, DNS, scanning, Layer 2 attacks, tunnelling and anonymity networks.', modules: ['foundations', 'network-attacks', 'wireless-attacks', 'tor'] },
   { id: 'web', label: 'Web & HTTP', blurb: 'HTTP, sessions and cookies, injection, XSS, request forgery, auth flows and API security.', modules: ['foundations', 'web-attacks', 'mobile-security'] },
   { id: 'windows-ad', label: 'Windows & Active Directory', blurb: 'Windows internals, NTLM and Kerberos, AD enumeration, delegation and domain compromise.', modules: ['foundations', 'active-directory', 'red-team', 'blue-team'] },
