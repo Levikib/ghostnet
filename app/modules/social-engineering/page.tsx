@@ -2,6 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import ModuleCodex, { CodexChapter } from '@/app/components/ModuleCodex'
+import { Local, Watch, Ref } from '@/app/components/learn/Mtaani'
 
 const accent = '#ff6ec7'
 
@@ -78,9 +79,14 @@ const chapters: CodexChapter[] = [
         <P>Social engineering is the art of manipulating people into taking actions they would not normally take. Unlike exploiting software, it targets the human operating the software. It is consistently the number one initial access vector in real-world breaches - because a person can be tricked even when the technology is perfectly secure.</P>
         <Note>Understanding social engineering psychology is both how attackers think and what defenders must teach. The same principles that make SE attacks effective are the ones that security awareness training must address. An attack works because of human wiring - not stupidity. Anyone can be manipulated by a sufficiently well-crafted pretext.</Note>
 
+        <Local>You know the &quot;Umepokea Ksh 9,000&quot; text that lands by mistake, then a panicked caller begs you to send it back before the &quot;agent&quot; notices the error? No phone was hacked there &mdash; your sense of fairness and your urge to help were. Social engineering is exactly this, turned into a craft: it does not break the device, it borrows the trusting, polite wiring in all of us. Learning the levers below is how you feel the tug before your thumb hits send.</Local>
         <H2>Cialdini's 7 Principles of Influence - Weaponised</H2>
         <P>Robert Cialdini identified the core psychological levers of persuasion. Social engineers weaponise each one systematically. Knowing them lets you both construct attacks and recognise when you are being targeted.</P>
 
+        <Watch
+          reads={<>Seven everyday pulls on human behaviour, each turned into a con. You will recognise every one from real life &mdash; the free sample that leaves you feeling you owe a purchase, the &quot;everyone else already did it&quot; nudge, the boss&apos;s voice that makes you skip the usual questions. Read them as a defender: naming the trick is half of resisting it.</>}
+          later={<>Nothing to run &mdash; the lab will have you spot these levers inside real messages.</>}
+        >
         <Pre label="// CIALDINI'S 7 PRINCIPLES - ATTACK APPLICATIONS">{`# 1. RECIPROCITY
 # People feel obligated to return favours
 # Give first: "helpful" document, useful info, a small favour
@@ -129,6 +135,7 @@ const chapters: CodexChapter[] = [
 # "As a fellow engineer, you understand why this needs to happen fast"
 # "We are all on the same team here - help me out"
 # Appeals to in-group identity lower defences dramatically`}</Pre>
+        </Watch>
 
         <H2>Cognitive Biases Exploited</H2>
         <Table
@@ -289,6 +296,7 @@ const chapters: CodexChapter[] = [
       <div>
         <P>Phishing is the most common form of social engineering attack. It uses fake communications - primarily email - that appear to come from trusted sources to steal credentials, deploy malware, or initiate fraudulent transactions. Understanding the full methodology from infrastructure to delivery is essential for both offensive operations and defensive architecture.</P>
 
+        <Local>A text arrives: &quot;Your bank account is blocked &mdash; verify here&quot;, with a link that looks almost like your bank&apos;s real address. You tap it, the page is a perfect copy, and you type your PIN straight into a stranger&apos;s hands. That is phishing: a counterfeit shopfront painted in a trusted name&apos;s colours. All the craft is in the small details that make &quot;almost right&quot; feel &quot;close enough&quot; &mdash; which is exactly what the rest of this chapter takes apart. <Ref>MOD-06 Web Attacks</Ref></Local>
         <H2>Phishing Attack Taxonomy</H2>
         <Table
           headers={['TYPE', 'TARGET', 'CUSTOMISATION', 'SUCCESS RATE']}
@@ -305,6 +313,10 @@ const chapters: CodexChapter[] = [
         <H2>Email Spoofing and SPF/DKIM/DMARC</H2>
         <P>Understanding email authentication is critical - these protocols determine whether a spoofed email is delivered or dropped. The window of opportunity for spoofing depends entirely on how strictly a target organisation has configured these records.</P>
 
+        <Watch
+          reads={<>These three checks &mdash; SPF, DKIM and DMARC &mdash; are how a domain tells the world &quot;only these senders are really us.&quot; The commands simply ask a domain what rules it has published. Where the rules are loose (p=none), an attacker can forge mail from that name; where they are strict (p=reject), they cannot. You are reading a target&apos;s front-door lock, not yet picking it.</>}
+          later={<>You will run these same lookups against real domains in the lab &mdash; for now, just follow what each line is asking.</>}
+        >
         <Pre label="// EMAIL AUTHENTICATION ANALYSIS">{`# Check target's email authentication posture:
 
 # SPF (Sender Policy Framework) - which IPs can send for this domain:
@@ -332,6 +344,7 @@ dig TXT _dmarc.targetcompany.com
 # To spoof FROM targetcompany.com you need p=none or no DMARC
 # Even with p=reject: you can spoof DISPLAY NAME while sending
 # from a legitimate lookalike domain (display name deception)`}</Pre>
+        </Watch>
 
         <H2>Phishing Infrastructure Setup</H2>
         <Pre label="// BUILD PRODUCTION PHISHING INFRASTRUCTURE">{`# Domain selection strategy:
@@ -742,6 +755,7 @@ sessions 1
 
         <Note>Physical penetration testing requires explicit written authorisation specifying which locations may be tested. Always carry a get-out-of-jail letter with a contact number for the client to confirm legitimacy if you are detained. Stop the test immediately if law enforcement is called.</Note>
 
+        <Local>A man in a reflective jacket and a clipboard strolls up to the estate gate: &quot;KPLC, I&apos;m here for the transformer.&quot; The askari, not wanting to seem rude or slow, lifts the boom &mdash; no phone call, no check. He was not overpowered; his politeness was. Tailgating is precisely this: slipping through a guarded door on the back of someone else&apos;s courtesy and someone else&apos;s access, no badge of your own required.</Local>
         <H2>Tailgating vs Piggybacking</H2>
         <Table
           headers={['TECHNIQUE', 'DEFINITION', 'HOW TO EXECUTE']}

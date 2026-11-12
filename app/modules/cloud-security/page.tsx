@@ -2,6 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import ModuleCodex, { CodexChapter } from '../../components/ModuleCodex'
+import { Local, Watch, Ref } from '@/app/components/learn/Mtaani'
 
 const accent = '#ff9500'
 const mono = 'JetBrains Mono, monospace'
@@ -71,6 +72,7 @@ const chapters: CodexChapter[] = [
         <P>Cloud computing has fundamentally changed the security landscape. On-premises networks had a clear perimeter: if you controlled the firewall, you controlled access. Cloud eliminates that perimeter entirely. Data and compute live in shared infrastructure operated by a third party, accessible from anywhere with the right credentials. This makes cloud security both more scalable and more treacherous.</P>
         <Note type="info">Think of cloud security like renting an apartment vs. owning a house. When you own, you control everything - the locks, the wiring, the roof. When you rent, you and the landlord share responsibilities. The lease (shared responsibility model) defines exactly who fixes what. Security breaches happen when tenants assume the landlord handles something they actually own themselves.</Note>
 
+        <Local>A row of shops with no outer fence &mdash; that is the cloud. On an old office network, a wall and a gate kept strangers away from the building. In the cloud there is no wall: your data sits in a huge shared block anyone can walk up to, and the only thing between a thief and your shop is the padlock on your own door &mdash; your login. Lose that key and it does not matter how big the building&apos;s guards are; the intruder is already inside, holding your keys. That is why in the cloud we say identity, not the network, is the real perimeter.</Local>
         <H3>Cloud Service Models and Shared Responsibility</H3>
         <P>The shared responsibility model defines which security controls the cloud provider handles and which the customer must implement. This boundary shifts depending on which service model you use.</P>
         <Table
@@ -87,6 +89,10 @@ const chapters: CodexChapter[] = [
             ['Network controls', 'Customer', 'Shared', 'Provider', 'Provider'],
           ]}
         />
+        <Watch
+          reads={<>A plain map of the four ways to rent computing. The big idea is the last line of each block: the further down you go, from IaaS to SaaS, the more the provider looks after and the less is left for you to secure &mdash; but your data and your logins stay yours to guard in every single one.</>}
+          later={<>Nothing to run here &mdash; just notice who owns what in each model before the lab.</>}
+        >
         <Pre label="// CLOUD SERVICE MODELS AT A GLANCE">{`# IaaS — Infrastructure as a Service
 # AWS EC2, Azure VMs, GCP Compute Engine
 # You get: virtual machines, storage, networking
@@ -110,6 +116,7 @@ const chapters: CodexChapter[] = [
 # You get: ephemeral compute triggered by events
 # You manage: function code, IAM roles, environment variables
 # Attack surface: event injection, dependency confusion, env var secrets, IAM roles`}</Pre>
+        </Watch>
 
         <H3>Major Cloud Providers - Security Feature Comparison</H3>
         <P>AWS holds roughly 31% market share and is the most common target in bug bounties and red team engagements. Azure holds around 25% and dominates enterprise environments deeply tied to Active Directory. GCP holds around 11% and is favoured by data-intensive and developer-heavy organisations.</P>
@@ -260,8 +267,13 @@ const chapters: CodexChapter[] = [
       <div>
         <P>AWS is the most commonly encountered cloud platform in security assessments. Its IAM system is powerful but complex - a complexity that regularly creates exploitable privilege escalation paths. Understanding how AWS credentials work, how IAM policies are evaluated, and where credentials leak is foundational to cloud offensive security.</P>
 
+        <Local>Picture mama mboga who runs three stalls. She decides who may open the till, who may only stack tomatoes, and who locks up at night. AWS IAM is exactly that for the cloud: every person, every server and every script gets only the keys it truly needs. The day she hands every casual worker the master key &quot;to save time&quot; is the day stock quietly vanishes and nobody can say who took it &mdash; which is why &quot;least privilege&quot;, giving the smallest set of keys that still gets the job done, is the whole game.</Local>
         <H3>IAM Fundamentals</H3>
         <P>AWS Identity and Access Management (IAM) controls who can do what to which AWS resource. It has several principal types: Users (humans with long-term credentials), Groups (collections of users sharing policies), Roles (assumed by services/code, temporary credentials), and Service Accounts used via instance profiles.</P>
+        <Watch
+          reads={<>An AWS permission written out as plain text. Read it top to bottom like a sentence: &quot;allow these S3 actions, on this one bucket, but only from this region.&quot; Every line is a door being opened or kept shut &mdash; right now you are reading a key, not cutting one.</>}
+          later={<>You will write and break policies like this in the lab; for now just learn the shape &mdash; Effect, Action, Resource, Condition.</>}
+        >
         <Pre label="// IAM POLICY STRUCTURE">{`{
   "Version": "2012-10-17",
   "Statement": [
@@ -288,6 +300,7 @@ const chapters: CodexChapter[] = [
 # Permission Boundary - maximum permissions an entity can ever have
 # SCP (Service Control Policy) - org-level deny ceiling, cannot be overridden
 # Resource Policy - attached to resource (S3 bucket policy, KMS key policy)`}</Pre>
+        </Watch>
 
         <H3>IAM Policy Evaluation Logic</H3>
         <Pre label="// AWS POLICY EVALUATION ORDER (memorise this)">{`# Step 1: Explicit DENY wins always - no exceptions
@@ -575,6 +588,7 @@ aws s3 sync s3://BUCKET_NAME/ ./loot/ --no-sign-request
       <div>
         <P>Azure security is inseparable from Azure Active Directory (now called Microsoft Entra ID). Unlike AWS where IAM is a separate service, Azure AD IS the identity platform for the entire Microsoft cloud ecosystem. Attacking Azure often means attacking AD - a familiar territory for operators with Active Directory experience, but with new cloud-specific twists.</P>
 
+        <Local>In the Microsoft cloud, one identity unlocks nearly everything &mdash; email, files, Teams, the servers &mdash; much like your Safaricom line is also your M-Pesa, your logins and your airtime, all tied to one number. Wonderfully convenient, until someone pulls a SIM-swap: take over the single identity and they are instantly you, everywhere, with no second gate to slow them down. That is why attacking Azure almost always means going after Azure AD (Entra ID) first. <Ref>MOD-10 Social Engineering</Ref></Local>
         <H3>Azure AD Hierarchy</H3>
         <Pre label="// AZURE STRUCTURE">{`# TENANT
 # A dedicated Azure AD instance (one per organisation)

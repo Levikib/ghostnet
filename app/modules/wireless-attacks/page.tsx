@@ -2,6 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import ModuleCodex, { CodexChapter } from '../../components/ModuleCodex'
+import { Local, Watch, Ref } from '@/app/components/learn/Mtaani'
 
 const accent = '#aaff00'
 const mono = 'JetBrains Mono, monospace'
@@ -70,6 +71,7 @@ const chapters: CodexChapter[] = [
       <div>
         <P>Before attacking wireless networks you must understand how they work at the protocol level. The 802.11 standard family defines how devices communicate over radio frequency. Each generation trades range, speed, and frequency band differently - and each has different security implications for attackers and defenders.</P>
 
+        <Local>WiFi is just radio. Like a local FM station, an access point shouts its signal into the open air, and anyone nearby with the right receiver can tune in and listen &mdash; walls barely slow it down. On the radio that is the whole point; on your network it is the danger. The only thing stopping an eavesdropper from understanding what they catch is encryption, which scrambles the words so that overhearing the broadcast is useless. That single idea is why every attack and defence in this module circles back to the lock, not the signal.</Local>
         <H3>802.11 Standards Comparison</H3>
         <Table
           headers={['Standard', 'WiFi Brand', 'Frequency', 'Max Speed', 'Security Note']}
@@ -97,6 +99,10 @@ const chapters: CodexChapter[] = [
 
         <H3>SSID, BSSID, ESSID</H3>
         <P>These three terms are often confused but have precise meanings in 802.11.</P>
+        <Watch
+          reads={<>Three names that sound alike but mean different things: the SSID is the network name you see and pick (&quot;Naivas_WiFi&quot;), the BSSID is the access point&apos;s hardware address, and the ESSID is several access points sharing one name so you roam between them. The key takeaway is right at the top &mdash; a network name is not a security control; it is trivial to see, and even a &quot;hidden&quot; one is coaxed out in seconds.</>}
+          later={<>Nothing to type yet &mdash; you will read these identifiers live off the air once you start scanning in the lab.</>}
+        >
         <Pre label="// WIRELESS IDENTIFIER CONCEPTS">{`SSID  (Service Set Identifier)
       The human-readable network name (up to 32 bytes)
       Broadcast in beacon frames every ~100ms
@@ -118,6 +124,7 @@ Hidden SSID attack:
       Clients still send probe requests with the SSID embedded
       Passive capture reveals SSID immediately when any client connects
       airodump-ng reveals hidden SSIDs within seconds in most environments`}</Pre>
+        </Watch>
 
         <H3>802.11 Frame Types</H3>
         <P>The 802.11 protocol uses three categories of frames. Understanding them helps you know what to capture and what to inject during attacks.</P>
@@ -263,7 +270,12 @@ kismetdb_to_pcap --in kismet_log.kismet --out capture.pcap`}</Pre>
       <div>
         <P>WPA2 remains the dominant WiFi security protocol. Despite being introduced in 2004, the core attack surface - the 4-way handshake and weak passwords - has not changed. This chapter covers the complete attack chain from setup through cracking.</P>
 
+        <Local>Picture a resident and the estate watchman greeting each other with a secret knock to prove, without ever shouting it aloud, that they both know the day&apos;s password. The WPA2 4-way handshake is that knock. An attacker cannot pull the password from thin air &mdash; but if they briefly kick your phone off the network (a deauth), your device must knock again to reconnect, and a recorder sitting quietly nearby captures that exchange. With the knock in hand they go home and guess the password offline, all night, as many times as they please. That whole story is what the commands below set up.</Local>
         <H3>Step 1: Monitor Mode Setup</H3>
+        <Watch
+          reads={<>Normally your WiFi card only listens for traffic meant for you &mdash; like hearing only your own name called at a crowded stage. &quot;Monitor mode&quot; tells the card to listen to everything in the air instead. These commands clear the programs that fight for the card, then flip it into that listen-to-all mode. It is the very first step of nearly every wireless capture.</>}
+          later={<>You will run these on your own adapter in the lab &mdash; here, just see the shape of the setup and what each line is for.</>}
+        >
         <Pre label="// ENABLE MONITOR MODE">{`# Kill conflicting processes (NetworkManager, wpa_supplicant, dhclient)
 sudo airmon-ng check kill
 
@@ -284,6 +296,7 @@ sudo ip link set wlan0 up
 
 # Check current mode
 iw wlan0 info | grep type`}</Pre>
+        </Watch>
 
         <H3>Step 2: Scanning for Targets</H3>
         <Pre label="// AIRODUMP-NG COMPLETE FLAG REFERENCE">{`# Basic scan - all bands, all channels
@@ -498,6 +511,7 @@ wpa_supplicant -v
       <div>
         <P>WPA3 was designed to address WPA2 weaknesses, particularly offline dictionary attacks against captured handshakes. However, the Dragonblood research revealed multiple implementation vulnerabilities in the SAE (Dragonfly) handshake. This chapter covers WPA3-specific attacks and advanced protocol-level vulnerabilities.</P>
 
+        <Local>A chama that reuses one shared password is only ever as safe as its most talkative member. WPA3 changes the ritual: instead of a fixed secret anyone can record and chip away at later, each connection runs a fresh, one-time exchange tied to both sides, proving each knows the password without ever exposing anything worth keeping. Record the whole conversation and you are left holding nothing &mdash; which is precisely the offline-guessing weakness in WPA2 that WPA3&apos;s handshake was designed to close.</Local>
         <H3>WPA3-SAE Dragonfly Handshake</H3>
         <Pre label="// SAE HANDSHAKE FLOW">{`WPA3-Personal SAE (Simultaneous Authentication of Equals):
 
