@@ -205,13 +205,24 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
         <h2 className="codex-chapter-title cx-title">{ch.title}</h2>
       </header>
 
+      {/* Scannable key points — the quick version, before the deep read */}
+      {ch.takeaways && ch.takeaways.length > 0 && (
+        <section aria-label="Key points at a glance" style={{ background: 'rgba(0,212,255,0.04)', border: '1px solid ' + acc + '2e', borderLeft: '3px solid ' + acc, borderRadius: '10px', padding: '14px 18px', margin: '0 0 22px' }}>
+          <div style={{ fontFamily: T.mono, fontSize: '10.5px', fontWeight: 700, color: acc, letterSpacing: '.2em', marginBottom: '10px' }}>KEY POINTS · THE QUICK VERSION</div>
+          <ul style={{ margin: 0, paddingLeft: '1.1rem', display: 'grid', gap: '7px' }}>
+            {ch.takeaways.map((t, i) => <li key={i} style={{ color: T.body, fontSize: '14px', lineHeight: 1.55 }}>{t}</li>)}
+          </ul>
+          <div style={{ fontFamily: T.sans, fontSize: '12px', color: T.dim, marginTop: '11px' }}>Scan these first, then read below for the depth and examples &mdash; or jump straight to the lab.</div>
+        </section>
+      )}
+
       {/* Content */}
       <div ref={contentRef} className="cx-body">{ch.content}</div>
       <div ref={endRef} aria-hidden="true" style={{ height: 1 }} />
 
       {/* Key takeaways */}
-      <section className="codex-takeaways gx-clay cx-take" aria-label="Key takeaways">
-        <div style={{ fontFamily: T.mono, fontSize: '11px', fontWeight: 700, color: acc, letterSpacing: '.22em', marginBottom: '12px' }}>KEY TAKEAWAYS</div>
+      <section className="codex-takeaways gx-clay cx-take" aria-label="Recap">
+        <div style={{ fontFamily: T.mono, fontSize: '11px', fontWeight: 700, color: acc, letterSpacing: '.22em', marginBottom: '12px' }}>RECAP · CHECK YOURSELF</div>
         <ul>
           {ch.takeaways.map((t, i) => <li key={i}>{t}</li>)}
         </ul>
