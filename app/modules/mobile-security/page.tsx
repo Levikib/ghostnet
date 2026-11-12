@@ -2,6 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import ModuleCodex, { CodexChapter } from '../../components/ModuleCodex'
+import { Local, Watch, Ref } from '@/app/components/learn/Mtaani'
 
 const accent = '#7c4dff'
 const mono = 'JetBrains Mono, monospace'
@@ -71,6 +72,7 @@ const chapters: CodexChapter[] = [
       <div>
         <P>Mobile security is one of the fastest-evolving domains in offensive and defensive security. Two platforms dominate: Android (roughly 72% global market share) and iOS. While both are hardened, both are regularly broken. Understanding their security models is the prerequisite for everything that follows in this module.</P>
 
+        <Local>Think of a market where every trader has their own lockable kibanda. One trader cannot reach over and dip into the next stall&apos;s till, and a customer in one stall never sees another&apos;s stock. Android does this for apps: each one gets its own locked space, its own user ID, walled off by the system, so a game you installed cannot quietly read your banking app&apos;s files. This &quot;sandbox&quot; is the backbone of mobile security &mdash; and most serious phone attacks are, at heart, one app finding a crack to climb into another&apos;s stall.</Local>
         <H3>Android Security Model</H3>
         <P>Android is built on a modified Linux kernel. Its isolation model is deceptively simple: every installed application gets its own Linux user ID (UID). The OS then enforces process isolation at the kernel level - app A literally cannot read app B's files because the filesystem permissions deny access at the UID level. This is called the application sandbox.</P>
         <Table
@@ -100,6 +102,10 @@ const chapters: CodexChapter[] = [
         />
 
         <H3>OWASP Mobile Top 10 (2024)</H3>
+        <Watch
+          reads={<>The ten most common ways mobile apps are broken, as agreed by the OWASP community. Do not try to memorise the list &mdash; just skim it as a map of where things go wrong: secrets left in the app, weak logins, data stored in the clear, sloppy crypto. Each one becomes a hands-on skill later in this module.</>}
+          later={<>Nothing to run &mdash; treat this as the table of contents for everything that follows.</>}
+        >
         <Pre label="// OWASP MOBILE TOP 10 — 2024 EDITION">{`M1  Improper Credential Usage
     Hardcoded credentials, insecure storage, weak key management
     Example: API key in strings.xml or hardcoded in APK assets
@@ -139,6 +145,7 @@ M9  Insecure Data Storage
 M10 Insufficient Cryptography
     Custom crypto, ECB mode, weak keys, reuse of IVs, MD5 for passwords
     Example: AES-ECB used for user data - same plaintext = same ciphertext`}</Pre>
+        </Watch>
 
         <H3>MASTG and MASVS</H3>
         <P>The OWASP Mobile Application Security Testing Guide (MASTG) is the definitive methodology for mobile app security testing. It covers both Android and iOS, structured as test cases mapped to MASVS controls. Think of MASTG as "how to test" and MASVS as "what to test against."</P>
@@ -182,8 +189,13 @@ M10 Insufficient Cryptography
       <div>
         <P>Static analysis means examining an app without running it. For Android, this means extracting and inspecting the APK. You will find architectural weaknesses, hardcoded secrets, dangerous API usage, and misconfigurations without ever needing a device.</P>
 
+        <Local>Buying a &quot;brand-new&quot; phone off a tarp on River Road, you already know the drill: it might be genuine, or a convincing shell with something nasty swapped inside. A sideloaded APK &mdash; an app passed around a WhatsApp group instead of the official store &mdash; is exactly that uncertain parcel. Since you cannot trust the seller, you do the sensible thing: open it up on the bench and inspect every part before trusting it. That careful unpacking is precisely what static analysis is.</Local>
         <H3>APK Structure</H3>
         <P>An APK (Android Package) is simply a ZIP archive with a specific internal structure. Every component is accessible once you unzip it. Understanding what each component is for is essential to knowing where to look for vulnerabilities.</P>
+        <Watch
+          reads={<>An APK is really just a ZIP folder with a known layout. This is a map of what spills out when you unzip one: the manifest that declares permissions, the compiled code (.dex), the resources, and the native libraries. The lines flagged &quot;check for secrets&quot; are where beginners find the quickest wins &mdash; so read this like the floor plan of a building before you walk in.</>}
+          later={<>You will crack open a real APK and poke through these folders in the lab.</>}
+        >
         <Pre label="// APK INTERNAL STRUCTURE">{`APK_NAME.apk (rename to .zip, then unzip)
 |
 |-- AndroidManifest.xml       # Binary-encoded XML: permissions, components, flags
@@ -202,6 +214,7 @@ M10 Insufficient Cryptography
 |-- META-INF/
     |-- MANIFEST.MF           # File hashes
     |-- CERT.RSA / CERT.SF    # App signature`}</Pre>
+        </Watch>
 
         <H3>AndroidManifest.xml Analysis</H3>
         <P>The manifest is the most important file for static analysis. It declares every component, every permission the app requests, and critical security flags. apktool decodes it to human-readable XML.</P>
@@ -408,6 +421,7 @@ curl -F "file=@TARGET.apk" http://localhost:8000/api/v1/upload \
       <div>
         <P>Dynamic analysis means running the app and observing its behaviour at runtime. This lets you bypass compile-time obfuscation, intercept live network traffic, dump memory, hook function calls, and test how the app behaves under adversarial input.</P>
 
+        <Local>When a fundi plugs a diagnostic reader into a matatu&apos;s port, he can suddenly see every fault and even rev the engine from his laptop &mdash; total access through one small socket. ADB with USB debugging switched on is that port for your phone: plug in and you can list files, pull data, install apps and run commands. Hugely useful on your own test device &mdash; and exactly why leaving USB debugging on, then handing your phone to a stranger to &quot;charge&quot;, is such a bad idea.</Local>
         <H3>Android Debug Bridge (ADB) Complete Reference</H3>
         <Pre label="// ADB ESSENTIAL COMMANDS">{`# ---- Device Management ----
 adb devices                          # List connected devices/emulators
