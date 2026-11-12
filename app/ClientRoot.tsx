@@ -7,6 +7,7 @@ import ProgressTracker from './components/ProgressTracker'
 import CheatSheet from './components/CheatSheet'
 import CVEFeed from './components/CVEFeed'
 import RecallPopup from './components/RecallPopup'
+import GhostDrone from './components/GhostDrone'
 import ErrorBoundary from './components/ErrorBoundary'
 import { AuthProvider, useAuth } from './components/AuthProvider'
 import { CATALOG } from '../lib/learning'
@@ -282,6 +283,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
           <ErrorBoundary label="Cheat Sheet"><CheatSheet /></ErrorBoundary>
           <ErrorBoundary label="CVE Feed"><CVEFeed /></ErrorBoundary>
           <ErrorBoundary label="Recall"><RecallPopup /></ErrorBoundary>
+          <ErrorBoundary label="Guide"><GhostDrone /></ErrorBoundary>
         </>
       )}
     </MobileMenuContext.Provider>
