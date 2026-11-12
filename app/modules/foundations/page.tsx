@@ -281,6 +281,14 @@ Uid:    1000    1000    1000    1000
     ],
     content: (
       <div>
+        <Key items={[
+          <>The <strong>shell</strong> (bash, zsh) turns typed commands into kernel actions; the <strong>terminal</strong> is the window it runs in</>,
+          <><strong>Move around:</strong> <C>pwd</C> (where am I), <C>ls</C> (list), <C>cd</C> (change dir). Paths are absolute (<C>/home</C>) or relative (<C>../</C>)</>,
+          <><strong>Read files:</strong> <C>cat</C>, <C>less</C>, <C>head</C>/<C>tail</C>; <strong>search</strong> with <C>grep</C>; <strong>locate</strong> with <C>find</C></>,
+          <><strong>Pipes</strong> (<C>|</C>) chain tools: one command&apos;s output becomes the next&apos;s input &mdash; the Unix superpower</>,
+          <><strong>Redirects</strong> (<C>&gt;</C>, <C>&gt;&gt;</C>) send output to files; big jobs are built from small tools joined together</>,
+        ]} />
+        <Local>Pipes are a jua kali assembly line: each fundi does one small job well and passes the piece to the next. <C>cat log | grep error | wc -l</C> is three fundis &mdash; fetch the log, keep only the errors, count them &mdash; and you just built a tool in one line.</Local>
         <H3>Terminal, Shell and Prompt</H3>
         <P>
           Security work happens at the command line. Servers rarely have a graphical desktop, exploits usually hand you a text shell, and most security tools are command-line programs. Three words get mixed up, so let us separate them. The <strong>terminal</strong> (or terminal emulator) is the window that shows text and takes your keystrokes. The <strong>shell</strong> is the program inside it that interprets what you type; on most Linux systems that is <strong>bash</strong>, while Kali has defaulted to <strong>zsh</strong> since 2020. The <strong>prompt</strong> is the text the shell prints while waiting for you, such as <C>ghost@lab:~$</C>. It tells you the user (ghost), the host (lab), the current directory (~, meaning home) and your privilege level: <C>$</C> for a normal user and <C>#</C> for root.
@@ -447,6 +455,14 @@ $ cat urls.txt | sort -u | tee unique.txt  # tee: write to file and screen`}
     ],
     content: (
       <div>
+        <Key items={[
+          <><strong>Accounts</strong> live in <C>/etc/passwd</C>; password <strong>hashes</strong> in <C>/etc/shadow</C> (root-only to read)</>,
+          <><strong>Permissions</strong> are <C>rwx</C> for owner / group / others. <C>chmod</C> changes them, <C>chown</C> changes the owner</>,
+          <><strong>SUID</strong> bits and sudo rules are prime <strong>privilege-escalation</strong> targets (MOD-04/05)</>,
+          <><strong>Processes:</strong> <C>ps</C>, <C>top</C>, <C>kill</C> &mdash; each has a PID and an owner</>,
+          <><strong>Services</strong> are managed by <C>systemd</C> (<C>systemctl start/status/enable</C>); <strong>logs</strong> live in <C>/var/log</C> and <C>journalctl</C></>,
+        ]} />
+        <Local>Think of <C>systemd</C> as the duka&apos;s night-watchman roster: it decides which services clock in at boot, keeps them running, and restarts any that collapse at 3am. And <C>/var/log</C> is the gate register &mdash; the first place a defender reads to see who came and went, and the first place an attacker tries to erase.</Local>
         <H3>Where Accounts Live</H3>
         <P>
           In Chapter 1 we saw that every process runs as a user and every file has an owner. Now we look at how Linux stores and enforces that. User accounts are listed in <C>/etc/passwd</C>, a plain text file that every user can read. Despite its name, it no longer contains passwords. Each line has seven fields separated by colons: username, a placeholder <C>x</C>, UID, primary GID (group ID), a comment (often the full name), the home directory and the login shell. Accounts with a shell like <C>/usr/sbin/nologin</C> are service accounts that cannot log in interactively.
@@ -636,6 +652,14 @@ $ last -n 5                                    # recent successful logins`}
     ],
     content: (
       <div>
+        <Key items={[
+          <><strong>Layers</strong> (TCP/IP model): each wraps the one above &mdash; link &rarr; IP &rarr; transport &rarr; application</>,
+          <><strong>IP address</strong> identifies a host (IPv4 like <C>192.168.1.10</C>, plus IPv6); private vs public ranges matter</>,
+          <><strong>Subnets + CIDR</strong> (<C>/24</C>) split a network; the <strong>mask</strong> says which part is network vs host</>,
+          <><strong>Routing</strong> moves packets between networks through gateways; your <strong>default gateway</strong> is the way out</>,
+          <><strong>MAC</strong> (layer 2) vs <strong>IP</strong> (layer 3); <strong>ARP</strong> maps IP&rarr;MAC on the local network</>,
+        ]} />
+        <Local>An <strong>IP address</strong> is like a postal address &mdash; &quot;House 12, Juja Road&quot;. A <strong>MAC address</strong> is the specific person who physically lives at that gate. <strong>ARP</strong> is shouting down the street &quot;who actually stays at House 12?&quot; before you hand over the parcel &mdash; which is exactly why ARP can be spoofed (MOD-08): lie about who lives there and the parcels come to you.</Local>
         <H3>Why Networking Is Non-Negotiable</H3>
         <P>
           Almost every attack crosses a network. Scanning, phishing, web exploitation, lateral movement and data exfiltration are all network events, and most defensive tooling (firewalls, intrusion detection, packet capture) lives there too. If you cannot say how a packet gets from your laptop to a server, you will not understand why a scan result looks the way it does, why a firewall rule failed, or how an attacker pivoted through a network. These two networking chapters give you that model.
@@ -799,6 +823,14 @@ Reply arrives at 41.90.12.7:40002  ->  router looks up table  ->  192.168.1.33:6
     ],
     content: (
       <div>
+        <Key items={[
+          <><strong>TCP</strong> = reliable, ordered, connection-based (3-way handshake: SYN &rarr; SYN-ACK &rarr; ACK). Used for web, SSH, email</>,
+          <><strong>UDP</strong> = fast, no guarantees, no handshake. Used for DNS, voice/video, games</>,
+          <><strong>Ports</strong> (0&ndash;65535) pick the service: 80 HTTP, 443 HTTPS, 22 SSH, 53 DNS, 3389 RDP</>,
+          <><strong>DNS</strong> turns names (<C>example.com</C>) into IPs &mdash; the internet&apos;s phonebook</>,
+          <><strong>Tools:</strong> <C>ping</C>, <C>traceroute</C>, <C>ss</C>/<C>netstat</C>, <C>dig</C>/<C>nslookup</C>, and <C>nmap</C> for scanning</>,
+        ]} />
+        <Local>Asking <strong>DNS</strong> to resolve a name is like asking a boda rider for a place by landmark: you say &quot;Naivas, Kilimani&quot; and he instantly knows the exact plot and road. Poison that answer (MOD-08) and the rider cheerfully drops you at the wrong gate &mdash; which is how phishing and man-in-the-middle attacks begin.</Local>
         <H3>The Transport Layer: TCP and UDP</H3>
         <P>
           IP gets a packet to the right machine. But a single machine may run a web server, an SSH server and a database at the same time, and the operating system needs to know which program each packet is for. That is the job of the transport layer, and it offers two main protocols with very different personalities.
@@ -994,6 +1026,14 @@ SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.5`}
     ],
     content: (
       <div>
+        <Key items={[
+          <><strong>HTTP</strong> is request &rarr; response: methods (<C>GET</C>, <C>POST</C>), status codes (200, 404, 500), and headers</>,
+          <>The web is <strong>stateless</strong> &mdash; <strong>cookies</strong> + <strong>sessions</strong> are what remember you between requests</>,
+          <>A <strong>session token</strong> in a cookie is your temporary ID card; stealing it = impersonation (MOD-06)</>,
+          <><strong>TLS</strong> (the <C>s</C> in https) encrypts the channel so nobody on the path can read or tamper</>,
+          <><strong>URL</strong> = <C>scheme://host/path?query</C> &mdash; every part is attacker-relevant</>,
+        ]} />
+        <Local>A <strong>session cookie</strong> is the wristband you get at a concert. After the gate checks your ticket once, the guards only glance at the band every time you re-enter &mdash; not your ID. That is convenient, but it means anyone who slips off your band walks in <em>as you</em>. Session hijacking is exactly that: steal the band, skip the ticket.</Local>
         <H3>Clients, Servers and URLs</H3>
         <P>
           The web is a conversation between <strong>clients</strong> (usually browsers, but also apps, scripts and curl) and <strong>servers</strong>. The client asks for a resource; the server answers. Every resource has a <strong>URL</strong> (Uniform Resource Locator), and every part of a URL is something an attacker may manipulate.
@@ -1163,6 +1203,14 @@ hostname, and signed by a CA it trusts? If not, the browser warns.`}
     ],
     content: (
       <div>
+        <Key items={[
+          <>Most organisations run <strong>Windows + Active Directory</strong> &mdash; the biggest real-world attack surface</>,
+          <>The <strong>Registry</strong> stores config and secrets; the <strong>SAM</strong> hive holds local password hashes</>,
+          <><C>lsass.exe</C> keeps credentials in memory &mdash; the prime target for credential theft (MOD-05)</>,
+          <><strong>PowerShell</strong> is the admin&apos;s &mdash; and the attacker&apos;s &mdash; power tool; logging it is essential</>,
+          <><strong>Administrator</strong> is powerful, but <strong>SYSTEM</strong> sits even higher; UAC is the prompt between you and it</>,
+        ]} />
+        <Local>Active Directory is the estate&apos;s central management office that keeps a copy of every tenant&apos;s key. One receptionist on the front desk is a normal user; the office safe is a Domain Controller. Crack the office and you hold every door on the estate at once &mdash; which is why MOD-05 spends so long there.</Local>
         <H3>Why Windows Matters</H3>
         <P>
           Linux runs most servers and the cloud, but Windows runs most corporate desktops, and Active Directory still underpins identity in the large majority of organisations. Ransomware gangs, red teams and incident responders all spend much of their time on Windows. The concepts from Chapter 1 carry over directly (processes, users, permissions, a kernel boundary), but the names and tools differ. This chapter gives you the vocabulary you will need for MOD-05 (Active Directory), MOD-07 (Malware) and MOD-11 (Red Team). Note that Windows 10 reached end of support in October 2025, so current enterprise estates are moving to Windows 11 and Windows Server 2022/2025; unsupported Windows 10 machines that remain are a growing risk.
@@ -1319,6 +1367,14 @@ PS> Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4625} -MaxEvents 10
     ],
     content: (
       <div>
+        <Key items={[
+          <><strong>CIA triad</strong> &mdash; Confidentiality (secrecy), Integrity (not tampered), Availability (reachable)</>,
+          <><strong>Authentication</strong> (who you are) is not <strong>Authorization</strong> (what you may do) &mdash; attacks abuse both</>,
+          <>Vocabulary: <strong>threat</strong>, <strong>vulnerability</strong>, <strong>risk</strong>, <strong>exploit</strong> &mdash; know the difference</>,
+          <><strong>Defence in depth:</strong> layers, least privilege, fail secure &mdash; no single wall is enough</>,
+          <>The attacker&apos;s and defender&apos;s jobs are mirror images of each other</>,
+        ]} />
+        <Local>The <strong>CIA triad</strong> is just M-Pesa in three words. <strong>Confidentiality:</strong> only you should see your balance. <strong>Integrity:</strong> nobody should be able to quietly change it. <strong>Availability:</strong> you must be able to send money the moment you need to. Break any one &mdash; a leaked balance, an altered figure, a service that is down on payday &mdash; and the whole system has failed you.</Local>
         <H3>What Are We Protecting? The CIA Triad</H3>
         <P>
           Security can feel like a sprawl of tools and acronyms, but almost all of it serves three goals, known as the <strong>CIA triad</strong>. <strong>Confidentiality</strong> means information is seen only by those authorised to see it: a data breach, a sniffed password or a leaked database violates it, and encryption and access control protect it. <strong>Integrity</strong> means information and systems are not altered without authorisation: a tampered bank transfer, a defaced website or a backdoored software update violates it, and hashes, digital signatures and change control protect it. <strong>Availability</strong> means systems and data are accessible when needed: ransomware and denial-of-service attacks violate it, and backups, redundancy and DDoS protection defend it.
@@ -1450,6 +1506,14 @@ C:H / I:H / A:H                      total loss of confidentiality, integrity, a
     ],
     content: (
       <div>
+        <Key items={[
+          <>Build an <strong>isolated lab</strong> (VirtualBox/VMware, or a cloud VM) &mdash; never practise on systems you do not own</>,
+          <><strong>Attacker box:</strong> Kali or Parrot. <strong>Targets:</strong> deliberately vulnerable VMs (Metasploitable, DVWA, VulnHub)</>,
+          <><strong>Snapshots</strong> let you break things and reset in seconds</>,
+          <><strong>The law is the line:</strong> unauthorised access is a crime &mdash; in Kenya, the Computer Misuse and Cybercrimes Act, 2018</>,
+          <><strong>Legal practice ranges:</strong> HackTheBox, TryHackMe, PortSwigger Web Security Academy</>,
+        ]} />
+        <Local>Your lab is your own shamba: dig it, burn it, plant whatever you like &mdash; it is yours. Reaching into someone else&apos;s system without permission is breaking into a neighbour&apos;s plot. Calling it &quot;research&quot; changes nothing; under the Computer Misuse and Cybercrimes Act (2018) it is an offence. The whole skill is doing real things in a place where real is still safe and legal.</Local>
         <H3>Why a Lab Comes First</H3>
         <P>
           Reading about security only gets you so far. You learn by running the commands, breaking things and fixing them. But practising on real systems you do not own is illegal, and experimenting on your main computer risks wrecking it or exposing it to the very malware and vulnerable services you are studying. The answer is a <strong>home lab</strong>: an isolated set of virtual machines where you can attack, defend, crash and rebuild as often as you like. Every professional maintains one, and building yours is the first practical project of your security career.
@@ -1584,6 +1648,14 @@ bandit0@bandit:~$ cat readme
     ],
     content: (
       <div>
+        <Key items={[
+          <><strong>No single path</strong> &mdash; pick a direction (offensive, defensive, or GRC), go deep, then broaden</>,
+          <><strong>Learn by doing:</strong> labs beat videos. Build it, break it, write it down</>,
+          <><strong>Spaced repetition beats cramming</strong> &mdash; use GHOSTNET&apos;s Review system (it schedules recall for you)</>,
+          <><strong>Build a portfolio:</strong> write-ups, a home lab, CTFs &mdash; proof beats certificates alone</>,
+          <><strong>Consistency over intensity</strong> &mdash; small daily reps compound into mastery</>,
+        ]} />
+        <Local>Learning cybersecurity is like learning to drive in Nairobi traffic: no amount of watching clips replaces hours behind the wheel with a patient instructor. The labs are your driving lessons, GHOST is the instructor in the passenger seat, and the Review cards are the Highway Code you keep in your head. Zero to operator is just enough laps of the roundabout.</Local>
         <H3>There Is No Single Path</H3>
         <P>
           &quot;Cybersecurity&quot; is not one job; it is dozens. Some people spend their days hunting for threats in logs, others break into applications for a living, others design cloud architectures, investigate incidents, reverse engineer malware, write policy or teach. The good news is that nearly every path starts from the same foundations you have just covered: operating systems, the command line, networking, the web and core security concepts. The second piece of good news is that the field still has more open roles than qualified people, and employers increasingly hire on demonstrated skill rather than degrees alone.
