@@ -351,7 +351,7 @@ export default function ProfilePage() {
             </div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px', flex: '1 1 240px' }}>
-            {[['OVERALL', p.overall_percent + '%', '#00ff41'], ['STREAK', p.streak_days + 'd', '#ffb347'], ['LABS', p.labs_completed + '/13', '#00d4ff'], ['CHAPTERS', String(p.chapters_read), '#bf5fff']].map(([k, v, c]) => (
+            {[['OVERALL', p.overall_percent + '%', '#00ff41'], ['STREAK', p.streak_days + 'd', '#ffb347'], ['LABS', p.labs_completed + '/' + p.modules.length, '#00d4ff'], ['CHAPTERS', String(p.chapters_read), '#bf5fff']].map(([k, v, c]) => (
               <div key={k} style={{ border: '1px solid ' + c + '30', padding: '10px 12px', background: c + '08' }}>
                 <div style={{ fontFamily: mono, fontSize: '1.15rem', color: c, fontWeight: 700 }}>{v}</div>
                 <div style={{ fontFamily: mono, fontSize: '.54rem', letterSpacing: '.22em', color: '#7d93a0', marginTop: '3px' }}>{k}</div>

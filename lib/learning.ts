@@ -8,6 +8,13 @@ import { MODULES } from './seo'
  */
 
 export const MODULE_COLORS: Record<string, string> = {
+  foundations: '#7fdbff',
+  linux: '#73c991',
+  scripting: '#ffd166',
+  'blue-team': '#4dd0e1',
+  'ai-security': '#82aaff',
+  grc: '#e0af68',
+  forensics: '#5ccfe0',
   tor: '#00ff41',
   osint: '#00d4ff',
   crypto: '#ffb347',
@@ -25,6 +32,13 @@ export const MODULE_COLORS: Record<string, string> = {
 
 /** Canonical XP per lab. Server-side source of truth; client-submitted XP is ignored. */
 export const LAB_XP: Record<string, number> = {
+  'foundations-lab': 300,
+  'linux-lab': 330,
+  'scripting-lab': 360,
+  'blue-team-lab': 450,
+  'ai-security-lab': 400,
+  'grc-lab': 300,
+  'forensics-lab': 420,
   'tor-lab': 345,
   'osint-lab': 305,
   'crypto-lab': 405,
@@ -45,6 +59,8 @@ export const CHAPTER_XP = 5
 
 // Steps in each guided lab (kept in step with each module's lab page).
 export const LAB_STEPS: Record<string, number> = {
+  'foundations-lab': 20, 'linux-lab': 22, 'scripting-lab': 18, 'blue-team-lab': 20,
+  'ai-security-lab': 18, 'grc-lab': 16, 'forensics-lab': 20,
   'tor-lab': 17, 'osint-lab': 16, 'crypto-lab': 20, 'offensive-lab': 20, 'active-directory-lab': 22, 'web-attacks-lab': 21, 'malware-lab': 22,
   'network-attacks-lab': 21, 'cloud-security-lab': 18, 'social-engineering-lab': 16, 'red-team-lab': 18, 'wireless-attacks-lab': 18, 'mobile-security-lab': 18,
 }
@@ -63,11 +79,19 @@ export type CatalogModule = {
 
 // Real chapter counts in each module's codex (kept in step with app/modules/*/page.tsx).
 const CHAPTER_COUNTS: Record<string, number> = {
+  foundations: 10, linux: 12, scripting: 9, 'blue-team': 10, 'ai-security': 10, grc: 10, forensics: 10,
   tor: 8, osint: 10, crypto: 9, offensive: 8, 'active-directory': 8, 'web-attacks': 10, malware: 7,
   'network-attacks': 8, 'cloud-security': 8, 'social-engineering': 9, 'red-team': 9, 'wireless-attacks': 9, 'mobile-security': 9,
 }
 
 const META: Record<string, { level: CatalogModule['level']; blurb: string }> = {
+  foundations: { level: 'BEGINNER', blurb: 'Computers, Linux, networking, the web and core security concepts: the ground floor for everything else.' },
+  linux: { level: 'BEGINNER', blurb: 'Install, operate, secure and build a lab on Linux: VMs, WSL, dual-boot, the shell and systemd, in depth.' },
+  scripting: { level: 'BEGINNER', blurb: 'Automate security work with Bash, Python and PowerShell, from zero to a real tool you can ship.' },
+  'blue-team': { level: 'INTERMEDIATE', blurb: 'Defend: SOC work, SIEM, detection engineering, threat hunting, incident response and forensics.' },
+  'ai-security': { level: 'ADVANCED', blurb: 'Attack and defend AI: prompt injection, jailbreaks, agent abuse, model theft and the defences.' },
+  grc: { level: 'INTERMEDIATE', blurb: 'Governance, risk and compliance: frameworks, audits, risk maths and building a security program.' },
+  forensics: { level: 'ADVANCED', blurb: 'Disk, memory, mobile and network forensics: acquire, analyse, build a timeline and report.' },
   tor: { level: 'BEGINNER', blurb: 'Onion routing, hidden services and the OPSEC that keeps you anonymous.' },
   osint: { level: 'BEGINNER', blurb: 'What the public internet reveals about people, companies and infrastructure.' },
   crypto: { level: 'INTERMEDIATE', blurb: 'How encryption, hashing, PKI and TLS work, and how they break.' },

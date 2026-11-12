@@ -651,7 +651,7 @@ type ls         # what IS this command - a program, alias, or shell builtin?`}
           headers={['Directory', 'Purpose', 'You go here to...']}
           rows={[
             ['/etc', 'System-wide configuration files (all text)', 'Change how services and the system behave'],
-            ['/home', 'Each user&apos;s personal files and settings', 'Keep your own documents, downloads, configs'],
+            ['/home', 'Personal files and settings for each user', 'Keep your own documents, downloads, configs'],
             ['/var', 'Variable data that grows and changes', 'Read logs (/var/log), inspect caches, spool'],
             ['/usr', 'Installed programs, libraries, docs', 'Find installed binaries (/usr/bin) and shared data'],
             ['/tmp', 'Short-lived temporary files', 'Scratch space; assume it is wiped on reboot'],

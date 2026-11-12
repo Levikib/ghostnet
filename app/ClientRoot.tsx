@@ -71,7 +71,7 @@ function Nav({ onMobileMenuChange }: { onMobileMenuChange: (open: boolean) => vo
             </button>
             {open === 'modules' && (
               <div className="gn-pop gn-pop-wide" role="menu">
-                <div className="gn-pop-head">13 MODULES · CHAPTERS + GUIDED LAB</div>
+                <div className="gn-pop-head">{CATALOG.length} MODULES · CHAPTERS + GUIDED LAB</div>
                 <div className="gn-mod-grid">
                   {CATALOG.map(m => {
                     const p = progressFor(m.id)
