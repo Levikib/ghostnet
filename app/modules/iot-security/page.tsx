@@ -2,6 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import ModuleCodex, { CodexChapter } from '../../components/ModuleCodex'
+import { Local, Watch } from '../../components/learn/Mtaani'
 
 const accent = '#b48ead'
 
@@ -57,6 +58,9 @@ const chapters: CodexChapter[] = [
       <div>
         <P>Everything with a chip and a network connection is now a target: a smart doorbell, a factory sensor, a hospital infusion pump, a city water valve. These devices were often built for cost and convenience, not security, and many sit in networks nobody patches. This module is about understanding that world well enough to break into a test device in your own lab — and, far more importantly, to defend the ones that matter.</P>
 
+        <Local>
+          Look at the <em>prepaid token meter</em> on an estate wall &mdash; the one you top up with a 20-digit code from M-Pesa. It is a tiny, cheap computer bolted outdoors that controls something physical: your power or water. Nobody updates it for 15 years, anyone can walk up and touch it, and the engineer&apos;s default code is often still set. That is the whole story of IoT and ICS security: small computers, built cheap, living in the open, running something real. Break the token meter&apos;s brain and you are not just crashing an app &mdash; you are turning the estate&apos;s water on and off.
+        </Local>
         <H>Why IoT and ICS Are Different</H>
         <Table headers={['PROPERTY', 'WHY IT MATTERS FOR SECURITY']} rows={[
           ['Long lifespans (10–25 yrs for ICS)', 'Devices run unpatched, unsupported OSes long after flaws are public'],
@@ -99,8 +103,15 @@ const chapters: CodexChapter[] = [
       <div>
         <P>Open almost any IoT device and you find debug interfaces the manufacturer left on the board. They were there for development — and they are still there for you. UART often drops you straight into a root console; JTAG gives full CPU control; SPI flash chips hold the firmware you will extract in the next chapter.</P>
 
+        <Local>
+          When a <em>fundi</em> services a standby generator, he doesn&apos;t rebuild it &mdash; he pops open a little flap and plugs a cable into the diagnostic socket the manufacturer left inside. Circuit boards have the same thing: small metal pads the engineers used while building the device and simply never removed. UART is that service hatch. Clip onto it with a cheap cable and you often land straight inside the device&apos;s brain, no password asked &mdash; exactly the hatch the maker forgot to lock.
+        </Local>
         <H>UART — the Easy Win</H>
         <P>A UART (serial console) is usually four pads or pins: VCC, GND, TX, RX. With a USB-to-TTL adapter you watch the boot log and, on a shocking number of devices, land at a shell.</P>
+        <Watch
+          reads={<>The lines starting with <code>#</code> are just notes to the reader, not commands. The two real commands (<code>screen</code> and <code>picocom</code>) simply open a window onto the device&apos;s service hatch so you can watch it switch on. Read it to see the shape of the task &mdash; find the pads, wire three little cables, open the console.</>}
+          later={<>You&apos;ll wire a USB-TTL adapter to a practice board and catch the boot log in the lab.</>}
+        >
         <Pre label="// IDENTIFY AND CONNECT TO A UART">{`# Identify the pins: GND by continuity to the shield, then TX shows boot
 # text on a logic analyser / multimeter. Baud is usually 115200 or 57600.
 
@@ -113,6 +124,7 @@ picocom -b 115200 /dev/ttyUSB0
 
 # Watch the bootloader. Interrupting U-Boot often gives a bootloader shell;
 # many devices simply present a root login or an unauthenticated shell.`}</Pre>
+        </Watch>
 
         <H>The Interfaces at a Glance</H>
         <Table headers={['INTERFACE', 'GIVES YOU', 'TOOL']} rows={[
@@ -154,7 +166,14 @@ binwalk firmware_dump.bin
       <div>
         <P>Firmware is the whole device in a file: its OS, its services, its secrets. You can get it by dumping the flash (last chapter), by downloading the vendor&apos;s update package, or by pulling it off the device over the network. Once you have it, you carve out the filesystem and read it like any Linux box.</P>
 
+        <Local>
+          A cheap <em>duka</em> alarm has a single chip inside that holds everything it knows &mdash; the siren pattern, the secret disarm code, the shop owner&apos;s phone number for alerts. Firmware is that chip&apos;s contents written out as one file. &quot;Carving&quot; it is like carefully prising the alarm open and reading what the factory burned into that chip &mdash; and far too often, the disarm code and a spare key are written right there in plain ink for anyone who opens the box.
+        </Local>
         <H>Carving the Image</H>
+        <Watch
+          reads={<>A four-step walk through opening up the firmware. <code>binwalk -e</code> cracks the single file into its real parts (the mini operating system and its folders); the rest just steps into the result and lists a folder. It reads like exploring a normal computer&apos;s files, because once carved, that is exactly what it is.</>}
+          later={<>You&apos;ll carve a real firmware image and hunt its secrets in the lab.</>}
+        >
         <Pre label="// EXTRACT A FIRMWARE FILESYSTEM">{`# binwalk identifies and extracts the embedded parts (kernel, rootfs):
 binwalk -e firmware.bin
 
@@ -162,6 +181,7 @@ binwalk -e firmware.bin
 # Browse it like a normal Linux root:
 cd _firmware.bin.extracted/squashfs-root
 ls -la etc/`}</Pre>
+        </Watch>
 
         <H>What to Grep For First</H>
         <Table headers={['TARGET', 'WHERE / HOW']} rows={[

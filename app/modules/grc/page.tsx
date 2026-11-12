@@ -2,6 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import ModuleCodex, { CodexChapter } from '@/app/components/ModuleCodex'
+import { Local, Watch } from '@/app/components/learn/Mtaani'
 
 const mono = 'JetBrains Mono, monospace'
 const accent = '#e0af68'
@@ -98,6 +99,9 @@ const chapters: CodexChapter[] = [
     ],
     content: (
       <div>
+        <Local>
+          Think of a <em>chama</em> &mdash; a savings group of neighbours. It survives because of three things working together. There is the written constitution and the elected officials who steer it (that is <strong>governance</strong>). There is the group deciding how much cash is safe to keep, who might run off with it, and what happens if someone defaults (that is <strong>risk</strong>). And there is the yearly check by an outside member confirming the books match the M-Pesa statement and the group followed its own by-laws (that is <strong>compliance</strong>). GRC is simply running an organisation the way a well-led chama runs itself: steer it, watch what could go wrong, and prove you kept your own rules.
+        </Local>
         <H3>Three Words, One Job</H3>
         <P>
           GRC stands for Governance, Risk and Compliance. It is the part of security that decides what to protect, how much to spend protecting it, and how to prove to outsiders that you did. A penetration tester finds a hole in a web application. A GRC professional answers a different set of questions: Is this the hole we should care about most? Who owns the decision to fix it? What will a regulator or a customer&apos;s auditor say if we do not? How do we show, on paper, that we manage this kind of problem across the whole company and not just this one app?
@@ -192,6 +196,9 @@ Board:      Approves. The patch was never the hard part -
     ],
     content: (
       <div>
+        <Local>
+          A chama&apos;s rules come in layers, and security governance is identical. The <strong>constitution</strong> says &quot;members&apos; money must be kept safe&quot; &mdash; it almost never changes and the whole group must vote to amend it (that is a <strong>policy</strong>). Below it, a by-law says &quot;we bank at this specific SACCO, two signatories per withdrawal&quot; &mdash; that can change as circumstances do (a <strong>standard</strong>). At the bottom, the WhatsApp reminder of exactly how to fill the deposit slip is the step-by-step (<strong>procedure</strong>). Mixing the layers is the classic mistake: if you write the bank&apos;s name into the constitution, you must hold a full meeting every time you switch banks.
+        </Local>
         <H3>The Document Hierarchy</H3>
         <P>
           Governance is written down, and the writing has a strict hierarchy that newcomers constantly mix up. Getting it right is one of the fastest ways to look competent. At the top sits policy: a short, mandatory, high-level statement of intent approved by leadership. A policy says what must be true and why, but not how. Below it sit standards: mandatory, specific rules that make a policy measurable - exact algorithms, minimum key lengths, required configurations. Below those sit procedures: step-by-step instructions for carrying something out. Alongside them sit guidelines: recommended, non-mandatory good practice that helps people comply when there is no single right way.
@@ -205,6 +212,10 @@ Board:      Approves. The patch was never the hard part -
             ['Guideline', 'No (recommended)', 'Advisory', '"Prefer a passphrase of four random words where length allows."'],
           ]}
         />
+        <Watch
+          reads={<>A real access-control policy, trimmed to its bones. Don&apos;t memorise it &mdash; just notice the shape: a header saying who owns and approved it, then purpose, scope, a few plain rules, and enforcement. It reads like a chama constitution: short, firm, and pointing to other documents for the fiddly detail.</>}
+          later={<>You&apos;ll draft your own one-page policy in the lab and get it &quot;board approved&quot;.</>}
+        >
         <Pre label="ACCESS CONTROL POLICY - EXCERPT (SafiPay)">
 {`SafiPay Access Control Policy  v2.1   Owner: CISO   Approved: Board
 
@@ -229,6 +240,7 @@ Board:      Approves. The patch was never the hard part -
 (Detailed key lengths, MFA methods and review steps live in the
  Access Control Standard and the Joiner-Mover-Leaver Procedure.)`}
         </Pre>
+        </Watch>
         <Note type="tip">
           A policy should outlive the technology. Notice the SafiPay policy says &quot;multi-factor authentication is required&quot; but never names a product. The product belongs in the standard, which changes often; the policy, approved by the board, should not need re-approval every time you swap tools.
         </Note>
@@ -305,6 +317,9 @@ Board:      Approves. The patch was never the hard part -
     ],
     content: (
       <div>
+        <Local>
+          A <em>mama mboga</em> deciding how much stock to buy before a long rainy weekend is doing risk management without the jargon. She weighs how <em>likely</em> the rain is to keep customers away against how much it would <em>hurt</em> if a crate of tomatoes rots unsold. Likelihood times impact. If spoilage is unlikely, she stocks up; if the matatus have stopped and the sun is gone, she buys little. And notice: she only worries about the tomatoes because they have <em>value</em>. Nobody frets about a risk to something worthless. Every risk score you&apos;ll ever compute is just her instinct, written down.
+        </Local>
         <H3>What Risk Actually Is</H3>
         <P>
           In security, risk is the potential for loss or harm when a threat exploits a vulnerability affecting an asset you value. Strip away the jargon and it is the product of two things: how likely something bad is (likelihood) and how much it would hurt (impact). Everything in risk management is an attempt to estimate, compare and reduce those two numbers across many possible events. Crucially, risk is always about an asset - something with value. If nothing of value is exposed, there is no risk worth your time, no matter how alarming the vulnerability sounds.
@@ -312,6 +327,10 @@ Board:      Approves. The patch was never the hard part -
         <P>
           This gives the foundational relationship: a threat is a potential cause of harm (a criminal group, a careless employee, a flood). A vulnerability is a weakness that the threat can use (an unpatched server, no backups, a single staff member with all the knowledge). Harm only happens when a threat meets a matching vulnerability on a valued asset. A sophisticated threat against a vulnerability you do not have is not your risk. A gaping vulnerability on an asset nobody would ever target is low risk. Risk lives at the intersection.
         </P>
+        <Watch
+          reads={<>The whole of risk, boiled to one line and then unpacked. Read it as the mama mboga&apos;s instinct: likelihood (how probable) multiplied by impact (how badly it hurts). The worked lines at the bottom show why a scary-sounding threat with no matching weakness is still low risk.</>}
+          later={<>In the lab you&apos;ll score real scenarios with this and rank what to fix first.</>}
+        >
         <Pre label="THE RISK EQUATION">
 {`Risk = Likelihood  x  Impact
 
@@ -324,6 +343,7 @@ Worked intuition:
    High threat + severe vulnerability
      on a high-value asset             -> this is what you fix first`}
         </Pre>
+        </Watch>
 
         <H3>Asset Valuation</H3>
         <P>
