@@ -2,6 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import ModuleCodex, { CodexChapter } from '@/app/components/ModuleCodex'
+import { Local, Watch, Ref } from '@/app/components/learn/Mtaani'
 
 const accent = '#00d4ff'
 const mono = 'JetBrains Mono, monospace'
@@ -69,6 +70,9 @@ const chapters: CodexChapter[] = [
           OSINT means gathering information about a target using only publicly available sources. No hacking required. A Google search is OSINT. Looking up a domain on WHOIS is OSINT. Checking someone on LinkedIn is OSINT. The skill is knowing where to look, what to look for, and how to connect information across many sources into a coherent picture.
         </Note>
 
+        <Local>
+          Think of the mama mboga at the estate gate. She never steps inside your house, yet from her stall she learns your routine &mdash; when you leave for work, who visits on weekends, that you have started buying baby food. She pieced it all together from what simply passed by in plain view. OSINT is that same craft done on purpose: building a full picture of a target purely from what is already out in the open.
+        </Local>
         <H3>Intelligence Disciplines: OSINT in Context</H3>
         <P>Intelligence collection is categorised by source type. Understanding where OSINT sits within the broader intelligence landscape clarifies both its power and its limits.</P>
         <Table
@@ -263,8 +267,15 @@ LAYER 6: Strip metadata before sharing
           Domain reconnaissance means mapping everything attached to a target's internet presence: their domain names, the servers behind them, all subdomains, SSL certificates, and the company information in registration records. Think of it as drawing a complete map of a building's entrances before deciding which door to try. You are not touching anything - you are reading public records that anyone can access.
         </Note>
 
+        <Local>
+          Before anyone builds on a plot, they go to the lands office and pull its title &mdash; who owns it, where the beacons sit, which boundaries meet the road. Domain reconnaissance pulls that same public title deed for a company&apos;s online plot: which names they registered, which servers sit behind them, and where every gate faces &mdash; all from records open to anyone who asks.
+        </Local>
         <H3>WHOIS Lookups</H3>
         <P>WHOIS is a public database of domain registration records. Before privacy guards became common (~2018), it often contained registrant names, email addresses, phone numbers, and physical addresses. Historical WHOIS data still reveals this pre-privacy information.</P>
+        <Watch
+          reads={<>These commands ask public registration databases who owns a domain and which company details were filed when it was registered. You are only reading records, exactly like looking up a title at the lands office &mdash; nothing is sent to the target.</>}
+          later={<>You&apos;ll run these lookups hands-on in the <Ref>MOD-02 lab</Ref>.</>}
+        >
         <Pre label="// WHOIS ENUMERATION">{`# Basic WHOIS lookup
 whois TARGET_DOMAIN
 whois TARGET_IP_ADDRESS
@@ -287,9 +298,14 @@ curl https://rdap.org/domain/TARGET_DOMAIN | python3 -m json.tool
 # Reverse WHOIS: find all domains registered by same email
 # domaintools.com/reverse-whois/
 # viewdns.info/reversewhois/`}</Pre>
+        </Watch>
 
         <H3>DNS Record Enumeration</H3>
         <P>DNS records reveal the full technical infrastructure of a target. MX records expose their email provider. TXT records contain SPF, DKIM, and third-party service verification tokens. NS records reveal their DNS hosting provider.</P>
+        <Watch
+          reads={<>Each &apos;dig&apos; line asks the internet&apos;s address book a different question about the target: which servers hold its mail, which machines its names point to, which other services it has declared. Do not memorise the flags &mdash; just notice that one small tool quietly draws a whole map.</>}
+          later={<>You&apos;ll practise these queries yourself in the <Ref>MOD-02 lab</Ref>.</>}
+        >
         <Pre label="// DNS RECORD TYPES">{`# Query all record types:
 dig TARGET_DOMAIN ANY
 dig TARGET_DOMAIN +short
@@ -316,6 +332,7 @@ host -t MX TARGET_DOMAIN
 # Online visual DNS map:
 # https://dnsdumpster.com
 # https://securitytrails.com`}</Pre>
+        </Watch>
 
         <H3>Zone Transfer Attempts</H3>
         <P>A DNS zone transfer (AXFR) is designed to replicate DNS records from a primary to a secondary nameserver. When misconfigured, it returns all DNS records for a domain to any requester - instantly revealing every subdomain and internal IP address.</P>
@@ -485,6 +502,9 @@ print('MD5:', favicon_hash)
           Shodan is a search engine for internet-connected devices. Instead of indexing web pages like Google, it continuously scans every IP address on the internet, connects to each port, records the response, and makes that data searchable. When a server runs MongoDB with no password, Shodan finds it and anyone can search for it. Security researchers use Shodan to find exposed services before attackers do - and to map an organisation's entire internet-facing infrastructure in seconds.
         </Note>
 
+        <Local>
+          Picture an estate askari on his night rounds, noting in his book every gate left unlatched and every window propped open. He touches nothing &mdash; he simply records what is already exposed. Shodan is an askari for the whole internet: it has already walked past every address, tried each door (port), and written down what answered, so you can later look up who left something open.
+        </Local>
         <H3>Shodan Search Operators: Full Reference</H3>
         <Table
           headers={['OPERATOR', 'FUNCTION', 'EXAMPLE']}

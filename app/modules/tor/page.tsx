@@ -2,6 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import ModuleCodex, { CodexChapter } from '@/app/components/ModuleCodex'
+import { Local, Watch, Ref } from '@/app/components/learn/Mtaani'
 
 const mono = 'JetBrains Mono, monospace'
 const accent = '#00ff41'
@@ -97,6 +98,9 @@ const chapters: CodexChapter[] = [
     ],
     content: (
       <div>
+        <Local>
+          Picture sending a parcel from Kisumu to a cousin in Mombasa by handing it down a line of three matatu conductors, with the parcel wrapped in three gunia sacks, one inside the next. The first conductor sees who gave it to him but not the final stop; the middle one simply passes it along; the last one knows the destination but never saw you. No single conductor knows both ends of the journey &mdash; that is exactly how Tor carries your traffic.
+        </Local>
         <H3>Onion Routing - The Core Concept</H3>
         <P>
           Tor (The Onion Router) was originally developed by the US Naval Research Laboratory and is now maintained by the non-profit Tor Project. The fundamental idea is onion routing: your traffic is wrapped in multiple layers of encryption, like an onion, and each relay in a chain peels exactly one layer before forwarding to the next. No single relay knows both where you came from and where you are going.
@@ -119,6 +123,10 @@ const chapters: CodexChapter[] = [
         <P>
           Your Tor client encrypts the payload three times - once for each relay - using the key agreed with each relay. The packet sent looks like: Encrypt(guard_key, Encrypt(middle_key, Encrypt(exit_key, actual_data))). The guard strips its layer and sees only an encrypted blob for the middle. The middle strips its layer. The exit strips the final layer and sees the original data in cleartext (if the destination is plain HTTP) or TLS-encrypted data (for HTTPS).
         </P>
+        <Watch
+          reads={<>Read it top to bottom. Your Tor client wraps your data in three layers, like three envelopes sealed one inside another. Each relay opens only its own envelope and finds another sealed one to pass on &mdash; so no relay ever sees who you are and what you sent at the same time.</>}
+          later={<>You&apos;ll watch a real circuit build these layers hop by hop in the <Ref>MOD-01 lab</Ref>.</>}
+        >
         <Pre label="CONCEPTUAL ENCRYPTION LAYERS">
 {`Client builds:  [ Guard_Layer [ Middle_Layer [ Exit_Layer [ YOUR DATA ] ] ] ]
 
@@ -131,6 +139,7 @@ Middle decrypts: [ Exit_Layer [ YOUR DATA ] ]                   -- forwards to E
 Exit   receives: [ Exit_Layer [ YOUR DATA ] ]
 Exit   decrypts: [ YOUR DATA ]                                  -- sends to destination`}
         </Pre>
+        </Watch>
 
         <H3>Directory Authorities</H3>
         <P>
@@ -204,10 +213,17 @@ CMD values:
     ],
     content: (
       <div>
+        <Local>
+          When you refill a gas cylinder, you check the dealer&apos;s seal and stamp before lighting it &mdash; a refilled fake with no proper seal can be dangerous. Verifying Tor Browser&apos;s signature is the same habit: you confirm the download truly came from the Tor Project and was not swapped for a tampered copy on the way, before you trust it with your safety.
+        </Local>
         <H3>Download and Signature Verification</H3>
         <P>
           Always download Tor Browser from torproject.org and verify the GPG signature. The Tor Project signs releases with their developer key. An attacker who compromises a CDN mirror could serve a malicious binary - signature verification catches this because they cannot forge the signature without the private key.
         </P>
+        <Watch
+          reads={<>These commands fetch the Tor Project&apos;s signing key and check the installer against it. The only line you really need to spot is the &quot;Good signature&quot; confirmation near the bottom &mdash; that is the system vouching that your download is genuine.</>}
+          later={<>You&apos;ll run this check yourself before installing in the <Ref>MOD-01 lab</Ref>.</>}
+        >
         <Pre label="VERIFYING TOR BROWSER SIGNATURE (Linux)">
 {`# Import Tor Project signing key
 gpg --auto-key-locate nodefault,wkd --locate-keys torbrowser@torproject.org
@@ -220,6 +236,7 @@ gpg --verify tor-browser-linux64-VERSION_ALL.tar.xz.asc \
 # Good signature from "Tor Browser Developers (signing key) <torbrowser@torproject.org>"
 # Primary key fingerprint: EF6E 286D DA85 EA2A 4BA7  DE68 4E2C 6E87 9329 8290`}
         </Pre>
+        </Watch>
 
         <H3>Security Levels</H3>
         <P>
@@ -317,6 +334,9 @@ torsocks curl https://api.ipify.org`}
     ],
     content: (
       <div>
+        <Local>
+          When the main highway has a police roadblock checking every matatu, drivers slip onto the panya routes &mdash; the unmarked back roads only locals know. Bridges are Tor&apos;s panya routes: entry points whose addresses are kept off the public list, so a censor who has blocked every known road still cannot see these quiet ones.
+        </Local>
         <H3>What Are Bridges?</H3>
         <P>
           Regular Tor relays are listed in the public consensus document that every Tor client downloads. Censors in restrictive countries can simply download this list and block all those IP addresses. Bridges are Tor relays that are not listed in the public consensus. Their IP addresses are kept semi-private and distributed only to users who request them. This makes them much harder to enumerate and block.
