@@ -6,6 +6,7 @@ import { useAuth, Operator } from './components/AuthProvider'
 import OperatorAvatar from './components/OperatorAvatar'
 import { CATALOG, LAB_STEPS } from '../lib/learning'
 import { PATHS, pathModules } from '../lib/paths'
+import { api } from '../lib/client/api'
 import { openGhost } from '../lib/client/ghostContext'
 import { Bar, Eyebrow, GxStyles, Ring, T, accentText } from './components/gx/Gx'
 import { Decode } from './components/hack/Hack'
@@ -41,7 +42,16 @@ export default function Dashboard() {
   const { profile, loading } = useAuth()
   const [filter, setFilter] = useState<Filter>('all')
   const [decodeOnce, setDecodeOnce] = useState(true)
+  const [review, setReview] = useState<{ due: number; streak: number } | null>(null)
   const asks = useGhostAsksToday()
+
+  useEffect(() => {
+    let live = true
+    api<{ due: number; streak: number }>('/api/review?n=1').then(r => {
+      if (live && r.ok !== false) setReview({ due: r.due || 0, streak: r.streak || 0 })
+    })
+    return () => { live = false }
+  }, [])
 
   useEffect(() => {
     try {
@@ -156,6 +166,30 @@ export default function Dashboard() {
               </div>
             )
           })()}
+
+          {/* Daily review: due cards + streak */}
+          {review && (review.due > 0 || review.streak > 0) && (
+            <Link href="/review" className="gx-clay gx-hit dash-pathbar" style={{ ['--accent' as string]: review.due > 0 ? T.amber : T.green } as React.CSSProperties}>
+              <div style={{ minWidth: 0 }}>
+                <Eyebrow color={review.due > 0 ? accentText(T.amber) : accentText(T.green)}>{'// DAILY REVIEW'}</Eyebrow>
+                <div style={{ fontFamily: T.sans, fontWeight: 650, fontSize: '17px', color: T.tx, marginTop: '4px' }}>
+                  {review.due > 0 ? review.due + (review.due === 1 ? ' card' : ' cards') + ' ready to review' : 'Memory is fresh — nothing due'}
+                </div>
+                <div style={{ fontFamily: T.sans, fontSize: '13.5px', color: T.dim, marginTop: '4px' }}>
+                  {review.due > 0 ? 'A few minutes of recall locks it into long-term memory.' : 'Keep learning — new material becomes review cards automatically.'}
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 'none' }}>
+                {review.streak > 0 && (
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontFamily: T.mono, fontSize: '22px', fontWeight: 800, color: T.green }}>{review.streak}</div>
+                    <div style={{ fontFamily: T.mono, fontSize: '9.5px', letterSpacing: '.14em', color: T.dim }}>DAY STREAK</div>
+                  </div>
+                )}
+                {review.due > 0 && <span className="gx-btn gx-btn--primary" style={{ ['--accent' as string]: T.amber } as React.CSSProperties}>REVIEW ▸</span>}
+              </div>
+            </Link>
+          )}
 
           {/* Continue hero */}
           {resume && resumeMeta && (
