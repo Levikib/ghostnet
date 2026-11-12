@@ -2,6 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import ModuleCodex, { CodexChapter } from '../../components/ModuleCodex'
+import { Local, Watch, Ref } from '@/app/components/learn/Mtaani'
 
 const accent = '#ff4136'
 
@@ -70,6 +71,10 @@ const chapters: CodexChapter[] = [
         ]} />
 
         <H>Basic Manual Enumeration (No Tools)</H>
+        <Watch
+          reads={<>These are questions you ask the network, typed one line at a time. &quot;Who are all the users in this domain?&quot; &quot;Who sits in the Domain Admins group?&quot; &quot;What am I allowed to do?&quot; The point is not the exact spelling &mdash; it is that before any fancy tool, Windows itself will answer these questions for anyone who asks politely.</>}
+          later={<>You&apos;ll run enumeration like this on a live lab domain in <Ref>the Active Directory lab</Ref>.</>}
+        >
         <Pre label="// BUILT-IN WINDOWS COMMANDS — NO TOOLS NEEDED">{`# Get domain info
 [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
 
@@ -90,6 +95,7 @@ systeminfo | findstr /i "domain"
 
 # DNS — find Domain Controllers
 nslookup -type=SRV _ldap._tcp.dc._msdcs.domain.local`}</Pre>
+        </Watch>
 
         <H>PowerView Quick Enumeration</H>
         <Pre label="// POWERVIEW — LOAD AND ENUMERATE">{`# Load PowerView (from compromised host with web access):
@@ -131,6 +137,8 @@ Get-DomainUser -PreauthNotRequired | select samaccountname`}</Pre>
     content: (
       <div>
         <P>BloodHound is the most powerful Active Directory enumeration tool ever created. It maps the entire domain into a graph database, visually revealing attack paths that are completely invisible in manual enumeration. A path to Domain Admin that would take days to find manually becomes obvious in seconds.</P>
+
+        <Local>Imagine the estate watchman who has worked the gate for twenty years. Ask him one thing &mdash; &quot;how do I get from the servant&apos;s quarter to the landlord&apos;s master bedroom?&quot; &mdash; and without pausing he draws the shortest route: this house has a spare key to that gate, that gate&apos;s guard trusts the cook, the cook is let into the main house at night. BloodHound is that watchman for a whole company: it already knows who can reach whom, and it hands you the shortest path to the top in seconds.</Local>
 
         <H>BloodHound Setup</H>
         <Pre label="// BLOODHOUND — INSTALL AND START">{`# Install BloodHound and Neo4j (Kali/Debian):
@@ -223,7 +231,13 @@ ldapsearch -x -H ldap://DC_IP -D "user@domain.local" -w "Password" \
       <div>
         <P>Kerberoasting and AS-REP Roasting are the two most commonly used Kerberos attacks. They both extract encrypted data that can be cracked offline — no brute-forcing the DC, no lockouts, no noise on the wire beyond a single authentication request.</P>
 
+        <Local>At a busy nyama choma joint you never pay the chef at the grill directly. You pay the cashier at the counter, who hands you a stamped token. You carry that token to the grill, and the chef serves you because he trusts the cashier&apos;s stamp, not you. Kerberos works the same way: the Domain Controller is the cashier, your first token (the TGT) proves who you are, and you swap it for a second token (the TGS) that one specific service &mdash; the grill &mdash; will accept. The attacks in this chapter are all about tricking the cashier, or walking off with a token you can study at home.</Local>
+
         <H>How Kerberos Works (Attack Perspective)</H>
+        <Watch
+          reads={<>Follow the arrows top to bottom: your machine (CLIENT) talks to the Domain Controller (KDC), gets a first token, then trades it for a service token, then shows that to the SERVICE. The two words pointing in from the right &mdash; <strong>KERBEROASTING</strong> and the ATTACK SURFACES list &mdash; mark exactly where an attacker steps in. You are reading a map of a handshake, not memorising it.</>}
+          later={<>You&apos;ll request and crack one of these service tickets yourself in <Ref>the Active Directory lab</Ref>.</>}
+        >
         <Pre label="// KERBEROS AUTHENTICATION FLOW">{`CLIENT                 KDC (Domain Controller)              SERVICE
   |                           |                                 |
   |-- AS-REQ --------------> |   Client proves identity        |
@@ -247,6 +261,7 @@ ATTACK SURFACES:
   AS-REP: If user has no preauth -> KDC sends hash without verifying identity
   TGS:    Any domain user can request TGS for any SPN -> encrypted with service hash
   TGT:    If krbtgt hash known -> forge any TGT -> Golden Ticket`}</Pre>
+        </Watch>
 
         <H>Kerberoasting</H>
         <P>Any domain user can request a Ticket Granting Service (TGS) for any Service Principal Name. The TGS is encrypted with the service account's NTLM hash — crackable offline. Service accounts often have weak passwords and never-expiring credentials.</P>
@@ -764,6 +779,8 @@ certipy auth -pfx administrator.pfx -dc-ip 10.10.10.10
     content: (
       <div>
         <P>Kerberos delegation lets a service act on behalf of a user — the classic example is a web server that must reach a database as the logged-in user. Useful, and dangerous: every delegation setting is a place where "act as someone else" is a configuration, not an exploit. Three flavours exist, and each has an abuse path.</P>
+
+        <Local>Think of sending someone to the bank with a signed letter authorising them to withdraw on your behalf. A good letter is specific: &quot;may withdraw from my account at this one branch only&quot; &mdash; that is constrained delegation. A blank signed letter that any bank anywhere will honour is unconstrained delegation, and if a thief grabs it they can empty everything. The three attacks here all come down to one question: whose signed letter can I get my hands on, and how wide does it reach?</Local>
 
         <H>1. Unconstrained Delegation</H>
         <P>A machine trusted for unconstrained delegation caches the Kerberos TGT of every user who authenticates to it. Compromise that host and you can extract those TGTs — including, if you can coerce it, a Domain Controller's.</P>

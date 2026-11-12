@@ -2,6 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import ModuleCodex, { CodexChapter } from '../../components/ModuleCodex'
+import { Local, Watch, Ref } from '@/app/components/learn/Mtaani'
 
 const accent = '#00ffff'
 
@@ -37,8 +38,14 @@ const chapters: CodexChapter[] = [
       <div>
         <P>Before launching any network attack you need to understand the infrastructure you are attacking. Every tool, every technique, and every defense maps to a specific layer of the network stack. This chapter builds that mental model from the ground up.</P>
 
+        <Local>When you send a parcel to your people up at the shamba, it does not teleport there. You wrap the gift, a counter clerk seals it in a sack and writes the destination, a sorting office decides the route, and finally a rider carries it the last stretch to the gate. Each stage only handles its own layer of wrapping and passes it to the next &mdash; and at the far end the wrapping comes off in reverse. The network&apos;s seven layers work exactly like that chain, and an attacker can tamper at any single stage along the way.</Local>
+
         <H>OSI Model - Attacker Perspective</H>
         <P>The OSI (Open Systems Interconnection) model has 7 layers. Each layer has its own protocols, vulnerabilities, and attack tools. Knowing which layer you are operating at tells you which defenses apply and which tools to reach for.</P>
+        <Watch
+          reads={<>This is a cheat-sheet of those seven wrapping stages, top to bottom, with the kinds of attack that hit each one and the tools that do it. Do not memorise it &mdash; just notice that every layer is a separate place something can go wrong, from a web form at the very top (Layer 7) down to someone physically tapping a cable at the bottom (Layer 1).</>}
+          later={<>You&apos;ll operate at several of these layers hands-on across this module and in <Ref>the network-attacks lab</Ref>.</>}
+        >
         <Pre label="// OSI LAYERS AND ASSOCIATED ATTACKS">{`Layer 7 - Application
   Protocols: HTTP, HTTPS, DNS, FTP, SMTP, LDAP, SMB
   Attacks: SQLi, XSS, credential brute force, DNS poisoning,
@@ -77,9 +84,14 @@ Layer 1 - Physical
   Attacks: Cable tapping, hardware keylogger, rogue AP,
            optical fiber interception
   Tools: WiFi Pineapple, hardware implants`}</Pre>
+        </Watch>
 
         <H>TCP/IP Model and Header Attack Surface</H>
         <P>In practice attackers think in the TCP/IP model (4 layers). Every header field is a potential attack vector - either to spoof, manipulate, or exploit.</P>
+        <Watch
+          reads={<>Every packet carries a small form at the front with labelled boxes: where it came from, where it is going, how many hops it has left to live. This lists the boxes that matter to an attacker and why. The one to clock is <strong>Src IP, marked SPOOF THIS</strong> &mdash; nothing forces a sender to tell the truth about their own return address, and half of networking&apos;s trouble starts there.</>}
+          later={<>You&apos;ll craft and spoof these very fields yourself with tools like scapy and hping3 later in this module.</>}
+        >
         <Pre label="// CRITICAL HEADER FIELDS FOR ATTACKERS">{`IP HEADER (20 bytes minimum):
   Version (4 bits)    - IPv4 vs IPv6 confusion attacks
   TTL (8 bits)        - fingerprint OS, traceroute, hop counting
@@ -114,6 +126,7 @@ ICMP:
   Type 11 (TTL Exceeded)- traceroute mechanism
   Type 3 (Unreachable)  - port closed indicator
   Type 5 (Redirect)     - ICMP redirect attack vector`}</Pre>
+        </Watch>
 
         <H>TCP 3-Way Handshake and Attack Opportunities</H>
         <Note label="BEGINNER NOTE">The TCP handshake is how two computers agree to start a conversation. Think of it like knocking on a door (SYN), getting an answer (SYN-ACK), and confirming you heard them (ACK). Attackers can abuse each step.</Note>
@@ -430,6 +443,8 @@ CONTENT DELIVERY NETWORK (CDN):
         <P>Reconnaissance is the first phase of any engagement. You need to know what is running, what version it is, and whether it has known vulnerabilities before you touch anything. Passive recon leaves no trace. Active scanning risks detection. Know which you are doing.</P>
 
         <Note label="LEGAL NOTE">Scanning systems without authorization is illegal in most jurisdictions. Always have written permission before scanning. Use labs like HackTheBox, TryHackMe, or your own isolated network for practice.</Note>
+
+        <Local>Say you want to join a chama but first you want to know who is really in it. You do not march up and interrogate the members &mdash; you quietly ask around the estate: who attends, when they meet, who holds the money. Everything you learn comes from people already talking, never once from contacting the chama itself. That is passive reconnaissance: all you can find out about a target from public, second-hand sources without ever touching it &mdash; so you leave no footprint on their door.</Local>
 
         <H>Passive Network Recon</H>
         <Pre label="// GATHER INTEL WITHOUT TOUCHING THE TARGET">{`SHODAN (search engine for internet-connected devices):
@@ -1129,6 +1144,8 @@ SURICATA - NIDS/NIPS:
     content: (
       <div>
         <P>Layer 2 attacks exploit the trust assumptions built into Ethernet and WiFi protocols. ARP has no authentication. DHCP has no authentication. STP elects root bridges without authentication. VLANs can be hopped. This chapter covers the tools and techniques to exploit these weaknesses.</P>
+
+        <Local>Picture an estate where everyone drops their outgoing letters with one trusted errand-person who runs them to town. There is no ID check &mdash; people simply trust whoever is standing there saying &quot;I am the errand-person today.&quot; A con artist just shows up and announces it louder; neighbours start handing him their letters, which he reads, maybe alters, then passes on so quietly that nobody notices. ARP runs on that same blind trust: the attacker shouts &quot;the gateway is me&quot; and the network believes him, because nothing ever checks.</Local>
 
         <H>ARP Poisoning Theory and Tools</H>
         <Note label="HOW ARP WORKS">ARP maps IP addresses to MAC addresses on your local network. When your computer wants to talk to 192.168.1.1, it broadcasts "Who has 192.168.1.1?" and the gateway replies "I do, my MAC is AA:BB:CC:DD:EE:FF." The problem: any device can reply to any ARP request with any MAC address. There is no verification.</Note>
