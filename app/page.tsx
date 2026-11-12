@@ -191,6 +191,18 @@ export default function Dashboard() {
             </Link>
           )}
 
+          {/* Capstone: Operation NIGHTGLASS */}
+          <Link href="/nightglass" className="gx-clay gx-hit dash-pathbar" style={{ ['--accent' as string]: '#ff4136' } as React.CSSProperties}>
+            <div style={{ minWidth: 0 }}>
+              <Eyebrow color="#ff6b5e">{'// CAPSTONE OPERATION'}</Eyebrow>
+              <div style={{ fontFamily: T.mono, fontWeight: 800, fontSize: '18px', color: T.tx, marginTop: '4px', letterSpacing: '.04em' }}>OPERATION NIGHTGLASS</div>
+              <div style={{ fontFamily: T.sans, fontSize: '13.5px', color: T.dim, marginTop: '4px' }}>
+                One simulated engagement, recon to report — the full kill chain across every module you’ve trained.
+              </div>
+            </div>
+            <span className="gx-btn gx-btn--primary" style={{ ['--accent' as string]: '#ff4136', flex: 'none' } as React.CSSProperties}>ENTER OPS ▸</span>
+          </Link>
+
           {/* Continue hero */}
           {resume && resumeMeta && (
             <section className="gx-clay dash-hero" style={{ ['--accent' as string]: resume.color } as React.CSSProperties} aria-labelledby="resume-title">

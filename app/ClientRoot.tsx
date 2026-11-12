@@ -110,6 +110,7 @@ function Nav({ onMobileMenuChange }: { onMobileMenuChange: (open: boolean) => vo
           </div>
           <Link href="/paths" className="gn-link" aria-current={path === '/paths' ? 'page' : undefined}>Paths</Link>
           {profile && <Link href="/review" className="gn-link" aria-current={path === '/review' ? 'page' : undefined}>Review</Link>}
+          {profile && <Link href="/nightglass" className="gn-link" aria-current={path === '/nightglass' ? 'page' : undefined}>Operation</Link>}
           <Link href="/leaderboard" className="gn-link" aria-current={path === '/leaderboard' ? 'page' : undefined}>Leaderboard</Link>
 
           {activeModule && (
@@ -151,6 +152,7 @@ function Nav({ onMobileMenuChange }: { onMobileMenuChange: (open: boolean) => vo
           <Link href="/paths" className="gn-mobile-link">Paths</Link>
           <Link href="/assess" className="gn-mobile-link">Find your level</Link>
           {profile && <Link href="/review" className="gn-mobile-link">Daily review</Link>}
+          {profile && <Link href="/nightglass" className="gn-mobile-link">Operation NIGHTGLASS</Link>}
           <Link href="/leaderboard" className="gn-mobile-link">Leaderboard</Link>
           <div className="gn-pop-head" style={{ marginTop: '18px' }}>MODULES</div>
           {CATALOG.map(m => (
