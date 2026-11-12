@@ -4,7 +4,7 @@
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://ghostnet-nine.vercel.app').replace(/\/$/, '')
 export const SITE_NAME = 'GHOSTNET'
 export const SITE_DESCRIPTION =
-  'Hands-on cybersecurity training: 20 modules from Linux and scripting foundations through OSINT, web, cloud and red team to blue-team defence, forensics and AI security, each with a guided lab, XP ranks and an AI guide.'
+  'Hands-on cybersecurity training: 21 modules from Linux and scripting foundations through OSINT, web, cloud and red team to blue-team defence, forensics, AI security and IoT/ICS hardware hacking, each with a guided lab, XP ranks and an AI guide.'
 
 export type SeoModule = { slug: string; code: string; title: string; topics: string[] }
 
@@ -29,6 +29,7 @@ export const MODULES: SeoModule[] = [
   { slug: "ai-security", code: "16", title: "AI & LLM Security", topics: ["How LLMs and AI Systems Work", "Prompt Injection: Direct and Indirect", "Jailbreaks and Guardrail Bypass", "Data Exfiltration and the Agent Threat Model", "Training-Time Attacks and Poisoning", "Model Extraction and Inversion", "Adversarial Examples and Evasion", "Defending AI Systems", "Securing the AI You Build", "AI for Attackers, Defenders and Governance"] },
   { slug: "grc", code: "17", title: "Governance, Risk & Compliance", topics: ["What GRC Is and Why It Pays", "Security Governance", "Risk Management Fundamentals", "Risk Frameworks", "Control Frameworks", "Compliance and Regulations", "Audits and Assessments", "Third-Party and Supply-Chain Risk", "Business Continuity and Disaster Recovery", "Building a Security Program and Your Career"] },
   { slug: "forensics", code: "18", title: "Digital Forensics", topics: ["Forensic Principles and Process", "Acquisition and Imaging", "Filesystem Forensics", "Windows Artifacts: Execution and Persistence", "Windows Artifacts: User Activity", "Memory Forensics", "Timeline Analysis", "Network and Log Forensics", "Mobile and Cloud Forensics", "Reporting and the DFIR Career"] },
+  { slug: "iot-security", code: "19", title: "IoT, ICS & Hardware Security", topics: ["The IoT and ICS Attack Surface", "Hardware Recon: UART, JTAG and SPI", "Firmware Extraction and Analysis", "Embedded Web and API Attacks", "Radio and Protocol Attacks (BLE, Zigbee, RF)", "ICS and SCADA Fundamentals", "Attacking Industrial Protocols (Modbus, DNP3)", "IoT Malware and Botnets", "Securing and Defending IoT/ICS"] },
 ]
 
 export function moduleDescription(m: SeoModule): string {

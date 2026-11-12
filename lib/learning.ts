@@ -28,6 +28,7 @@ export const MODULE_COLORS: Record<string, string> = {
   'red-team': '#ff3333',
   'wireless-attacks': '#aaff00',
   'mobile-security': '#7c4dff',
+  'iot-security': '#b48ead',
 }
 
 /** Canonical XP per lab. Server-side source of truth; client-submitted XP is ignored. */
@@ -52,6 +53,7 @@ export const LAB_XP: Record<string, number> = {
   'red-team-lab': 465,
   'wireless-attacks-lab': 455,
   'mobile-security-lab': 435,
+  'iot-security-lab': 440,
 }
 
 /** XP for reading: awarded once per chapter the first time it is opened. */
@@ -63,6 +65,7 @@ export const LAB_STEPS: Record<string, number> = {
   'ai-security-lab': 18, 'grc-lab': 16, 'forensics-lab': 20,
   'tor-lab': 17, 'osint-lab': 16, 'crypto-lab': 20, 'offensive-lab': 20, 'active-directory-lab': 22, 'web-attacks-lab': 21, 'malware-lab': 22,
   'network-attacks-lab': 21, 'cloud-security-lab': 18, 'social-engineering-lab': 16, 'red-team-lab': 18, 'wireless-attacks-lab': 18, 'mobile-security-lab': 18,
+  'iot-security-lab': 18,
 }
 
 export type CatalogModule = {
@@ -80,8 +83,9 @@ export type CatalogModule = {
 // Real chapter counts in each module's codex (kept in step with app/modules/*/page.tsx).
 const CHAPTER_COUNTS: Record<string, number> = {
   foundations: 10, linux: 12, scripting: 9, 'blue-team': 10, 'ai-security': 10, grc: 10, forensics: 10,
-  tor: 8, osint: 10, crypto: 9, offensive: 8, 'active-directory': 8, 'web-attacks': 10, malware: 7,
+  tor: 8, osint: 10, crypto: 9, offensive: 8, 'active-directory': 10, 'web-attacks': 10, malware: 8,
   'network-attacks': 8, 'cloud-security': 8, 'social-engineering': 9, 'red-team': 9, 'wireless-attacks': 9, 'mobile-security': 9,
+  'iot-security': 9,
 }
 
 const META: Record<string, { level: CatalogModule['level']; blurb: string }> = {
@@ -105,6 +109,7 @@ const META: Record<string, { level: CatalogModule['level']; blurb: string }> = {
   'red-team': { level: 'ADVANCED', blurb: 'Planning and running adversary emulation: C2, OPSEC and reporting.' },
   'wireless-attacks': { level: 'INTERMEDIATE', blurb: 'WPA handshakes, evil twins, Bluetooth and radio attacks.' },
   'mobile-security': { level: 'INTERMEDIATE', blurb: 'Android and iOS app security: storage, APIs and OWASP MASVS.' },
+  'iot-security': { level: 'ADVANCED', blurb: 'Hardware, firmware and industrial control: UART/JTAG, firmware extraction, radio, and ICS/SCADA and their defences.' },
 }
 
 export const CATALOG: CatalogModule[] = MODULES.map(m => ({
