@@ -66,7 +66,7 @@ export function GxStyles() {
         --e-pressed: inset 0 3px 8px rgba(0,0,0,.6), inset 0 -1px 0 rgba(255,255,255,.05), 0 1px 0 rgba(255,255,255,.04);
         --e-well: inset 0 2px 6px rgba(0,0,0,.65), inset 0 -1px 0 rgba(255,255,255,.06);
       }
-      .gx-clay { position: relative; border-radius: 14px; background: var(--clay-face); border: 1px solid rgba(232,243,246,.05); box-shadow: var(--e-clay); color: var(--tx); isolation: isolate; }
+      .gx-clay { position: relative; border-radius: 11px; background: var(--clay-face); border: 1px solid rgba(232,243,246,.05); box-shadow: var(--e-clay); color: var(--tx); isolation: isolate; }
       .gx-clay::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1;
         background: radial-gradient(120% 80% at 0% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 60%); }
       .gx-hit { cursor: pointer; text-decoration: none; transition: transform .24s var(--ease-out), box-shadow .24s var(--ease-out), background .24s; }
@@ -74,10 +74,10 @@ export function GxStyles() {
       .gx-hit:active { transform: translateY(1px); box-shadow: var(--e-pressed); transition-duration: 90ms; }
       .gx-hit:focus-visible, .gx-btn:focus-visible, .gx-chip:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
 
-      .gx-btn { position: relative; isolation: isolate; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px; padding: 0 16px;
-        border: 0; background: none; cursor: pointer; text-decoration: none; font: 700 11px/1 var(--mono); letter-spacing: .15em; text-transform: uppercase; transition: transform .16s var(--ease-out), filter .24s, color .16s; }
-      .gx-btn--primary { color: var(--ink); min-height: 40px; padding: 0 20px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.6)) drop-shadow(0 10px 18px rgba(0,212,255,.18)); }
-      .gx-btn--primary::before { content: ''; position: absolute; inset: 0; z-index: -1; clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+      .gx-btn { position: relative; isolation: isolate; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 30px; padding: 0 13px;
+        border: 0; background: none; cursor: pointer; text-decoration: none; font: 700 10px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; transition: transform .16s var(--ease-out), filter .24s, color .16s; }
+      .gx-btn--primary { color: var(--ink); min-height: 34px; padding: 0 16px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.6)) drop-shadow(0 10px 18px rgba(0,212,255,.18)); }
+      .gx-btn--primary::before { content: ''; position: absolute; inset: 0; z-index: -1; clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
         background: linear-gradient(180deg,#f6fcfe 0%,#d3e5eb 100%); box-shadow: inset 0 2px 0 rgba(255,255,255,.95), inset 0 -4px 0 rgba(4,7,10,.2); transition: background .16s; }
       .gx-btn--primary:hover::before { background: linear-gradient(180deg,#6ee8ff 0%,#00bfe6 100%); }
       .gx-btn--primary:hover { transform: translateY(-1px); filter: drop-shadow(0 3px 3px rgba(0,0,0,.6)) drop-shadow(0 14px 26px rgba(0,212,255,.35)); }
@@ -85,10 +85,10 @@ export function GxStyles() {
       .gx-btn--secondary { color: var(--tx); border-radius: 10px; background: var(--clay-face); box-shadow: var(--e-clay); border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); }
       .gx-btn--secondary:hover { transform: translateY(-1px); box-shadow: var(--e-clay-hi); color: #fff; }
       .gx-btn--secondary:active { transform: translateY(1px); box-shadow: var(--e-pressed); }
-      .gx-btn--ghost { color: var(--tx-dim-hi); border: 1px solid var(--line-hi); font-size: 10.5px; min-height: 32px; }
+      .gx-btn--ghost { color: var(--tx-dim-hi); border: 1px solid var(--line-hi); font-size: 9.5px; min-height: 28px; }
       .gx-btn--ghost:hover { color: var(--tx); border-color: var(--cyan); background: rgba(0,212,255,.05); }
 
-      .gx-chip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 11px; border-radius: 999px; font: 600 10px/1 var(--mono); letter-spacing: .13em; text-transform: uppercase;
+      .gx-chip { display: inline-flex; align-items: center; gap: 5px; height: 23px; padding: 0 9px; border-radius: 999px; font: 600 9px/1 var(--mono); letter-spacing: .11em; text-transform: uppercase;
         color: var(--tx-dim-hi); background: var(--clay-face); box-shadow: var(--e-clay); border: 1px solid rgba(232,243,246,.05); cursor: pointer; transition: all .16s var(--ease-out); text-decoration: none; }
       .gx-chip:hover { color: var(--tx); transform: translateY(-1px); }
       .gx-chip[aria-pressed="true"] { color: var(--cyan); box-shadow: var(--e-pressed); background: var(--s1); transform: none; }
@@ -108,7 +108,7 @@ export function GxStyles() {
         filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 50%, transparent)); }
       .gx-ring > b { font: 700 calc(var(--size) * .2)/1 var(--mono); font-variant-numeric: tabular-nums; color: var(--tx); position: relative; }
 
-      .hx-tag { display: inline-block; font-family: var(--mono); font-size: 9.5px; font-weight: 600; letter-spacing: .16em; padding: 3px 6px; border: 1px solid currentColor; line-height: 1; }
+      .hx-tag { display: inline-block; font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: .14em; padding: 2px 5px; border: 1px solid currentColor; line-height: 1; }
       .gx-hud { position: relative; border: 1px solid rgba(232,243,246,.08); background: linear-gradient(180deg, rgba(10,18,24,.85), rgba(4,7,10,.9)); }
       .gx-hud::before, .gx-hud::after { content: ''; position: absolute; width: 12px; height: 12px; border: 0 solid var(--accent); pointer-events: none; }
       .gx-hud::before { top: -1px; left: -1px; border-top-width: 2px; border-left-width: 2px; }
