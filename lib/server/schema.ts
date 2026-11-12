@@ -220,6 +220,26 @@ const STATEMENTS = [
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS review_streak_days int NOT NULL DEFAULT 0`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS last_review_date date`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS daily_review_cap int NOT NULL DEFAULT 30`,
+
+  // End-of-chapter quizzes: a generated-once cache of questions per chapter, plus per-user results.
+  `CREATE TABLE IF NOT EXISTS chapter_quizzes (
+    module_id text NOT NULL,
+    chapter_id text NOT NULL,
+    questions jsonb NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (module_id, chapter_id)
+  )`,
+  `CREATE TABLE IF NOT EXISTS quiz_results (
+    user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    module_id text NOT NULL,
+    chapter_id text NOT NULL,
+    best_correct int NOT NULL DEFAULT 0,
+    total int NOT NULL DEFAULT 0,
+    attempts int NOT NULL DEFAULT 0,
+    xp_awarded int NOT NULL DEFAULT 0,
+    updated_at timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (user_id, module_id, chapter_id)
+  )`,
 ]
 
 let ready: Promise<void> | null = null

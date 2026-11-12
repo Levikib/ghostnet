@@ -3,6 +3,8 @@ import React, { useState, useEffect, useRef } from 'react'
 import { fetchServerProgress, syncChapter } from '../../lib/client/progress'
 import { openGhost, setGhostContext } from '../../lib/client/ghostContext'
 import { GxStyles, T, accentText } from './gx/Gx'
+import ChapterQuiz from './ChapterQuiz'
+import { CATALOG, LAB_STEPS } from '../../lib/learning'
 
 const READ_SIZES = { S: 15, M: 16, L: 18, XL: 20 } as const
 type ReadSize = keyof typeof READ_SIZES
@@ -231,6 +233,34 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
         </div>
       </section>
 
+      {/* Chapter -> lab linkage: which lab exercises this chapter has prepared you for */}
+      {(() => {
+        const stepsTotal = LAB_STEPS[moduleId + '-lab'] || 0
+        if (stepsTotal <= 0 || chapters.length <= 0) return null
+        const from = Math.floor((current * stepsTotal) / chapters.length) + 1
+        const to = Math.max(from, Math.floor(((current + 1) * stepsTotal) / chapters.length))
+        const labHref = ch.labLink || '/modules/' + moduleId + '/lab'
+        return (
+          <a href={labHref} className="cx-labready" aria-label="Lab exercises you are ready for">
+            <div>
+              <div className="cx-labready-k">▸ READY TO PRACTISE</div>
+              <div className="cx-labready-t">You&apos;ve now covered enough for <strong>Lab steps {from}–{to}</strong> of {stepsTotal}. Try them in the lab while it&apos;s fresh.</div>
+            </div>
+            <span className="cx-labready-go">OPEN LAB ▸</span>
+          </a>
+        )
+      })()}
+
+      {/* Graded end-of-chapter quiz (GHOST-generated, earns XP) */}
+      <ChapterQuiz
+        moduleId={moduleId}
+        moduleTitle={CATALOG.find(m => m.id === moduleId)?.title || moduleId}
+        chapterId={ch.id}
+        chapterTitle={ch.title}
+        takeaways={ch.takeaways}
+        accent={acc}
+      />
+
       <div className="cx-actions">
         <button className="gx-btn gx-btn--secondary" onClick={() => openGhost('Quiz me with 3 quick questions on this chapter: ' + ch.title)}>QUIZ ME WITH GHOST</button>
         <button className="gx-btn gx-btn--ghost" onClick={() => openGhost('Explain the key idea of "' + ch.title + '" more simply, with a real-world example.')}>EXPLAIN SIMPLER</button>
@@ -294,6 +324,12 @@ export default function ModuleCodex({ moduleId, accent, chapters }: Props) {
         .cx-take li::before { content: ''; position: absolute; left: 0; top: .6em; width: 8px; height: 8px; border-radius: 2px; background: var(--accent); transform: rotate(45deg); }
         .cx-read-status { margin-top: 18px; padding-top: 14px; border-top: 1px dashed rgba(232,243,246,.1); font: 600 11.5px/1.4 var(--mono); letter-spacing: .08em; color: var(--tx-dim-hi); }
         .cx-read-status[data-done="true"] { color: var(--green); }
+        .cx-labready { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 18px; padding: 13px 16px; border-radius: 12px; text-decoration: none; background: color-mix(in srgb, var(--accent) 7%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent); transition: transform .14s, box-shadow .14s; }
+        .cx-labready:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,.3); }
+        .cx-labready-k { font-family: var(--mono); font-size: 9.5px; letter-spacing: .16em; color: var(--accent); }
+        .cx-labready-t { font-family: var(--sans); font-size: 13.5px; color: var(--tx-body); margin-top: 3px; line-height: 1.5; }
+        .cx-labready-t strong { color: var(--tx); }
+        .cx-labready-go { flex: none; font-family: var(--mono); font-size: 10.5px; font-weight: 700; letter-spacing: .12em; color: var(--accent); }
         .cx-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
         .cx-pn { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-top: 28px; }
         .cx-pn-btn { display: flex; flex-direction: column; gap: 5px; padding: 13px 15px; border: 0; color: inherit; font: inherit; text-align: left; border-radius: 12px; }
