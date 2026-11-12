@@ -2,6 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import ModuleCodex, { CodexChapter } from '@/app/components/ModuleCodex'
+import { Local, Watch } from '@/app/components/learn/Mtaani'
 
 const mono = 'JetBrains Mono, monospace'
 const accent = '#5ccfe0'
@@ -103,6 +104,9 @@ const chapters: CodexChapter[] = [
     ],
     content: (
       <div>
+        <Local>
+          Think of the <em>watchman&apos;s gate register</em> at an estate, backed by the CCTV above it. When something goes missing, the register tells you who entered, when, and who signed them in; the camera footage shows what actually happened. Digital forensics is exactly this for computers &mdash; reconstructing who did what and when from the traces left behind. And there is one golden rule the estate learned the hard way: if a guard scribbles over the register or someone edits the footage, it is worthless in a <em>baraza</em> or a court. The evidence only counts if you can prove nobody tampered with it.
+        </Local>
         <H3>What Digital Forensics Actually Is</H3>
         <P>
           Digital forensics is the application of scientific method to digital evidence so that findings survive scrutiny - in a courtroom, a disciplinary hearing, an insurance dispute or an internal incident review. The discipline splits into closely related sub-fields: disk (dead-box) forensics, memory forensics, mobile forensics, network forensics, cloud forensics and multimedia forensics. DFIR - Digital Forensics and Incident Response - fuses the evidentiary rigour of forensics with the speed of incident response, because in a live breach you rarely have the luxury of a pristine lab and unlimited time.
@@ -190,6 +194,9 @@ Hash re-verified at each custody change: MATCH`}
     ],
     content: (
       <div>
+        <Local>
+          You would never scribble your working notes onto the original gate register &mdash; you&apos;d take it to the shop, make a <em>certified photocopy</em>, stamp it, and only ever write on the copy. Forensic imaging is that photocopy, but perfect down to the last smudge: a bit-for-bit duplicate of the whole disk, even the blank-looking pages. The hash you compute is like the shopkeeper stamping &quot;this copy matches the original, page for page&quot; &mdash; so months later nobody can claim you added or erased a line.
+        </Local>
         <H3>What a Forensic Image Is</H3>
         <P>
           A forensic image is a complete, bit-for-bit duplicate of a storage device: every sector, allocated or not, including the slack space at the end of files and the unallocated space that holds deleted data. This is fundamentally different from copying files. Copying files with the operating system gives you only what the filesystem currently references; it skips deleted files, slack, the journal, shadow copies and the boot areas. Carving deleted data, recovering timestamps and proving nothing was changed all depend on having the raw bitstream, so forensic acquisition always works at the physical device level.
@@ -199,6 +206,10 @@ Hash re-verified at each custody change: MATCH`}
         <P>
           The classic Unix imager is dd, which simply reads one device and writes to another. For forensics the specialised forks dc3dd (DoD Cyber Crime Center) and dcfldd (DoD Computer Forensics Lab) add what dd lacks: on-the-fly hashing, progress output, error logging and verification. You image the whole physical device (for example /dev/sda), not a partition, so you capture the partition table and any hidden areas.
         </P>
+        <Watch
+          reads={<>Two commands and their output. The first (<code>lsblk</code>) just lists the disks so you can confirm which one is the suspect &mdash; like reading the serial number off the register before photocopying it. The second (<code>dc3dd</code>) makes the bit-for-bit copy and hashes it as it reads. The last line, <em>device verified: yes</em>, is the shopkeeper&apos;s stamp.</>}
+          later={<>You&apos;ll run this against a practice disk image in the lab, write blocker and all.</>}
+        >
         <Pre label="DISK IMAGING WITH dc3dd">
 {`# Identify the suspect disk (behind a write blocker)
 lsblk -o NAME,SIZE,MODEL,SERIAL
@@ -213,6 +224,7 @@ dc3dd if=/dev/sda of=/evidence/GN-0042.raw hash=sha256
    sha256: 9f2c0b7d41e2...e41a
    device verified : yes`}
         </Pre>
+        </Watch>
         <Note type="warn">
           Long commands are wrapped across lines for readability. Always confirm if= points at the physical device and of= points at your evidence drive - transposing them wipes the evidence. Many examiners physically label the write-blocked source and the destination before running anything.
         </Note>
@@ -241,6 +253,10 @@ dc3dd if=/dev/sda of=/evidence/GN-0042.raw hash=sha256
         <P>
           Hashing is the mathematical backbone of forensic integrity. You compute a cryptographic digest of the source, acquire the image, compute the digest of the image, and compare. A match proves the copy is identical to the original. MD5 and SHA-1 are cryptographically broken against deliberate collision attacks, but for integrity verification of a specific acquired image - where no adversary is crafting a colliding disk during your acquisition - they remain in wide use; best practice is to record SHA-256 as well so the integrity proof survives future scrutiny.
         </P>
+        <Watch
+          reads={<>This is the &quot;does my copy still match?&quot; check. It computes a fresh fingerprint of the image and compares it to the one recorded when the copy was made. If the two strings match, the evidence is intact; if a single character differs, something changed. Read it as proof, not a task to do now.</>}
+          later={<>You&apos;ll verify a hash and catch a deliberately tampered image in the lab.</>}
+        >
         <Pre label="VERIFYING AN ACQUIRED IMAGE">
 {`# Hash the image after acquisition
 sha256sum /evidence/GN-0042.raw
@@ -254,6 +270,7 @@ ewfverify GN-0042.E01
   MD5 hash stored in file:   d41d8cd9...  (matches calculated)
   SHA256 hash calculated:    9f2c0b7d...  verified : success`}
         </Pre>
+        </Watch>
 
         <H3>Live vs Dead Acquisition</H3>
         <P>
@@ -308,6 +325,9 @@ insmod lime.ko "path=/evidence/host01.lime format=lime"
     ],
     content: (
       <div>
+        <Local>
+          A disk is organised like a busy <em>duka</em>&apos;s store room. There is an index book at the front listing which shelf holds what (the partition table), the shelves themselves (the filesystem), and &mdash; the part investigators love &mdash; the back corner where &quot;finished&quot; stock is tossed. The shopkeeper crossed it out of the index book, so to a customer it looks gone, but the actual cartons are still sitting there until new stock is physically stacked on top. That back corner is slack and unallocated space, and deleted files live there long after someone thinks they threw them away.
+        </Local>
         <H3>Partition Schemes: MBR and GPT</H3>
         <P>
           Before you can parse a filesystem you must find it. The Master Boot Record (MBR), used since the 1980s, sits in the first 512-byte sector and holds a four-entry partition table plus bootstrap code; it caps disks at 2 TB and four primary partitions. The GUID Partition Table (GPT), part of UEFI, replaces it on modern systems with a protective MBR, a primary GPT header, up to 128 partition entries and a backup table at the end of the disk. The Sleuth Kit&apos;s mmls reads either scheme and prints the layout so you know the byte offset of each volume.

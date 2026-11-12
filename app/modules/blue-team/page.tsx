@@ -2,6 +2,7 @@
 import React from 'react'
 import Link from 'next/link'
 import ModuleCodex, { CodexChapter } from '@/app/components/ModuleCodex'
+import { Local, Watch } from '@/app/components/learn/Mtaani'
 
 const mono = 'JetBrains Mono, monospace'
 const accent = '#4dd0e1'
@@ -96,6 +97,9 @@ const chapters: CodexChapter[] = [
     ],
     content: (
       <div>
+        <Local>
+          A gated estate runs a 24-hour <em>watchman</em> team, and a SOC is the digital version of it. The watchmen sit in the guardroom with the camera feeds and the gate radios (the telemetry), they are trained people who can tell a resident from a thief (the analysts), and they follow an agreed drill &mdash; log it, call the supervisor, raise the alarm &mdash; so every shift reacts the same way (the processes). The famous &quot;video wall&quot; is just the guardroom screen; it is the trained eyes and the shift drill, not the screen, that actually keep the estate safe.
+        </Local>
         <H3>What a Security Operations Centre Actually Does</H3>
         <P>
           Every offensive module in GHOSTNET ends in the same place: an attacker on a network doing something they should not. This module is about the other side of that story. A Security Operations Centre (SOC) is the function inside an organisation, or provided to it by a managed service, that watches for those attackers, decides which signals are real, and drives the response when they are. It is tempting to picture a dark room with a video wall, but the room is the least important part. A SOC is three things working together: telemetry (the logs and sensor data you collect), people who can interpret that telemetry, and processes that turn interpretation into consistent action.
@@ -128,6 +132,10 @@ const chapters: CodexChapter[] = [
         <P>
           An alert moves through predictable states. Understanding them is how you avoid the two classic failures: closing a real incident as noise, and drowning a real incident in a queue of noise.
         </P>
+        <Watch
+          reads={<>A flow of what happens to every single alarm, from the moment it rings (<strong>NEW</strong>) to how it is closed. The branches are the watchman&apos;s possible verdicts: a real break-in, a resident who forgot their gate code (real but allowed), or a false alarm that needs the sensor adjusted. The bottom two lines are the point &mdash; every closure is written down, and that logbook is what the whole chapter&apos;s metrics are built from.</>}
+          later={<>You&apos;ll walk real alerts through these states in the lab and record each verdict.</>}
+        >
         <Pre label="ALERT LIFECYCLE IN A TYPICAL SOAR / CASE TOOL">
 {`[NEW] --triage--> [IN PROGRESS] --verdict--> [CLOSED: True Positive  -> escalate to incident]
                                         |--> [CLOSED: Benign True Positive (real, but allowed)]
@@ -137,6 +145,7 @@ const chapters: CodexChapter[] = [
 Every closure records: verdict, evidence checked, analyst, time spent.
 Those fields are what your metrics and tuning backlog are built from.`}
         </Pre>
+        </Watch>
         <P>
           Notice the category &quot;benign true positive&quot;. The rule fired correctly, the behaviour really happened, but it was authorised: an administrator ran PsExec during a maintenance window, or a vulnerability scanner triggered a port scan alert. Separating these from false positives (the rule matched something it should not have) matters, because the fix is different. A false positive means the rule logic is wrong. A benign true positive means you need context, such as an allowlist of scanner IPs or a change-ticket lookup.
         </P>
@@ -222,6 +231,9 @@ Those fields are what your metrics and tuning backlog are built from.`}
     ],
     content: (
       <div>
+        <Local>
+          No estate watchman writes down every leaf that blows through the gate &mdash; the logbook would fill in an hour and hide the one entry that matters. He records what counts: who entered, which gate, what time, and failed attempts at the lock. Choosing which logs to keep is exactly that decision for a network. Record too little and the break-in leaves no trace; record everything and the real intrusion drowns in noise. Deciding what goes in the book is itself a security choice, made before anything ever goes wrong.
+        </Local>
         <H3>Why Log Selection Is a Security Decision</H3>
         <P>
           Investigations live or die on telemetry. When an incident responder asks &quot;did the attacker run anything on the file server?&quot; the answer is either in a log you collected months ago or it is lost. Collecting everything is unaffordable (SIEM licences are usually priced by ingest volume) and noisy, so defenders choose. This chapter covers the sources that repeatedly prove decisive in real intrusions, what the key fields mean, and the configuration you need so they actually contain useful data.
@@ -268,6 +280,10 @@ Those fields are what your metrics and tuning backlog are built from.`}
             ['11', 'CachedInteractive', 'Logon with cached domain credentials, no DC reachable'],
           ]}
         />
+        <Watch
+          reads={<>One line from the gate logbook &mdash; a single failed login, written out in full. You don&apos;t decode every field; just find the human story in it: someone tried the account <code>a.patel</code> on the domain controller, got the password wrong, and came over the network (Logon Type 3). The <code>Sub Status</code> line even notes the username was right but the password wrong &mdash; a small detail that tells a watchman this was a targeted guess, not a typo.</>}
+          later={<>You&apos;ll read and triage real 4625 events in the lab and spot a password-spray pattern.</>}
+        >
         <Pre label="EVENT 4625 (ABRIDGED) - FAILED LOGON">
 {`Log Name:      Security
 Event ID:      4625
@@ -290,6 +306,7 @@ Detailed Authentication Information:
     Logon Type:          3
     Authentication Package: NTLM`}
         </Pre>
+        </Watch>
         <Table
           headers={['SubStatus', 'Meaning', 'Investigative value']}
           rows={[
@@ -446,6 +463,9 @@ $ journalctl -u ssh --since "2026-11-03 22:00"`}
     ],
     content: (
       <div>
+        <Local>
+          Picture a <em>Naivas</em> branch with cameras over every till, the doors, and the stockroom. Each camera alone sees only its own corner. A SIEM is the control room that pipes every feed onto one desk, so a guard can notice that the same face lingering at the exit also appeared by the stockroom five minutes earlier &mdash; a pattern no single camera could ever show. It pulls scattered logs from across the whole network into one place and raises a flag when the pieces, read together, spell trouble.
+        </Local>
         <H3>What a SIEM Is For</H3>
         <P>
           A Security Information and Event Management (SIEM) platform is the place where your telemetry from chapter 2 lands, becomes searchable, and gets evaluated against detection rules. Splunk Enterprise Security, Microsoft Sentinel, Elastic Security, Google SecOps (formerly Chronicle), IBM QRadar and open-source stacks such as Wazuh or OpenSearch with Security Analytics all solve the same problem with different trade-offs in cost, query language and scale. Increasingly, organisations also split storage from analytics: cheap data-lake storage for bulk logs, and a SIEM tier for the high-value data that feeds real-time detections.
